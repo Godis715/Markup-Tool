@@ -3,6 +3,8 @@ import "reflect-metadata";
 import express from "express";
 import cookieParser from "cookie-parser";
 import * as auth from "./controllers/auth";
+import * as dataset from "./controllers/dataset";
+import { ensureAuthentication } from "./middlewares/ensureAuthentication";
 
 const PORT = 8000;
 
@@ -31,6 +33,12 @@ app.get(
 app.get(
     "/api/auth/logout",
     auth.logout
+);
+
+app.post(
+    "/api/dataset",
+    ensureAuthentication,
+    dataset.post
 );
 
 app.listen(

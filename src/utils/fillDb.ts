@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Role } from "./entity/Role";
+import { Role } from "../entity/Role";
 import { createConnection } from "typeorm";
 import { ROLE_ADMIN, ROLE_CUSTOMER, ROLE_EXPERT } from "./configs";
 
