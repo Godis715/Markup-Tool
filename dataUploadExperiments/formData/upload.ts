@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import fs from "fs";
 
-export async function uploadDataset(dirPath: string, datasetName: string) {
+export async function uploadDataset(dirPath: string, datasetName: string, requestHeaders) {
     const files = fs.readdirSync(dirPath, { withFileTypes: true })
         .filter(
             (f) => f.isFile()
@@ -35,7 +35,8 @@ export async function uploadDataset(dirPath: string, datasetName: string) {
     const requestOptions = {
         hostname: "localhost",
         path: "/api/dataset",
-        port: 8000
+        port: 8000,
+        headers: requestHeaders
     };
 
     return new Promise((resolve, reject) => {

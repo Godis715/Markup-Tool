@@ -13,7 +13,7 @@ import {
     CSRF_REFRESH_TOKEN_HEADER,
     REFRESH_TOKEN_COOKIE
 } from "../utils/configs";
-import { ensureAuthentication } from "../middlewares/ensureAuthentication";
+import ensureAuthentication from "../middlewares/ensureAuthentication";
 
 export async function login(request: Request, response: Response) {
     const { login, password } = request.body;
