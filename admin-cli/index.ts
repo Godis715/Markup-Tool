@@ -1,7 +1,7 @@
 import commander from "commander";
 import { prompt } from "inquirer";
 import jwt from "jsonwebtoken";
-import * as auth from "../src/auth";
+import * as auth from "../src/utils/auth";
 
 commander
     .version("1.0.0")

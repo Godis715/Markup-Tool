@@ -3,8 +3,9 @@ import {
     PrimaryGeneratedColumn,
     Column,
     JoinTable,
-    ManyToMany
+    ManyToMany, OneToMany
 } from "typeorm";
+import { Dataset } from "./Dataset";
 
 import { Role } from "./Role";
 
@@ -24,4 +25,7 @@ export class User {
     @ManyToMany(type => Role)
     @JoinTable()
     roles: Role[];
+
+    @OneToMany(() => Dataset, (dataset) => dataset.user)
+    datasets: Dataset[]
 }

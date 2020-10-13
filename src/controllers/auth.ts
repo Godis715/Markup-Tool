@@ -2,17 +2,18 @@ import {
     generateTokens,
     verifyTokens,
     generateAccessTokens
-} from "../auth";
-
+} from "../utils/auth";
 import {
     Request,
     Response
 } from "express";
-
-const ACCESS_TOKEN_COOKIE = "Access-Token";
-const REFRESH_TOKEN_COOKIE = "Refresh-Token";
-const CSRF_ACCESS_TOKEN_HEADER = "Csrf-Access-Token";
-const CSRF_REFRESH_TOKEN_HEADER = "Csrf-Refresh-Token";
+import {
+    ACCESS_TOKEN_COOKIE,
+    CSRF_ACCESS_TOKEN_HEADER,
+    CSRF_REFRESH_TOKEN_HEADER,
+    REFRESH_TOKEN_COOKIE
+} from "../utils/configs";
+import ensureAuthentication from "../middlewares/ensureAuthentication";
 
 export async function login(request: Request, response: Response) {
     const { login, password } = request.body;
@@ -46,26 +47,12 @@ export async function login(request: Request, response: Response) {
 }
 
 
-export async function verify(request: Request, response: Response) {
-    const csrfAccessToken = request.header(CSRF_ACCESS_TOKEN_HEADER);
-    const accessToken = request.cookies[ACCESS_TOKEN_COOKIE];
-
-    if (!csrfAccessToken || !accessToken) {
-        response.sendStatus(401);
-        return;
-    }
-
-    try {
-        // бросает исключение, если пара значений не прошла верификацию
-        verifyTokens(accessToken, csrfAccessToken);
-        response.sendStatus(200);
-    }
-    catch(err) {
-        console.error(err);
-        response.sendStatus(401);
-    }
-}
-
+export const verify = [
+    ensureAuthentication,
+    (req: Request, res: Response) => {
+        res.sendStatus(200);
+    } 
+];
 
 export async function refresh(request: Request, response: Response) {
     const csrfRefreshToken = request.header(CSRF_REFRESH_TOKEN_HEADER);

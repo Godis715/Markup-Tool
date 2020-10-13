@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import { createConnection } from "typeorm";
-import { User } from "../src/entity/User";
+import { User } from "../entity/User";
 import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
-import { Role } from "./entity/Role";
+import { Role } from "../entity/Role";
 
 // TODO: безопасное хранение ключа
 const SECRET_KEY = "123";
