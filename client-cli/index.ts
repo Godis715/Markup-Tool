@@ -1,7 +1,7 @@
 import commander from "commander";
 import { prompt } from "inquirer";
 import axios from "axios";
-import { uploadDataset } from "../dataUploadScratch/formData/upload";
+import { uploadDataset } from "../dataUploadExperiments/formData/upload";
 
 commander
     .version("1.0.0")

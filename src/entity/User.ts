@@ -22,7 +22,7 @@ export class User {
     @Column()
     passwordHash: string;
 
-    @ManyToMany(type => Role)
+    @ManyToMany((type) => Role)
     @JoinTable()
     roles: Role[];
 

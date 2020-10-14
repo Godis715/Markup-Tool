@@ -4,7 +4,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import * as auth from "./controllers/auth";
 import * as dataset from "./controllers/dataset";
-import ensureAuthentication from "./middlewares/ensureAuthentication";
+import allowForRoles from "./middlewares/allowForRoles";
+import { ROLE_CUSTOMER } from "./utils/configs";
 
 const PORT = 8000;
 
@@ -15,15 +16,15 @@ app.use(cookieParser());
 // чтобы работать с телом запроса
 app.use(express.json());
 
-app.post( "/api/auth/login", auth.login);
+app.post("/api/auth/login", auth.login);
 
-app.get( "/api/auth/verify", auth.verify);
+app.get("/api/auth/verify", auth.verify);
 
-app.get( "/api/auth/refresh", auth.refresh);
+app.get("/api/auth/refresh", auth.refresh);
 
-app.get( "/api/auth/logout", auth.logout);
+app.get("/api/auth/logout", auth.logout);
 
-app.post("/api/dataset", ensureAuthentication, ...dataset.post);
+app.post("/api/dataset", allowForRoles(ROLE_CUSTOMER), dataset.post);
 app.use("/api/dataset", dataset.postHandleErrors);
 
 app.listen(
