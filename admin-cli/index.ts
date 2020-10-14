@@ -2,6 +2,7 @@ import commander from "commander";
 import { prompt } from "inquirer";
 import jwt from "jsonwebtoken";
 import * as auth from "../src/utils/auth";
+import { ROLE_ADMIN, ROLE_CUSTOMER, ROLE_EXPERT } from "../src/utils/configs";
 
 commander
     .version("1.0.0")
@@ -26,15 +27,15 @@ commander
 
             const roles = [];
             if (cmd.expert) {
-                roles.push("expert");
+                roles.push(ROLE_EXPERT);
             }
 
             if (cmd.customer) {
-                roles.push("customer");
+                roles.push(ROLE_CUSTOMER);
             }
 
             if (cmd.admin) {
-                roles.push("admin");
+                roles.push(ROLE_ADMIN);
             }
 
             try {
