@@ -3,6 +3,10 @@ import { prompt } from "inquirer";
 import axios from "axios";
 import { uploadDataset } from "../dataUploadExperiments/formData/upload";
 
+const axiosInst = axios.create({
+    baseURL: "http://localhost:8000/api"
+});
+
 commander
     .version("1.0.0")
     .description("CLI administration panel.");
@@ -27,13 +31,18 @@ commander
                     }
                 ]);
     
-                const response = await axios.post("http://localhost:8000/api/auth/login", { login, password });
+                const response = await axiosInst.post("/auth/login", { login, password });
                 const setCookies = response.headers["set-cookie"];
                 
                 await uploadDataset(path, name, { "Cookie": setCookies, "Csrf-Access-Token": response.data.csrfAccessToken });
             }
             catch(err) {
-                console.error(err);
+                if (err.message) {
+                    console.error(err.message);
+                }
+                else {
+                    console.error("Unknown error occured");
+                }
             }
         }
     );

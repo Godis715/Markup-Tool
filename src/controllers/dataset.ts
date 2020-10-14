@@ -54,9 +54,9 @@ async function saveToDB(
     res: express.Response,
     next: express.NextFunction
 ) {
+    const connection = await createConnection();
     try {
         const login = res.locals.login;
-        const connection = await createConnection();
         // выяснить, нужно ли передавать ошибку через next(err)
         const user = await connection.manager.findOneOrFail(User, { login }, { relations: ["datasets"] });
     
@@ -104,6 +104,9 @@ async function saveToDB(
         res.sendStatus(200);
     }
     catch(err) {
+        if (connection.isConnected) {
+            connection.close();
+        }
         next(err);
     }
 };
