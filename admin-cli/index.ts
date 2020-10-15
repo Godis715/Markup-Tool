@@ -16,7 +16,7 @@ commander
     .description("Create new user with specified name")
     .action(
         async (login, cmd) => {
-            const answers = await prompt([
+            const { password } = await prompt([
                 {
                     type: "password",
                     mask: "*",
@@ -39,7 +39,7 @@ commander
             }
 
             try {
-                await auth.createUser(login, answers.password, roles);
+                await auth.createUser(login, password, roles);
                 console.log("User has been successfully created.");
             }
             catch(err) {
