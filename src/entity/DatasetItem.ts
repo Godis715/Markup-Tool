@@ -1,24 +1,26 @@
+import { IsNotEmpty } from "class-validator";
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    ManyToOne
+    ManyToOne,
+    Unique
 } from "typeorm";
 import { Dataset } from "./Dataset";
 
 @Entity()
+@Unique(["name", "dataset"])
 export class DatasetItem {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({
-        unique: true
-    })
+    @IsNotEmpty({ message: "Dataset item's name mustn't be empty" })
+    // не является первичным ключом
+    @Column()
     name: string;
 
-    @Column({
-        unique: true
-    })
+    @IsNotEmpty({ message: "Dataset item's location mustn't be empty" })
+    @Column({ unique: true })
     location: string;
 
     @ManyToOne(() => Dataset, (dataset) => dataset.items)

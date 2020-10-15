@@ -1,6 +1,5 @@
 import {
     generateTokens,
-    verifyTokens,
     generateAccessTokens
 } from "../utils/auth";
 import {
@@ -9,7 +8,6 @@ import {
 } from "express";
 import {
     ACCESS_TOKEN_COOKIE,
-    CSRF_ACCESS_TOKEN_HEADER,
     CSRF_REFRESH_TOKEN_HEADER,
     REFRESH_TOKEN_COOKIE
 } from "../utils/configs";
