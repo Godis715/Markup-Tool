@@ -11,6 +11,9 @@ import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User";
 
+/**
+ * Можно сделать отдельной сущностью
+ */
 export enum MarkupType {
     // классификация изображений
     CLASSIFICATION = "classification",
