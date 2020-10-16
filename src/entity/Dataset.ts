@@ -6,7 +6,7 @@ import {
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { User } from "./User";
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, ValidateNested } from "class-validator";
 import { Markup } from "./Markup";
 
 @Entity()

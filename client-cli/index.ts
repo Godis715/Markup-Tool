@@ -37,7 +37,7 @@ commander
                 await uploadDataset(path, name, { "Cookie": setCookies, "Csrf-Access-Token": response.data.csrfAccessToken });
             }
             catch(err) {
-                if (err.message) {
+                if (err) {
                     console.error(err.message);
                 }
                 else {

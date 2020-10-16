@@ -4,6 +4,7 @@ import { User } from "../entity/User";
 import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 import { Role } from "../entity/Role";
+import { validateOrReject } from "class-validator";
 
 // TODO: безопасное хранение ключа
 const SECRET_KEY = "123";
@@ -63,6 +64,8 @@ export async function createUser(login: string, password: string, roleNames: str
         }
     
         newUser.roles = roles;
+
+        await validateOrReject(newUser);
     
         await connection.manager.save(newUser);
         await connection.close();

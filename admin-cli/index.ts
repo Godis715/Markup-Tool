@@ -43,7 +43,7 @@ commander
                 console.log("User has been successfully created.");
             }
             catch(err) {
-                console.error(err.message);
+                logError(err);
             }
         }
     );
@@ -75,7 +75,7 @@ commander
                 console.log(`Csrf-Refresh: ${tokens.csrfRefreshToken}`);
             }
             catch(err) {
-                console.error(err.message);
+                logError(err);
             }
         }
     );
@@ -94,7 +94,7 @@ commander
                 console.log(`Token type: ${type}`);
             }
             catch(err) {
-                console.error(err.message);
+                logError(err);
             }
         }
     );
@@ -111,9 +111,24 @@ commander
                 console.log(`Csrf-Access: ${tokens.csrfAccessToken}`);
             }
             catch(err) {
-                console.error(err.message);
+                logError(err);
             }
         }
     )
 
 commander.parse(process.argv);
+
+function logError(error: Error | Error[]) {
+    if (Array.isArray(error)) {
+        error.forEach(
+            (err) => logSingleError(err)
+        );
+    }
+    else {
+        logSingleError(error);
+    }
+}
+
+function logSingleError(error: Error) {
+    console.error(error.message || error);
+}

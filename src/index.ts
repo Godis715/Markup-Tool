@@ -4,8 +4,10 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import * as auth from "./controllers/auth";
 import * as dataset from "./controllers/dataset";
+import * as markup from "./controllers/markup";
 import allowForRoles from "./middlewares/allowForRoles";
 import { ROLE_CUSTOMER } from "./utils/configs";
+import { ValidationError } from "class-validator";
 
 const PORT = 8000;
 
@@ -15,6 +17,9 @@ const app = express();
 app.use(cookieParser());
 // чтобы работать с телом запроса
 app.use(express.json());
+
+// чтобы express не парсил параметры запроса в объекты
+app.set("query parser", "simple");
 
 //#region AUTH
 app.post("/api/auth/login", auth.login);
@@ -30,6 +35,27 @@ app.get("/api/auth/logout", auth.logout);
 app.post("/api/dataset", allowForRoles(ROLE_CUSTOMER), dataset.post);
 app.use("/api/dataset", dataset.postHandleErrors);
 //#endregion
+
+//#region MARKUP
+// тип разметки передается в параметре запроса: /api/dataset/:datasetId/markup?type=xyz
+app.post("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.postDatasetMarkup);
+
+app.get("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.getDatasetMarkup);
+
+app.post("/api/markup/:markupId/experts", allowForRoles(ROLE_CUSTOMER), markup.updateExperts);
+//#endregion 
+
+app.use(
+    (
+        err: Error,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) => {
+        console.error(err);
+        res.sendStatus(500);
+    }
+);
 
 app.listen(
     PORT,

@@ -41,14 +41,16 @@ export class Markup {
     dataset: Dataset;
 
     @Column()
-    @IsIn(Object.values(MarkupType))
+    @IsIn(Object.values(MarkupType), {
+        message: (args) => `Invalid markup type '${args.value}'`
+    })
     type: string;
 
     @OneToMany(() => MarkupItem, (markupItem) => markupItem.markup)
     items: MarkupItem[];
 
     // эксперты, назначенные на выполнение задачи
-    @ManyToMany(() => User)
+    @ManyToMany(() => User, (expert) => expert.relatedMarkups)
     @JoinTable()
     experts: User[];
 }

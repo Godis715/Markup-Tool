@@ -7,6 +7,7 @@ import { createConnection } from "typeorm";
 import { User } from "../entity/User";
 import { Dataset } from "../entity/Dataset";
 import { DatasetItem } from "../entity/DatasetItem";
+import { validateOrReject } from "class-validator";
 
 /**
  * TODO:
@@ -28,7 +29,7 @@ async function uploadData(
     let writtenLen = 0;
     req.on("data", (data) => writtenLen += data.length);
 
-    // когда содинение закрывается, провеверяем количество заявленных и полученных байтов
+    // когда содинение закрывается, проверяем количество заявленных и полученных байтов
     req.on("close", () => {
         const totalLength = parseInt(req.header("Content-Length"));
         if (totalLength > writtenLen) {
@@ -69,24 +70,31 @@ async function saveToDB(
         dataset.user = user;
         dataset.location = datasetPath;
         dataset.items = [];
+        await validateOrReject(dataset);
     
-        console.log(user.datasets);
         user.datasets.push(dataset);
 
         const savings = [];
         const files = req.files as Express.Multer.File[];
-        files.forEach(
-            (f) => {
-                const datasetItem = new DatasetItem();
-                datasetItem.dataset = dataset;
-                datasetItem.location = f.path;
-                datasetItem.name = f.originalname;
-                dataset.items.push(datasetItem);
-            }
-        )
+        await Promise.all(
+            files.map(
+                async (f) => {
+                    const datasetItem = new DatasetItem();
+                    datasetItem.dataset = dataset;
+                    datasetItem.location = f.path;
+                    datasetItem.name = f.originalname;
+                    dataset.items.push(datasetItem);
+
+                    return validateOrReject(datasetItem);
+                }
+            )
+        );
 
         await connection.transaction(
             async (transactionManager) => {
+                await validateOrReject(user);
+                await validateOrReject(dataset);
+
                 savings.push(
                     transactionManager.save(user),
                     transactionManager.save(dataset),

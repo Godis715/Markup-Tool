@@ -28,7 +28,8 @@ export default async function ensureAuthentication(
         next();
     }
     catch(err) {
-        console.error(err);
-        response.sendStatus(401);
+        response
+            .status(401)
+            .send(err.message);
     }
 }
