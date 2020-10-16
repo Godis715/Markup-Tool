@@ -38,13 +38,4 @@ export class MarkupItem {
     @IsJSON()
     @IsNotEmpty()
     result: string;
-    
-    /**
-     * TODO:
-     * аналогично result
-     */
-    @Column()
-    @IsJSON()
-    @IsNotEmpty()
-    config: string;
 }

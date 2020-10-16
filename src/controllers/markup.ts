@@ -221,7 +221,7 @@ export async function updateExperts(
         const markup = await connection.manager.findOne(
             Markup,
             { id: markupId },
-            { relations: ["experts", "dataset", "user"] }
+            { relations: ["experts", "dataset", "dataset.user"] }
         );
         if (!markup) {
             await connection.close();

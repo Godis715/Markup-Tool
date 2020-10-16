@@ -5,9 +5,9 @@ import cookieParser from "cookie-parser";
 import * as auth from "./controllers/auth";
 import * as dataset from "./controllers/dataset";
 import * as markup from "./controllers/markup";
+import * as markupItem from "./controllers/markupItem";
 import allowForRoles from "./middlewares/allowForRoles";
-import { ROLE_CUSTOMER } from "./utils/configs";
-import { ValidationError } from "class-validator";
+import { ROLE_CUSTOMER, ROLE_EXPERT } from "./utils/configs";
 
 const PORT = 8000;
 
@@ -43,7 +43,11 @@ app.post("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.
 app.get("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.getDatasetMarkup);
 
 app.post("/api/markup/:markupId/experts", allowForRoles(ROLE_CUSTOMER), markup.updateExperts);
-//#endregion 
+//#endregion
+
+//#region MARKUP ITEM
+app.get("/api/markup/:markupId/item", allowForRoles(ROLE_EXPERT), markupItem.get);
+//#endregion
 
 app.use(
     (
@@ -52,7 +56,7 @@ app.use(
         res: express.Response,
         next: express.NextFunction
     ) => {
-        console.error(err);
+        console.error("[Server error]", err);
         res.sendStatus(500);
     }
 );
