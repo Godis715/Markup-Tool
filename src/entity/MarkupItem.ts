@@ -8,7 +8,7 @@ import {
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
 import { User } from "./User";
-import { IsJSON, IsNotEmpty } from "class-validator";
+import MarkupItemResult from "../validationDecorators/markupItemResult";
 
 @Entity()
 export class MarkupItem {
@@ -35,7 +35,7 @@ export class MarkupItem {
      * Пока что можно хранить как JSON
      */
     @Column()
-    @IsJSON()
-    @IsNotEmpty()
-    result: string;
+    @MarkupItemResult()
+    @Column("simple-json")
+    result: any;
 }

@@ -1,3 +1,10 @@
+export enum MarkupType {
+    // классификация изображений
+    CLASSIFICATION = "classification",
+    // поиск заданного объекта
+    RECOGNITION = "recognition"
+}
+
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -9,17 +16,7 @@ import {
 import { IsIn } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
-import { User } from "./User";
-
-/**
- * Можно сделать отдельной сущностью
- */
-export enum MarkupType {
-    // классификация изображений
-    CLASSIFICATION = "classification",
-    // поиск заданного объекта
-    RECOGNITION = "recognition"
-}
+import { User } from "./User" ;
 
 /**
  * Сущность, представляющая собой задание для экспертов на разметку и

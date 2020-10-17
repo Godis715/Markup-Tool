@@ -47,6 +47,8 @@ app.post("/api/markup/:markupId/experts", allowForRoles(ROLE_CUSTOMER), markup.u
 
 //#region MARKUP ITEM
 app.get("/api/markup/:markupId/item", allowForRoles(ROLE_EXPERT), markupItem.get);
+
+app.post("/api/markup/:markupId/item", allowForRoles(ROLE_EXPERT), markupItem.post);
 //#endregion
 
 app.use(
