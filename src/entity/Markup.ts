@@ -11,6 +11,7 @@ import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
 import { MarkupType } from "../enums/appEnums";
+import MarkupConfig from "../validationDecorators/markupConfig";
 
 /**
  * Сущность, представляющая собой задание для экспертов на разметку и
@@ -44,4 +45,8 @@ export class Markup {
     @ManyToMany(() => User, (expert) => expert.relatedMarkups)
     @JoinTable()
     experts: User[];
+
+    @MarkupConfig()
+    @Column("simple-json", { nullable: true })
+    config?: any;
 }

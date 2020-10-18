@@ -21,6 +21,7 @@ export async function postDatasetMarkup(
         const datasetId = request.params.datasetId;
         const type = request.query.type as string;
         const { login } = response.locals;
+        const { config } = request.body;
         
         const dataset = await manager.findOne(
             Dataset,
@@ -45,6 +46,7 @@ export async function postDatasetMarkup(
         const markup = new Markup();
         markup.dataset = dataset;
         markup.type = type;
+        markup.config = config;
 
         try {
             await validateOrReject(markup, { validationError: { target: false } });
