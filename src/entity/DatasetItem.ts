@@ -19,6 +19,7 @@ export class DatasetItem {
     @Column()
     name: string;
 
+    // путь включает себя папку, в которой лежит датасет
     @IsNotEmpty({ message: "Dataset item's location mustn't be empty" })
     @Column({ unique: true })
     location: string;

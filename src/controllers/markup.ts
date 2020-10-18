@@ -155,6 +155,11 @@ export async function getForExpert(
     }
 }
 
+/**
+ * TODO:
+ * подумать, может, стоит разделить на два метода:
+ * удалить экспертов, добавить экспертов
+ */
 export async function updateExperts(
     request: express.Request,
     response: express.Response,
@@ -163,8 +168,8 @@ export async function updateExperts(
     try {
         const manager = getManager();
 
-        const login = response.locals.login;
-        const markupId = request.params.markupId;
+        const login: string = response.locals.login;
+        const markupId: string = request.params.markupId;
         const toAdd: string[] = request.body.toAdd || [];
         const toRemove: string[] = request.body.toRemove || [];
 
@@ -255,6 +260,57 @@ export async function updateExperts(
         await manager.save(markup);
 
         response.sendStatus(200);
+    }
+    catch(err) {
+        next(err);
+    }
+}
+
+export async function getResult(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+) {
+    try {
+        const manager = getManager();
+
+        const login: string = response.locals.login;
+        const markupId: string = request.params.markupId;
+        const markup =  await manager.findOne(
+            Markup,
+            { id: markupId },
+            { relations: ["items", "dataset", "dataset.user", "items.datasetItem"] }
+        );
+
+        if (!markup) {
+            response
+                .status(404)
+                .send(`Makrup with id '${markupId}' doesn't exist`);
+            return;
+        }
+
+        if(markup.dataset.user.login !== login) {
+            response
+                .status(403)
+                .send("This user is not an author of the markup");
+            return;
+        }
+
+        const result = markup.items.map(
+            (item) => ({
+                url: item.datasetItem.location,
+                name: item.datasetItem.name,
+                markup: item.result
+            })
+        );
+
+        /**
+         * TODO:
+         * сделать подсчет прогресса
+         */
+        response
+            .status(200)
+            .send({ result });
     }
     catch(err) {
         next(err);

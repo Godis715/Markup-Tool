@@ -114,6 +114,10 @@ export async function get(
             }
         }
     
+        /**
+         * TODO:
+         * возвращение __необходимой__ информации
+         */
         response
             .status(200)
             .send(appointment.datasetItem);

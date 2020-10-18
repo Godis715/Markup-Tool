@@ -30,7 +30,6 @@ const app = express();
 app.use(cookieParser());
 // чтобы работать с телом запроса
 app.use(express.json());
-
 // чтобы express не парсил параметры запроса в объекты
 app.set("query parser", "simple");
 
@@ -53,9 +52,16 @@ app.use("/api/dataset", dataset.postHandleErrors);
 // тип разметки передается в параметре запроса: /api/dataset/:datasetId/markup?type=xyz
 app.post("/api/dataset/:datasetId/markup", allowForRoles(UserRole.CUSTOMER), markup.postDatasetMarkup);
 
+// получение списка разметок одного датасета
 app.get("/api/dataset/:datasetId/markup", allowForRoles(UserRole.CUSTOMER), markup.getDatasetMarkup);
 
 app.post("/api/markup/:markupId/experts", allowForRoles(UserRole.CUSTOMER), markup.updateExperts);
+
+// получение сведений о конкретной разметке; для эксперта и заказчика - разный резлуьтат
+app.get("/api/markup/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOMER), () => {});
+
+// получение разметки в виде текста
+app.get("/api/markup/:markupId/result", allowForRoles(UserRole.CUSTOMER), markup.getResult);
 //#endregion
 
 //#region MARKUP ITEM
