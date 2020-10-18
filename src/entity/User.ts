@@ -3,7 +3,7 @@ import {
     PrimaryGeneratedColumn,
     Column,
     JoinTable,
-    ManyToMany, OneToMany
+    ManyToMany, OneToMany, PrimaryColumn
 } from "typeorm";
 import { Dataset } from "./Dataset";
 import { Length } from "class-validator";

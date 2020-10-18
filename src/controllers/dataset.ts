@@ -7,7 +7,8 @@ import { getManager } from "typeorm";
 import { User } from "../entity/User";
 import { Dataset } from "../entity/Dataset";
 import { DatasetItem } from "../entity/DatasetItem";
-import { validateOrReject, ValidatorOptions } from "class-validator";
+import { validateOrReject } from "class-validator";
+import validateAllOrReject from "../utils/validateAllOrReject";
 
 /**
  * TODO:
@@ -110,14 +111,6 @@ async function saveToDB(
     }
 };
 
-async function validateAllOrReject(objects: any[], options?: ValidatorOptions) {
-    return Promise.all(
-        objects.map(
-            (obj) => validateOrReject(obj, options)
-        )
-    );
-}
-
 /** Финальный обработчик ошибок */
 async function handleErrors (
     err: Error,
@@ -150,3 +143,31 @@ export const post = [
 ];
 
 export const postHandleErrors = handleErrors;
+
+export async function get(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+) {
+    try {
+        const login: string = response.locals.login;
+        const manager = getManager();
+
+        const user = await manager.findOne(User, { login }, { relations: ["datasets"] });
+
+        const dataToSend = user.datasets.map(
+            (dataset) => ({
+                id: dataset.id,
+                name: dataset.name
+            })
+        );
+
+        response
+            .status(200)
+            .send(dataToSend);
+    }
+    catch(err) {
+        next(err);
+    }
+}
+

@@ -34,7 +34,6 @@ export class MarkupItem {
      * 
      * Пока что можно хранить как JSON
      */
-    @Column()
     @MarkupItemResult()
     @Column("simple-json")
     result: any;
