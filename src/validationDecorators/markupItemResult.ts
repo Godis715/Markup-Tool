@@ -1,7 +1,13 @@
-import { registerDecorator, ValidationOptions, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { Markup, MarkupType } from '../entity/Markup';
+import {
+    registerDecorator,
+    ValidationOptions,
+    ValidationArguments,
+    ValidatorConstraint,
+    ValidatorConstraintInterface
+} from 'class-validator';
 import Ajv from "ajv";
-const ajv = new Ajv({ allErrors: true });
+import { MarkupItem } from '../entity/MarkupItem';
+import { MarkupType } from '../enums/appEnums';
 
 const coordSchema = {
     type: "number",
@@ -10,9 +16,18 @@ const coordSchema = {
 
 // JSON-схемы для результатов разметки различных типов
 const schemas = {
+    /**
+     * TODO:
+     * можно сделать параметризованную схему -
+     * проверять, что строка - один из возможных вариантов
+     */
     [MarkupType.CLASSIFICATION]: {
         type: "string"
     },
+    /**
+     * а здесь - условие на координаты и что координаты не превосходят
+     * размера картинки
+     */
     [MarkupType.RECOGNITION]: {
         type: "object",
         additionalProperties: false,
@@ -28,21 +43,18 @@ const schemas = {
 
 @ValidatorConstraint({ name: "markupItemResult", async: false })
 export class MarkupItemResultConstraint implements ValidatorConstraintInterface {
-
     public message: string = null;
 
     public validate(value: any, args: ValidationArguments) {
-        console.log("starting validate", value);
-        const markup = (args.object as any)["markup"] as Markup;
+        const markup = (args.object as MarkupItem).markup;
 
         if (!markup) {
             return false;
         }
 
         const schema = schemas[markup.type];
+        const ajv = new Ajv({ allErrors: true });
         const isValid = ajv.validate(schema, value);
-
-        console.log("isValid", isValid);
 
         if (!isValid) {
             this.message = ajv.errorsText();
@@ -53,10 +65,9 @@ export class MarkupItemResultConstraint implements ValidatorConstraintInterface 
         return true;
     }
 
-    public defaultMessage(args: ValidationArguments) { // Set the default error message here
-      return this.message;
+    public defaultMessage(args: ValidationArguments) {
+      return `Markup item's result has wrong format: ${this.message}`;
     }
-
 }
 
 /**

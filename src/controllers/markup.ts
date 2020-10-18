@@ -4,7 +4,7 @@ import { createConnection } from "typeorm";
 import { Dataset } from "../entity/Dataset";
 import { Markup } from "../entity/Markup";
 import { User } from "../entity/User";
-import { ROLE_EXPERT } from "../utils/configs";
+import { UserRole } from "../enums/appEnums";
 
 /**
  * TODO:
@@ -206,7 +206,7 @@ export async function updateExperts(
             .filter(
                 (user) => !user.roles
                     .map(({ name }) => name)
-                    .includes(ROLE_EXPERT)
+                    .includes(UserRole.EXPERT)
             )
             .map(({ id }) => id);
 

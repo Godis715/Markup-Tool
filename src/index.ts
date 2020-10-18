@@ -7,7 +7,7 @@ import * as dataset from "./controllers/dataset";
 import * as markup from "./controllers/markup";
 import * as markupItem from "./controllers/markupItem";
 import allowForRoles from "./middlewares/allowForRoles";
-import { ROLE_CUSTOMER, ROLE_EXPERT } from "./utils/configs";
+import { UserRole } from "./enums/appEnums";
 
 const PORT = 8000;
 
@@ -32,23 +32,23 @@ app.get("/api/auth/logout", auth.logout);
 //#endregion
 
 //#region DATASET
-app.post("/api/dataset", allowForRoles(ROLE_CUSTOMER), dataset.post);
+app.post("/api/dataset", allowForRoles(UserRole.CUSTOMER), dataset.post);
 app.use("/api/dataset", dataset.postHandleErrors);
 //#endregion
 
 //#region MARKUP
 // тип разметки передается в параметре запроса: /api/dataset/:datasetId/markup?type=xyz
-app.post("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.postDatasetMarkup);
+app.post("/api/dataset/:datasetId/markup", allowForRoles(UserRole.CUSTOMER), markup.postDatasetMarkup);
 
-app.get("/api/dataset/:datasetId/markup", allowForRoles(ROLE_CUSTOMER), markup.getDatasetMarkup);
+app.get("/api/dataset/:datasetId/markup", allowForRoles(UserRole.CUSTOMER), markup.getDatasetMarkup);
 
-app.post("/api/markup/:markupId/experts", allowForRoles(ROLE_CUSTOMER), markup.updateExperts);
+app.post("/api/markup/:markupId/experts", allowForRoles(UserRole.CUSTOMER), markup.updateExperts);
 //#endregion
 
 //#region MARKUP ITEM
-app.get("/api/markup/:markupId/item", allowForRoles(ROLE_EXPERT), markupItem.get);
+app.get("/api/markup/:markupId/item", allowForRoles(UserRole.CUSTOMER), markupItem.get);
 
-app.post("/api/markup/:markupId/item", allowForRoles(ROLE_EXPERT), markupItem.post);
+app.post("/api/markup/:markupId/item", allowForRoles(UserRole.CUSTOMER), markupItem.post);
 //#endregion
 
 app.use(
