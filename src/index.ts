@@ -22,7 +22,7 @@ createConnection()
     })
     .catch((err) => {
         console.error(err);
-    })
+    });
 
 const app = express();
 

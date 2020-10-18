@@ -1,10 +1,11 @@
 import "reflect-metadata";
 import { Role } from "../entity/Role";
-import { getManager } from "typeorm";
+import { createConnection } from "typeorm";
 import { UserRole } from "../enums/appEnums";
 
+
 (async () => {
-    const manager = getManager();
+    const connection = await createConnection();
 
     const roles = Object.values(UserRole).map(
         (roleName) => {
@@ -14,5 +15,5 @@ import { UserRole } from "../enums/appEnums";
         }
     );
 
-    await manager.save(roles);
+    await connection.manager.save(roles);
 })();

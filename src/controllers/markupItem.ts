@@ -113,14 +113,14 @@ export async function get(
                 return;
             }
         }
+
+        const dataToSend = {
+            url: appointment.datasetItem.location
+        };
     
-        /**
-         * TODO:
-         * возвращение __необходимой__ информации
-         */
         response
             .status(200)
-            .send(appointment.datasetItem);
+            .send(dataToSend);
     }
     catch(err) {
         next(err);
