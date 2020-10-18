@@ -8,8 +8,21 @@ import * as markup from "./controllers/markup";
 import * as markupItem from "./controllers/markupItem";
 import allowForRoles from "./middlewares/allowForRoles";
 import { UserRole } from "./enums/appEnums";
+import { createConnection } from "typeorm";
 
 const PORT = 8000;
+
+/**
+ * Для работы с typeorm требуется лишь один раз создать соединение
+ * Закрывать соединение не обязательно, согласно документации
+ */
+createConnection()
+    .then(() => {
+        console.log("[Server]: DB is connected");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
 
 const app = express();
 
@@ -46,9 +59,9 @@ app.post("/api/markup/:markupId/experts", allowForRoles(UserRole.CUSTOMER), mark
 //#endregion
 
 //#region MARKUP ITEM
-app.get("/api/markup/:markupId/item", allowForRoles(UserRole.CUSTOMER), markupItem.get);
+app.get("/api/markup/:markupId/item", allowForRoles(UserRole.EXPERT), markupItem.get);
 
-app.post("/api/markup/:markupId/item", allowForRoles(UserRole.CUSTOMER), markupItem.post);
+app.post("/api/markup/:markupId/item", allowForRoles(UserRole.EXPERT), markupItem.post);
 //#endregion
 
 app.use(

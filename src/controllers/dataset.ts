@@ -3,11 +3,11 @@ import crypto from "crypto";
 import multer from "multer";
 import fs from "fs";
 import extractUserLogin from "../middlewares/extractUserLogin";
-import { createConnection } from "typeorm";
+import { getManager } from "typeorm";
 import { User } from "../entity/User";
 import { Dataset } from "../entity/Dataset";
 import { DatasetItem } from "../entity/DatasetItem";
-import { validateOrReject } from "class-validator";
+import { validateOrReject, ValidatorOptions } from "class-validator";
 
 /**
  * TODO:
@@ -34,7 +34,7 @@ async function uploadData(
         const totalLength = parseInt(req.header("Content-Length"));
         if (totalLength > writtenLen) {
             next(
-                new Error("Connection closed, before data have derived")
+                new Error("Connection closed, before data had derived")
             );
         }
     });
@@ -55,11 +55,11 @@ async function saveToDB(
     res: express.Response,
     next: express.NextFunction
 ) {
-    const connection = await createConnection();
     try {
+        const manager = getManager();
         const login = res.locals.login;
-        // выяснить, нужно ли передавать ошибку через next(err)
-        const user = await connection.manager.findOneOrFail(User, { login }, { relations: ["datasets"] });
+        // FIX ME: повесить обработчик ошибки
+        const user = await manager.findOneOrFail(User, { login }, { relations: ["datasets"] });
     
         // Нужна валидация, возможно, раньше
         const datasetName = req.body["Dataset-Name"];
@@ -70,54 +70,53 @@ async function saveToDB(
         dataset.user = user;
         dataset.location = datasetPath;
         dataset.items = [];
-        await validateOrReject(dataset);
     
         user.datasets.push(dataset);
 
-        const savings = [];
         const files = req.files as Express.Multer.File[];
-        await Promise.all(
-            files.map(
-                async (f) => {
-                    const datasetItem = new DatasetItem();
-                    datasetItem.dataset = dataset;
-                    datasetItem.location = f.path;
-                    datasetItem.name = f.originalname;
-                    dataset.items.push(datasetItem);
-
-                    return validateOrReject(datasetItem);
-                }
-            )
-        );
-
-        await connection.transaction(
-            async (transactionManager) => {
-                await validateOrReject(user);
-                await validateOrReject(dataset);
-
-                savings.push(
-                    transactionManager.save(user),
-                    transactionManager.save(dataset),
-                    dataset.items.map(
-                        (item) => transactionManager.save(item)
-                    )
-                );
-        
-                await Promise.all(savings);
+        files.forEach(
+            (f) => {
+                const datasetItem = new DatasetItem();
+                datasetItem.dataset = dataset;
+                datasetItem.location = f.path;
+                datasetItem.name = f.originalname;
+                dataset.items.push(datasetItem);
             }
         );
 
-        await connection.close();
+        try {
+            await validateOrReject(dataset, { validationError: { target: false } });
+            await validateAllOrReject(dataset.items, { validationError: { target: false } });
+        }
+        catch(errors) {
+            res
+                .status(400)
+                .send(errors);
+            return;
+        }
+
+        await manager.transaction(
+            async (transactionManager) => {
+                await transactionManager.save(user);
+                await transactionManager.save(dataset);
+                await transactionManager.save(dataset.items);
+            }
+        );
 
         res.sendStatus(200);
     }
     catch(err) {
-        if (connection.isConnected) {
-            connection.close();
-        }
         next(err);
     }
 };
+
+async function validateAllOrReject(objects: any[], options?: ValidatorOptions) {
+    return Promise.all(
+        objects.map(
+            (obj) => validateOrReject(obj, options)
+        )
+    );
+}
 
 /** Финальный обработчик ошибок */
 async function handleErrors (

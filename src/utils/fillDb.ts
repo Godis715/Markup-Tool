@@ -1,20 +1,18 @@
 import "reflect-metadata";
 import { Role } from "../entity/Role";
-import { createConnection } from "typeorm";
+import { getManager } from "typeorm";
 import { UserRole } from "../enums/appEnums";
-import { User } from "../entity/User";
 
 (async () => {
-    const customer = new Role();
-    customer.name = UserRole.CUSTOMER;
+    const manager = getManager();
 
-    const expert = new Role();
-    expert.name = UserRole.EXPERT;
+    const roles = Object.values(UserRole).map(
+        (roleName) => {
+            const newRole = new Role();
+            newRole.name = roleName;
+            return newRole;
+        }
+    );
 
-    const admin = new Role();
-    admin.name = UserRole.ADMIN;
-
-    const connection = await createConnection();
-    await connection.manager.save([customer, expert, admin]);
-    await connection.close();
+    await manager.save(roles);
 })();

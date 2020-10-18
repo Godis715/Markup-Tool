@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { createConnection } from "typeorm";
+import { getManager } from "typeorm";
 import { User } from "../entity/User";
 import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
@@ -29,54 +29,44 @@ export type JWTPayload = {
 }
 
 export async function createUser(login: string, password: string, roleNames: string[]) {
-    const connection = await createConnection();
-    try {
-        const user = await connection.manager.findOne(User, { login });
+    const manager = getManager();
+    const user = await manager.findOne(User, { login });
 
-        if (user) {
-            throw new Error(USER_ALREADY_EXISTS_ERROR);
-        }
-    
-        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-        
-        const newUser = new User();
-        newUser.login = login;
-        newUser.passwordHash = passwordHash;
-
-        const roles = await connection.manager.find(Role, {
-            where: roleNames.map(
-                (name) => ({ name })
-            )
-        });
-    
-        /**
-         * Проверка, есть ли в переданном списке ролей таких,
-         * которых нет в базе
-         */
-        const invalidRoles = roleNames.filter(
-            (roleName) => roles.every(
-                (role) => roleName !== role.name
-            )
-        );
-    
-        if (invalidRoles.length > 0) {
-            throw new Error(`Unknown roles are found: ${invalidRoles}`);
-        }
-    
-        newUser.roles = roles;
-
-        await validateOrReject(newUser);
-    
-        await connection.manager.save(newUser);
-        await connection.close();
+    if (user) {
+        throw new Error(USER_ALREADY_EXISTS_ERROR);
     }
-    catch(err) {
-        if(connection.isConnected) {
-            await connection.close();
-        }
 
-        throw err;
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    
+    const newUser = new User();
+    newUser.login = login;
+    newUser.passwordHash = passwordHash;
+
+    const roles = await manager.find(Role, {
+        where: roleNames.map(
+            (name) => ({ name })
+        )
+    });
+
+    /**
+     * Проверка, есть ли в переданном списке ролей таких,
+     * которых нет в базе
+     */
+    const invalidRoles = roleNames.filter(
+        (roleName) => roles.every(
+            (role) => roleName !== role.name
+        )
+    );
+
+    if (invalidRoles.length > 0) {
+        throw new Error(`Unknown roles are found: ${invalidRoles}`);
     }
+
+    newUser.roles = roles;
+
+    await validateOrReject(newUser);
+
+    await manager.save(newUser);
 }
 
 /** Возвращает пару [токен, csrf-токен] */
@@ -105,9 +95,8 @@ function generateJWTPair(login: string, type: TokenType): [string, string] {
 }
 
 export async function generateTokens(login: string, password: string) {
-    const connection = await createConnection();
-    const user = await connection.manager.findOne(User, { login });
-    await connection.close();
+    const manager = getManager();
+    const user = await manager.findOne(User, { login });
 
     if (!user) {
         throw new Error(INVALID_CREDENTIALS_ERROR);
