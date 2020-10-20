@@ -28,20 +28,12 @@ createConnection()
 
 const app = express();
 
-const frontendDir = path.join(__dirname, "../../frontend");
-const publicDir = path.join(frontendDir, "/public");
-const configPath = path.join(frontendDir, "/config/gatsby-express.json");
-const path404 = path.join(publicDir, "/404/index.html");
-
+// FIX ME: директория с фронтом может передаваться как переменная окружения
+const publicDir = path.join(__dirname, "../../frontend/public");
+const configPath = path.join(__dirname, "../../frontend/config/gatsby-express.json");
 
 app.use(express.static(publicDir));
-app.use(gatsyExpress(configPath, {
-    publicDir: publicDir,
-  
-    // redirects all /path/ to /path
-    // should be used with gatsby-plugin-remove-trailing-slashes
-    redirectSlashes: true,
-}));
+app.use(gatsyExpress(configPath, { publicDir }));
 
 // чтобы работать с куки ответа
 app.use(cookieParser());

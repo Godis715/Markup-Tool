@@ -1,7 +1,7 @@
+import axios from "axios";
 import commander from "commander";
 import { prompt } from "inquirer";
-import axios from "axios";
-import { uploadDataset } from "../dataUploadExperiments/formData/upload";
+import { uploadDataset } from "./upload";
 
 const axiosInst = axios.create({
     baseURL: "http://localhost:8000/api"
