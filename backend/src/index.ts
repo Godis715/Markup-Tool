@@ -9,8 +9,6 @@ import * as markupItem from "./controllers/markupItem";
 import allowForRoles from "./middlewares/allowForRoles";
 import { UserRole } from "./enums/appEnums";
 import { createConnection } from "typeorm";
-import gatsyExpress from "gatsby-plugin-express";
-import path from "path";
 
 const PORT = 8000;
 
@@ -27,13 +25,6 @@ createConnection()
     });
 
 const app = express();
-
-// FIX ME: директория с фронтом может передаваться как переменная окружения
-const publicDir = path.join(__dirname, "../../frontend/public");
-const configPath = path.join(__dirname, "../../frontend/config/gatsby-express.json");
-
-app.use(express.static(publicDir));
-app.use(gatsyExpress(configPath, { publicDir }));
 
 // чтобы работать с куки ответа
 app.use(cookieParser());
@@ -73,6 +64,8 @@ app.get("/api/markup/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOME
 
 // получение разметки в виде текста
 app.get("/api/markup/:markupId/result", allowForRoles(UserRole.CUSTOMER), markup.getResult);
+
+app.get("/api/markup", allowForRoles(UserRole.EXPERT), markup.getForExpert);
 //#endregion
 
 //#region MARKUP ITEM

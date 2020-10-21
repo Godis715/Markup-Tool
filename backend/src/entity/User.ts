@@ -10,6 +10,7 @@ import { Length } from "class-validator";
 
 import { Role } from "./Role";
 import { Markup } from "./Markup";
+import ArrayUniqueByProp from "../validationDecorators/arrayUniqueByProp";
 
 @Entity()
 export class User {
@@ -25,15 +26,9 @@ export class User {
 
     @ManyToMany((type) => Role)
     @JoinTable()
+    @ArrayUniqueByProp("id")
     roles: Role[];
 
     @OneToMany(() => Dataset, (dataset) => dataset.user)
     datasets: Dataset[];
-
-    /**
-     * Это поле может содержать значения, только если пользователь - эксперт
-     * Оно нужно, чтобы быстро получать разметки, в которых пользователь выступает экспертом
-     */
-    @ManyToMany(() => Markup, (markup) => markup.experts)
-    relatedMarkups?: Markup[];
 }

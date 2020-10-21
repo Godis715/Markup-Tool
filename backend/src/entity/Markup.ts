@@ -4,14 +4,16 @@ import {
     Column,
     ManyToOne,
     OneToMany,
-    ManyToMany, JoinTable
+    ManyToMany,
+    JoinTable, Unique
 } from "typeorm";
-import { IsIn } from "class-validator";
+import { IsIn, ArrayUnique } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
 import { MarkupType } from "../enums/appEnums";
 import MarkupConfig from "../validationDecorators/markupConfig";
+import ArrayUniqueByProp from "../validationDecorators/arrayUniqueByProp";
 
 /**
  * Сущность, представляющая собой задание для экспертов на разметку и
@@ -42,8 +44,9 @@ export class Markup {
     items: MarkupItem[];
 
     // эксперты, назначенные на выполнение задачи
-    @ManyToMany(() => User, (expert) => expert.relatedMarkups)
+    @ManyToMany(() => User)
     @JoinTable()
+    @ArrayUniqueByProp("id")
     experts: User[];
 
     @MarkupConfig()

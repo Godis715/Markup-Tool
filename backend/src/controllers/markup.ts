@@ -120,6 +120,9 @@ export async function getDatasetMarkup(
     }
 }
 
+/**
+ * Получение заданий на разметку, в которые назначен данный эксперт
+ */
 export async function getForExpert(
     request: express.Request,
     response: express.Response,
@@ -129,20 +132,15 @@ export async function getForExpert(
         const manager = getManager();
 
         const login = response.locals.login;
-        const user = await manager.findOne(
-            User,
-            { login },
-            { relations: ["markups"] }
-        );
+        const markups = await manager
+            .createQueryBuilder(Markup, "markup")
+            .select()
+            .leftJoin("markup.experts", "expert")
+            .where("expert.login = :login")
+            .setParameter("login", login)
+            .getMany();
 
-        if (!user) {
-            response
-                .status(400)
-                .send(`User with login '${login}' doesn't exist`);
-            return;
-        }
-
-        const markupData = user.relatedMarkups.map(
+        const markupData = markups.map(
             (markup) => ({
                 id: markup.id
             })
@@ -227,18 +225,6 @@ export async function updateExperts(
             return; 
         }
 
-        // поиск пользователей, которых нужно добавить, но они уже добавлены
-        const alreadyAddedIds = toAdd.filter(
-            (id) => markup.experts.some((user) => user.id === id)
-        );
-
-        if (alreadyAddedIds.length > 0) {
-            response
-                .status(400)
-                .send(`These experts are already added: ${alreadyAddedIds}`);
-            return;    
-        }
-
         // поиск поьзователей, которых нужно удалить, но их и не было в списке экспертов
         const notPresentedIds = toRemove.filter(
             (id) => !markup.experts.some((user) => user.id === id)
@@ -258,6 +244,16 @@ export async function updateExperts(
                 (id) => users.find((user) => user.id === id)
             )
             .concat(markup.experts);
+
+        try {
+            await validateOrReject(markup, { validationError: { target: false, value: false } });
+        }
+        catch(errors) {
+            response
+                .status(400)
+                .send(errors);
+            return;
+        }
 
         await manager.save(markup);
 
