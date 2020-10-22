@@ -1,7 +1,10 @@
 {
-    "type": "sqlite",
+    "type": "postgres",
     "host": "localhost",
-    "database": "dev.db",
+    "port": 5432,
+    "username": "MarkupAdmin",
+    "password": "qwerty123",
+    "database": "MarkupDB",
     "synchronize": true,
     "logging": false,
     "entities": [

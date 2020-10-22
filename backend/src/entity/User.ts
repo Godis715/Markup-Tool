@@ -3,13 +3,13 @@ import {
     PrimaryGeneratedColumn,
     Column,
     JoinTable,
-    ManyToMany, OneToMany, PrimaryColumn
+    ManyToMany,
+    OneToMany
 } from "typeorm";
 import { Dataset } from "./Dataset";
 import { Length } from "class-validator";
 
 import { Role } from "./Role";
-import { Markup } from "./Markup";
 import ArrayUniqueByProp from "../validationDecorators/arrayUniqueByProp";
 
 @Entity()
@@ -26,7 +26,7 @@ export class User {
 
     @ManyToMany((type) => Role)
     @JoinTable()
-    @ArrayUniqueByProp("id")
+    @ArrayUniqueByProp("id", { message: "User must have unique roles" })
     roles: Role[];
 
     @OneToMany(() => Dataset, (dataset) => dataset.user)

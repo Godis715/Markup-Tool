@@ -46,7 +46,7 @@ export class Markup {
     // эксперты, назначенные на выполнение задачи
     @ManyToMany(() => User)
     @JoinTable()
-    @ArrayUniqueByProp("id")
+    @ArrayUniqueByProp("id", { message: "Markup must have unique experts" })
     experts: User[];
 
     @MarkupConfig()
