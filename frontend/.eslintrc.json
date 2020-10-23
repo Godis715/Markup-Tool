@@ -21,7 +21,7 @@
     },
     "parserOptions": {
         // Движку нужен проект TS для правил с типами
-		"project": "tsconfig.json",
+		"project": "./tsconfig.json",
 		"tsconfigRootDir": "."
     },
     "plugins": [
@@ -33,6 +33,7 @@
         // https://stackoverflow.com/questions/63818415/react-was-used-before-it-was-defined
         "no-use-before-define": "off",
         "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/ban-ts-comment": "off",
         "indent": ["error", 4, {
             "SwitchCase": 1
         }],
@@ -52,11 +53,7 @@
         }],
         "comma-dangle": ["error", "never"],
         "semi": ["error", "always"],
-        "no-extra-parens": ["error", "all", {
-            "ignoreJSX": "multi-line",
-            "nestedBinaryExpressions": false
-
-        }],
+        "@typescript-eslint/no-extra-parens": ["error"],
         "class-methods-use-this": ["error", {
             "exceptMethods": ["render"]
         }],
@@ -77,7 +74,8 @@
         "no-unmodified-loop-condition": "error",
         "no-unused-expressions": "error",
         "no-useless-return": "error",
-        "no-shadow": "error",
+        "@typescript-eslint/no-shadow": "error",
+        "no-shadow": "off",
         "array-bracket-spacing": ["error", "never"],
         "array-element-newline": ["error", "consistent"],
         "block-spacing": ["error", "always"],
