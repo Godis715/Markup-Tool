@@ -38,6 +38,10 @@ const corsOptions = {
     credentials: true,
 } as CorsOptions;
 app.use(cors(corsOptions));
+// раздаем статику react-а
+app.use(express.static("../frontend/build"));
+// раздаем картинки
+app.use("/images", express.static("./images"));
 // чтобы express не парсил параметры запроса в объекты
 app.set("query parser", "simple");
 
@@ -94,9 +98,12 @@ app.use(
     }
 );
 
-app.listen(
+const server = app.listen(
     PORT,
     () => {
         console.log(`[server]: Server is running at https://localhost:${PORT}`);
     }
 );
+
+// без этого загрузка файлов падает ровно через минуту, т.к. headersTimeout = 60000 по умолчанию
+server.headersTimeout = 1 * 60 * 60 * 1000; // час

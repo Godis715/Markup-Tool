@@ -4,7 +4,7 @@ import { prompt } from "inquirer";
 import { uploadDataset } from "./upload";
 
 const axiosInst = axios.create({
-    baseURL: "http://localhost:8000/api"
+    baseURL: "http://46.4.97.234:8000/api"
 });
 
 commander

@@ -33,10 +33,11 @@ export async function uploadDataset(dirPath: string, datasetName: string, reques
     });
 
     const requestOptions = {
-        hostname: "localhost",
+        hostname: "46.4.97.234",
         path: "/api/dataset",
         port: 8000,
-        headers: requestHeaders
+        headers: requestHeaders,
+        timeout: 1
     };
 
     return new Promise((resolve, reject) => {
