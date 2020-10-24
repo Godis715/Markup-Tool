@@ -2,6 +2,7 @@ import "reflect-metadata";
 
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors, { CorsOptions } from "cors";
 import * as auth from "./controllers/auth";
 import * as dataset from "./controllers/dataset";
 import * as markup from "./controllers/markup";
@@ -11,6 +12,7 @@ import { UserRole } from "./enums/appEnums";
 import { createConnection } from "typeorm";
 
 const PORT = 8000;
+const ORIGIN = "http://localhost:3000";
 
 /**
  * Для работы с typeorm требуется лишь один раз создать соединение
@@ -30,6 +32,12 @@ const app = express();
 app.use(cookieParser());
 // чтобы работать с телом запроса
 app.use(express.json());
+// включить cors
+const corsOptions = {
+    origin: [ORIGIN],
+    credentials: true,
+} as CorsOptions;
+app.use(cors(corsOptions));
 // чтобы express не парсил параметры запроса в объекты
 app.set("query parser", "simple");
 
