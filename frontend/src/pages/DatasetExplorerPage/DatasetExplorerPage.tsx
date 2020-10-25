@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer } from "react";
+import { Link } from "react-router-dom";
 import { fetchDatasets } from "../../remote/api";
 import { DatasetShort } from "../../types/dataset";
 
@@ -54,16 +55,19 @@ export default function DatasetExplorerPage(): JSX.Element {
         effect();
     }, []);
 
-    return <div>{
-        state.recievingDatasets
-            ? "Loading..."
-            : <>
-                <div>Datasets:</div>
-                <ul>{
+    return <div>
+        <div>Datasets:</div>
+        {
+            state.recievingDatasets
+                ? "Loading..."
+                : <ul>{
                     state.datasets.map(
-                        (dataset) => <li key={dataset.id}>{dataset.name}</li>
+                        (dataset) => <li key={dataset.id}>
+                            <span>{dataset.name}</span>
+                            <Link to={`dataset/${dataset.id}`}>Open</Link>
+                        </li>
                     )
                 }</ul>
-            </>
-    }</div>;
+        }
+    </div>;
 }
