@@ -13,6 +13,7 @@ import "./App.css";
 import { setUnauthorizedListener } from "../../remote/api";
 import DatasetExplorerPage from "../DatasetExplorerPage/DatasetExplorerPage";
 import DatasetPage from "../DatasetPage/DatasetPage";
+import MarkupExplorerPage from "../MarkupExplorerPage/MarkupExplorerPage";
 
 enum AuthState {
     LOADING,
@@ -113,7 +114,7 @@ function App(): JSX.Element {
                     <Route exact path="/markup">
                         {
                             roles.includes(UserRole.EXPERT)
-                                ? <div>Markups: ...</div>
+                                ? <MarkupExplorerPage />
                                 : <Redirect to="/" />
                         }
                     </Route>

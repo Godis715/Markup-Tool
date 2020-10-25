@@ -136,13 +136,17 @@ export async function getForExpert(
             .createQueryBuilder(Markup, "markup")
             .select()
             .leftJoin("markup.experts", "expert")
+            .leftJoinAndSelect("markup.dataset", "dataset")
+            .leftJoinAndSelect("dataset.user", "user")
             .where("expert.login = :login")
             .setParameter("login", login)
             .getMany();
 
         const markupData = markups.map(
             (markup) => ({
-                id: markup.id
+                id: markup.id,
+                type: markup.type,
+                owner: markup.dataset.user.login
             })
         );
 

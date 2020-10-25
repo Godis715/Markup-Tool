@@ -1,5 +1,6 @@
 import axios from "axios";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
+import { MarkupForExpert } from "../types/markup";
 import {
     CustomErrorType,
     ErrorResult,
@@ -61,6 +62,16 @@ export async function fetchDataset(id: string): RequestResult<DatasetDetailed> {
     }
     catch(err) {
         // TODO: to custom error
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
+}
+
+export async function fetchMarkups(): RequestResult<MarkupForExpert[]> {
+    try {
+        const response = await axiosInst.get<MarkupForExpert[]>("/markup");
+        return new SuccessResult(response.data);
+    }
+    catch(err) {
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
