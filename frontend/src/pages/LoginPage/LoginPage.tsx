@@ -5,12 +5,14 @@ type Props = {
     errorMessage?: string | null
 };
 
+type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
+
 export default function LoginPage(props: Props): JSX.Element {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
 
-    const onLoginChange = (ev: React.ChangeEvent<HTMLInputElement>) => setLogin(ev.target.value);
-    const onPasswordChange = (ev: React.ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value);
+    const onLoginChange = (ev: InputChangeEvent) => setLogin(ev.target.value);
+    const onPasswordChange = (ev: InputChangeEvent) => setPassword(ev.target.value);
     const onLogin = () => {
         props.onLogin(login, password);
     };

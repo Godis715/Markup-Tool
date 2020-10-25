@@ -144,7 +144,7 @@ export const post = [
 
 export const postHandleErrors = handleErrors;
 
-export async function get(
+export async function getAll(
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
@@ -171,3 +171,48 @@ export async function get(
     }
 }
 
+export async function getById(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+) {
+    try {
+        const login: string = response.locals.login;
+        const datasetId: string = request.params.datasetId;
+        const manager = getManager();
+
+        const dataset = await manager.findOne(
+            Dataset,
+            { id: datasetId },
+            { relations: ["user", "markups", "markups.experts"] }
+        );
+
+        if (dataset.user.login !== login) {
+            response
+                .status(403)
+                .send("User is not an owner of the dataset");
+            return;
+        }
+
+        const dataToSend = {
+            id: dataset.id,
+            name: dataset.name,
+            markups: dataset.markups.map(
+                (markup) => ({
+                    id: markup.id,
+                    type: markup.type,
+                    experts: markup.experts.map(
+                        (expert) => expert.login
+                    )
+                })
+            )
+        };
+
+        response
+            .status(200)
+            .send(dataToSend);
+    }
+    catch(err) {
+        next(err);
+    }
+}

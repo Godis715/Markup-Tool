@@ -1,6 +1,7 @@
 import {
     generateTokens,
-    generateAccessTokens
+    generateAccessTokens,
+    getUserRoles
 } from "../utils/auth";
 import {
     Request,
@@ -13,6 +14,9 @@ import {
 } from "../utils/configs";
 import ensureAuthentication from "../middlewares/ensureAuthentication";
 
+/**
+ * Отправляет в ответе csrf-токены и роли пользователя
+ */
 export async function login(request: Request, response: Response) {
     const { login, password } = request.body;
 
@@ -29,13 +33,18 @@ export async function login(request: Request, response: Response) {
             csrfRefreshToken
         } = await generateTokens(login, password);
 
+        const roles = await getUserRoles(login);
+
         response
             .cookie(ACCESS_TOKEN_COOKIE, accessToken, { httpOnly: true })
             .cookie(REFRESH_TOKEN_COOKIE, refreshToken, { httpOnly: true })
             .status(200)
             .send({
-                csrfAccessToken,
-                csrfRefreshToken
+                tokens: {
+                    csrfAccessToken,
+                    csrfRefreshToken
+                },
+                roles
             });
     }
     catch(err) {
@@ -47,8 +56,12 @@ export async function login(request: Request, response: Response) {
 
 export const verify = [
     ensureAuthentication,
-    (req: Request, res: Response) => {
-        res.sendStatus(200);
+    async (req: Request, res: Response) => {
+        const login = res.locals.login;
+        const roles = await getUserRoles(login);
+        res
+            .status(200)
+            .send({ roles });
     } 
 ];
 

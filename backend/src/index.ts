@@ -59,7 +59,9 @@ app.get("/api/auth/logout", auth.logout);
 app.post("/api/dataset", allowForRoles(UserRole.CUSTOMER), dataset.post);
 app.use("/api/dataset", dataset.postHandleErrors);
 
-app.get("/api/dataset", allowForRoles(UserRole.CUSTOMER), dataset.get);
+app.get("/api/dataset", allowForRoles(UserRole.CUSTOMER), dataset.getAll);
+
+app.get("/api/dataset/:datasetId", allowForRoles(UserRole.CUSTOMER), dataset.getById);
 //#endregion
 
 //#region MARKUP

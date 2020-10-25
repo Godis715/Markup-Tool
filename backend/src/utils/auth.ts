@@ -69,6 +69,12 @@ export async function createUser(login: string, password: string, roleNames: str
     await manager.save(newUser);
 }
 
+export async function getUserRoles(login: string) {
+    const manager = getManager();
+    const user = await manager.findOne(User, { login }, { relations: ["roles"] });
+    return user.roles.map(({ name }) => name);
+}
+
 /** Возвращает пару [токен, csrf-токен] */
 function generateJWTPair(login: string, type: TokenType): [string, string] {
     /**

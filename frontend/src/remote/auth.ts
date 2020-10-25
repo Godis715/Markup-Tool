@@ -7,7 +7,6 @@ import {
 } from "../utils/customError";
 import { isAxiosError } from "./axiosErrorHelpers";
 
-// FIX ME: move to constants or to env variables
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 if (!BASE_URL) {
@@ -24,9 +23,22 @@ export type TokensData = {
     csrfRefreshToken: string
 };
 
-export async function fetchTokens(login: string, password: string): RequestResult<TokensData> {
+
+export type AuthData = {
+    tokens: TokensData,
+    roles: string[]
+};
+
+export type CheckIsAuthData = {
+    isAuthenticated: true,
+    roles: string[],
+} | {
+    isAuthenticated: false
+};
+
+export async function authenticate(login: string, password: string): RequestResult<AuthData> {
     try {
-        const response = await axiosInst.post<TokensData>("/login", { login, password });
+        const response = await axiosInst.post<AuthData>("/login", { login, password });
         return new SuccessResult(response.data);
     }
     catch(e) {
@@ -38,18 +50,21 @@ export async function fetchTokens(login: string, password: string): RequestResul
     }
 }
 
-export async function checkIsAuth(csrfAccessToken: string): RequestResult<boolean> {
+export async function checkIsAuth(csrfAccessToken: string): RequestResult<CheckIsAuthData> {
     const configs = {
         headers: { "Csrf-Access-Token": csrfAccessToken }
     };
 
     try {
-        await axiosInst.get<TokensData>("/verify", configs);
-        return new SuccessResult(true);
+        const { data } = await axiosInst.get<{ roles: string[] }>("/verify", configs);
+        return new SuccessResult({
+            isAuthenticated: true,
+            roles: data.roles
+        });
     }
     catch(e) {
         if (isAxiosError(e) && e.response && e.response.status === 401) {
-            return new SuccessResult(false);
+            return new SuccessResult({ isAuthenticated: false });
         }
 
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, e);
