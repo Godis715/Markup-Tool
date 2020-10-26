@@ -29,7 +29,7 @@ export async function get(
             return;
         }
 
-        const markup = await manager.findOne(Markup, { id: markupId }, { relations: ["experts"] });
+        const markup = await manager.findOne(Markup, { id: markupId }, { relations: ["experts", "dataset"] });
         if (!markup) {
             response
                 .status(400)
@@ -71,35 +71,42 @@ export async function get(
              * 
              * TODO:
              * продумать схемы с тем, чтобы у пользователей задачи могли пересекаться
+             * 
+             * FIX ME:
+             * видимо, это баг typeorm, что в каких-то случаях, происходит подстановка кавычек для postgre
+             * в каких-то нет
+             * проверить это дело
              */
             const datasetItemSubQb = manager
                 .createQueryBuilder()
-                .select("datasetItem")
-                .from(DatasetItem, "datasetItem")
-                .where(
+                .select("di")
+                .from(DatasetItem, "di")
+                .where('di."datasetId" = :datasetId')
+                .andWhere(
                     (qb) => {
                         const subQuery = qb
                             .subQuery()
-                            .select("app.datasetItemId")
+                            .select('app."datasetItemId"')
                             .from(Appointment, "app")
-                            .where("app.markupId = :markupId")
+                            .where('app."markupId" = :markupId')
                             .getQuery();
                     
-                        return `datasetItem.id NOT IN ${subQuery}`;
+                        return `di.id NOT IN ${subQuery}`;
                     }
                 )
                 .andWhere(
                     (qb) => {
                         const subQuery = qb
                             .subQuery()
-                            .select("item.datasetItemId")
+                            .select('item."datasetItemId"')
                             .from(MarkupItem, "item")
-                            .where("item.markupId = :markupId")
+                            .where('item."markupId" = :markupId')
                             .getQuery();
 
-                        return `datasetItem.id NOT IN ${subQuery}`;
+                        return `di.id NOT IN ${subQuery}`;
                     }
                 )
+                .setParameter("datasetId", markup.dataset.id)
                 .setParameter("markupId", markupId);
 
             const datasetItem = await datasetItemSubQb.getOne();
@@ -115,7 +122,7 @@ export async function get(
         }
 
         const dataToSend = {
-            url: appointment.datasetItem.location
+            imageSrc: appointment.datasetItem.location
         };
     
         response

@@ -14,6 +14,7 @@ import { setUnauthorizedListener } from "../../remote/api";
 import DatasetExplorerPage from "../DatasetExplorerPage/DatasetExplorerPage";
 import DatasetPage from "../DatasetPage/DatasetPage";
 import MarkupExplorerPage from "../MarkupExplorerPage/MarkupExplorerPage";
+import MarkupPage from "../MarkupPage/MarkupPage";
 
 enum AuthState {
     LOADING,
@@ -121,12 +122,10 @@ function App(): JSX.Element {
                     <Route exact path="/markup/:markupId">
                         {
                             roles.includes(UserRole.EXPERT)
-                                ? (props: RouteComponentProps<{ markupId: string }>) => {
-                                    // eslint-disable-next-line
-                                    const { markupId } = props.match.params;
-                                    // eslint-disable-next-line
-                                    return markupId;
-                                }
+                                ? (props: RouteComponentProps<{ markupId: string }>) =>
+                                    <MarkupPage
+                                        markupId={props.match.params.markupId}
+                                    />
                                 : <Redirect to="/" />
                         }
                     </Route>

@@ -1,10 +1,11 @@
 import axios from "axios";
 import commander from "commander";
 import { prompt } from "inquirer";
+import { HOST, PORT } from "./costants";
 import { uploadDataset } from "./upload";
 
 const axiosInst = axios.create({
-    baseURL: "http://46.4.97.234:8000/api"
+    baseURL: `http://${HOST}:${PORT}/api`
 });
 
 commander
@@ -34,7 +35,7 @@ commander
                 const response = await axiosInst.post("/auth/login", { login, password });
                 const setCookies = response.headers["set-cookie"];
                 
-                await uploadDataset(path, name, { "Cookie": setCookies, "Csrf-Access-Token": response.data.csrfAccessToken });
+                await uploadDataset(path, name, { "Cookie": setCookies, "Csrf-Access-Token": response.data.tokens.csrfAccessToken });
             }
             catch(err) {
                 if (err) {

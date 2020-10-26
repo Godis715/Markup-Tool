@@ -47,6 +47,7 @@ export async function postDatasetMarkup(
         markup.dataset = dataset;
         markup.type = type;
         markup.config = config;
+        markup.experts = [];
 
         try {
             await validateOrReject(markup, { validationError: { target: false } });

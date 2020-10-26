@@ -1,6 +1,7 @@
 import axios from "axios";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";
+import { MarkupItem, MarkupItemResult } from "../types/markupItem";
 import {
     CustomErrorType,
     ErrorResult,
@@ -74,4 +75,38 @@ export async function fetchMarkups(): RequestResult<MarkupForExpert[]> {
     catch(err) {
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
+}
+
+export async function fetchNextMarkupItem(markupId: string): RequestResult<MarkupItem> {
+    try {
+        const response = await axiosInst.get<MarkupItem>(`/markup/${markupId}/item`);
+        return new SuccessResult(response.data);
+    }
+    catch(err) {
+        // TODO: рассмотреть вариант ошибки 404 - означает, что у пользователя закончились элементы для разметки
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
+}
+
+// FIX ME: это костыльный вариант для получения markup по id
+export async function fetchMarkup(id: string): RequestResult<MarkupForExpert> {
+    const result = await fetchMarkups();
+    if (!result.isSuccess) {
+        return result;
+    }
+
+    const markup = result.data.find(
+        ({ id: markupId }) => markupId === id
+    );
+
+    if (!markup) {
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, new Error("markup not found"));
+    }
+
+    return new SuccessResult(markup);
+}
+
+export async function postMarkupItemResult(markupId: string, result: MarkupItemResult): RequestResult<{}> {
+    await Promise.resolve();
+    return new SuccessResult({});
 }
