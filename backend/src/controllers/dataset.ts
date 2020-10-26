@@ -158,7 +158,8 @@ export async function getAll(
         const dataToSend = user.datasets.map(
             (dataset) => ({
                 id: dataset.id,
-                name: dataset.name
+                name: dataset.name,
+                uploadDate: dataset.uploadDate
             })
         );
 
@@ -203,9 +204,11 @@ export async function getById(
                     type: markup.type,
                     experts: markup.experts.map(
                         (expert) => expert.login
-                    )
+                    ),
+                    createDate: markup.createDate
                 })
-            )
+            ),
+            uploadData: dataset.uploadDate
         };
 
         response

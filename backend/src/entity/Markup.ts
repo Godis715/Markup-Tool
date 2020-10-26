@@ -5,7 +5,7 @@ import {
     ManyToOne,
     OneToMany,
     ManyToMany,
-    JoinTable, Unique
+    JoinTable, Unique, CreateDateColumn
 } from "typeorm";
 import { IsIn, ArrayUnique } from "class-validator";
 import { Dataset } from "./Dataset";
@@ -52,4 +52,7 @@ export class Markup {
     @MarkupConfig()
     @Column("simple-json", { nullable: true })
     config?: any;
+
+    @CreateDateColumn()
+    createDate: Date;
 }

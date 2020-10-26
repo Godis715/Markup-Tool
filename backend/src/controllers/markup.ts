@@ -147,7 +147,8 @@ export async function getForExpert(
             (markup) => ({
                 id: markup.id,
                 type: markup.type,
-                owner: markup.dataset.user.login
+                owner: markup.dataset.user.login,
+                createDate: markup.createDate
             })
         );
 

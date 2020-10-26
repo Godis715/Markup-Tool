@@ -2,7 +2,7 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    ManyToOne, OneToMany
+    ManyToOne, OneToMany, CreateDateColumn
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { User } from "./User";
@@ -40,4 +40,7 @@ export class Dataset {
 
     @OneToMany(() => Markup, (markup) => markup.dataset)
     markups: Markup[];
+
+    @CreateDateColumn()
+    uploadDate: Date;
 } 
