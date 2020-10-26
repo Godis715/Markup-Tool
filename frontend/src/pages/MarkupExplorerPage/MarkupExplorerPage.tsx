@@ -66,6 +66,7 @@ export default function MarkupExplorerPage(): JSX.Element {
                             <div>{markup.id}</div>
                             <div>type: {markup.type}</div>
                             <div>owner: {markup.owner}</div>
+                            <div>create date: {markup.createDate.toLocaleDateString("ru")}</div>
                             <Link to={`markup/${markup.id}`}>Open</Link>
                         </li>
                     )

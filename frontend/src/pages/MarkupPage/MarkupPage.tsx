@@ -170,6 +170,7 @@ export default function MarkupPage(props: Props): JSX.Element {
                     <div>
                         <div>type: {state.markup?.type}</div>
                         <div>owner: {state.markup?.owner}</div>
+                        <div>create date: {state.markup?.createDate.toLocaleDateString("ru")}</div>
                     </div>
 
                     <div>
@@ -188,6 +189,8 @@ export default function MarkupPage(props: Props): JSX.Element {
         <div>{
             state.recievingMarkupItem
                 ? "Loading markup item..."
+                // в данном случае markupItem не может быть undefined
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 : <img src={`http://localhost:8000/images/${state.markupItem?.imageSrc}`} alt="markup item" />
         }</div>
     </div>;

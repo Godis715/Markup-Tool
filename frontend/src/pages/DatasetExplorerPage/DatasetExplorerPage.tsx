@@ -63,7 +63,8 @@ export default function DatasetExplorerPage(): JSX.Element {
                 : <ul>{
                     state.datasets.map(
                         (dataset) => <li key={dataset.id}>
-                            <span>{dataset.name}</span>
+                            <div>{dataset.name}</div>
+                            <div>{dataset.uploadDate.toLocaleDateString("ru")}</div>
                             <Link to={`dataset/${dataset.id}`}>Open</Link>
                         </li>
                     )

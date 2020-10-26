@@ -2,6 +2,7 @@ import axios from "axios";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";
 import { MarkupItem, MarkupItemResult } from "../types/markupItem";
+import axiosParseWithDates from "../utils/axiosParseWithDates";
 import {
     CustomErrorType,
     ErrorResult,
@@ -18,7 +19,9 @@ if (!BASE_URL) {
 
 const axiosInst = axios.create({
     baseURL: `${BASE_URL}/api`,
-    withCredentials: true
+    withCredentials: true,
+    // чтобы автоматически парсить даты в ответе
+    transformResponse: [axiosParseWithDates]
 });
 
 axiosInst.interceptors.request.use(

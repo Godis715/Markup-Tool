@@ -72,12 +72,14 @@ export default function DatasetPage(props: Props): JSX.Element {
                     <ul>{
                         state.dataset?.markups.map(
                             (markup) => <li key={markup.id}>
-                                <span>{markup.id} </span>
-                                <span>{markup.type} </span>
+                                <div>{markup.id} </div>
+                                <div>{markup.type} </div>
+                                <div>{markup.createDate.toLocaleDateString("ru")}</div>
                                 <Link to={`markup/${markup.id}`}>Open</Link>
                             </li>
                         )
                     }</ul>
+                    <div>{state.dataset?.uploadDate}</div>
                 </div>
         }
     </div>;
