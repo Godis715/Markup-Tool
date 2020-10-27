@@ -1,7 +1,7 @@
-import axios from "axios";
-import { DatasetDetailed, DatasetShort } from "../types/dataset";
-import { MarkupForExpert } from "../types/markup";
-import { MarkupItem, MarkupItemResult } from "../types/markupItem";
+import axios, { AxiosRequestConfig } from "axios";
+import { DatasetDetailed, DatasetShort } from "../../../backend/src/types/dataset";
+import { MarkupForExpert } from "../../../backend/src/types/markup";
+import { MarkupItemData, MarkupItemResult } from "../../../backend/src/types/markupItem";
 import axiosParseWithDates from "../utils/axiosParseWithDates";
 import {
     CustomErrorType,
@@ -31,6 +31,8 @@ axiosInst.interceptors.request.use(
     }
 );
 
+const parseDatesConfig: AxiosRequestConfig = { transformResponse: [axiosParseWithDates] };
+
 // TODO: проверить, работает ли это вообще
 export function setUnauthorizedListener(cb: () => void): void {
     axios.interceptors.request.use(
@@ -49,7 +51,7 @@ export function setUnauthorizedListener(cb: () => void): void {
 
 export async function fetchDatasets(): RequestResult<DatasetShort[]> {
     try {
-        const respone = await axiosInst.get<DatasetShort[]>("/dataset", { transformResponse: [axiosParseWithDates] });
+        const respone = await axiosInst.get<DatasetShort[]>("/dataset", parseDatesConfig);
         return new SuccessResult(respone.data);
     }
     catch(err) {
@@ -60,7 +62,7 @@ export async function fetchDatasets(): RequestResult<DatasetShort[]> {
 
 export async function fetchDataset(id: string): RequestResult<DatasetDetailed> {
     try {
-        const response = await axiosInst.get<DatasetDetailed>(`/dataset/${id}`, { transformResponse: [axiosParseWithDates] });
+        const response = await axiosInst.get<DatasetDetailed>(`/dataset/${id}`, parseDatesConfig);
         return new SuccessResult(response.data);
     }
     catch(err) {
@@ -71,18 +73,18 @@ export async function fetchDataset(id: string): RequestResult<DatasetDetailed> {
 
 export async function fetchMarkups(): RequestResult<MarkupForExpert[]> {
     try {
-        const response = await axiosInst.get<MarkupForExpert[]>("/markup", { transformResponse: [axiosParseWithDates] });
-        return new SuccessResult(response.data);
+        const { data } = await axiosInst.get<MarkupForExpert[]>("/markup", parseDatesConfig);
+        return new SuccessResult(data);
     }
     catch(err) {
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
 
-export async function fetchNextMarkupItem(markupId: string): RequestResult<MarkupItem> {
+export async function fetchNextMarkupItem(markupId: string): RequestResult<MarkupItemData> {
     try {
-        const response = await axiosInst.get<MarkupItem>(`/markup/${markupId}/item`);
-        return new SuccessResult(response.data);
+        const { data } = await axiosInst.get<MarkupItemData>(`/markup/${markupId}/item`);
+        return new SuccessResult(data);
     }
     catch(err) {
         if (isAxiosError(err) && err.response?.status === 404) {
