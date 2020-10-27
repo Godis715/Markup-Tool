@@ -1,8 +1,10 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkup, fetchNextMarkupItem, postMarkupItemResult } from "../../remote/api";
 import { MarkupForExpert } from "../../types/markup";
 import { MarkupItem, MarkupItemResult } from "../../types/markupItem";
+import { CustomErrorType } from "../../utils/customError";
+import ClassificationTool from "./ClassificationTool/ClassificationTool";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -36,8 +38,8 @@ type State = {
     recievingMarkup: boolean,
     markupItem: MarkupItem | null,
     recievingMarkupItem: boolean,
-    result: MarkupItemResult | null,
-    sendingResult: boolean
+    sendingResult: boolean,
+    isFinished: boolean
 };
 
 function reducer(state: State, action: Action): State {
@@ -46,15 +48,7 @@ function reducer(state: State, action: Action): State {
             return {
                 ...state,
                 markup: action.markup,
-                recievingMarkup: false,
-                result: action.markup.type === "classification"
-                    ? ""
-                    : {
-                        x1: null,
-                        x2: null,
-                        y1: null,
-                        y2: null
-                    }
+                recievingMarkup: false
             } as State;
         case ActionType.START_FETCHING_MARKUP_ITEM:
             return {
@@ -95,9 +89,11 @@ export default function MarkupPage(props: Props): JSX.Element {
         // с текущим элементом разметки
         markupItem: null,
         recievingMarkupItem: true,
-        result: null,
-        sendingResult: false
+        sendingResult: false,
+        isFinished: false
     });
+
+    const [isFinished, setIsFinished] = useState(false);
 
     const startFetchingNextMarkupItem = async () => {
         dispatch({
@@ -108,6 +104,12 @@ export default function MarkupPage(props: Props): JSX.Element {
         console.log(result);
 
         if (!result.isSuccess) {
+            // это может быть ошибка, гласящая о том, что больше нет элементов для разметки
+            if (result.error.type === CustomErrorType.NOT_FOUND) {
+                setIsFinished(true);
+                return;
+            }
+
             console.error(result.error.original);
             return;
         }
@@ -118,16 +120,13 @@ export default function MarkupPage(props: Props): JSX.Element {
         });
     };
 
-    const onSendResult = async () => {
+    const onSendResult = async (markupItemResult: MarkupItemResult) => {
         dispatch({
             type: ActionType.START_SENDING_RESULT
         });
 
-        if (!state.result) {
-            return;
-        }
-
-        const result = await postMarkupItemResult(props.markupId, state.result);
+        const result = await postMarkupItemResult(props.markupId, markupItemResult);
+        console.log(result);
 
         if (!result.isSuccess) {
             console.error(result.error.original);
@@ -161,37 +160,46 @@ export default function MarkupPage(props: Props): JSX.Element {
         startFetchingMarkup();
     }, []);
 
+    const absImageSrc = state.markupItem && `http://localhost:8000/images/${state.markupItem?.imageSrc}`;
+
     return <div>
         <Link to="/markup">Back to markups</Link>
-        <div>{
-            state.recievingMarkup
-                ? "Loading markup..."
-                : <>
+        <div>
+            {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
+            {
+                state.recievingMarkup &&
+                <div>Загрузка данных...</div>
+            }
+            {
+                isFinished &&
+                <div>Больше нет элементов для разметки</div>
+            }
+            {
+                !isFinished &&
+                !state.recievingMarkup &&
+                <>
                     <div>
                         <div>type: {state.markup?.type}</div>
                         <div>owner: {state.markup?.owner}</div>
                         <div>create date: {state.markup?.createDate.toLocaleDateString("ru")}</div>
                     </div>
 
-                    <div>
-                        {
-                            state.markup?.type === "classification" &&
-                            <div>radio buttons...</div>
-                        }
-                        {
-                            state.markup?.type === "recognition" &&
-                            <div>four number inputs ...</div>
-                        }
-                    </div>
+                    {
+                        /** TODO: добавить условие на то, если вдруг элемент еще загружается */
+                        absImageSrc && // чтобы типовыводилка не жаловалась
+                        state.markup?.type === "classification" &&
+                        <ClassificationTool
+                            imageSrc={absImageSrc}
+                            classes={state.markup.config}
+                            onSubmit={onSendResult}
+                        />
+                    }
+                    {
+                        state.markup?.type === "recognition" &&
+                        <div>four number inputs ...</div>
+                    }
                 </>
-        }</div>
-
-        <div>{
-            state.recievingMarkupItem
-                ? "Loading markup item..."
-                // в данном случае markupItem не может быть undefined
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                : <img src={`http://localhost:8000/images/${state.markupItem?.imageSrc}`} alt="markup item" />
-        }</div>
+            }
+        </div>
     </div>;
 }

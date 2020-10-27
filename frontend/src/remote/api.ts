@@ -19,9 +19,7 @@ if (!BASE_URL) {
 
 const axiosInst = axios.create({
     baseURL: `${BASE_URL}/api`,
-    withCredentials: true,
-    // чтобы автоматически парсить даты в ответе
-    transformResponse: [axiosParseWithDates]
+    withCredentials: true
 });
 
 axiosInst.interceptors.request.use(
@@ -33,6 +31,7 @@ axiosInst.interceptors.request.use(
     }
 );
 
+// TODO: проверить, работает ли это вообще
 export function setUnauthorizedListener(cb: () => void): void {
     axios.interceptors.request.use(
         (response) => response,
@@ -50,7 +49,7 @@ export function setUnauthorizedListener(cb: () => void): void {
 
 export async function fetchDatasets(): RequestResult<DatasetShort[]> {
     try {
-        const respone = await axiosInst.get<DatasetShort[]>("/dataset");
+        const respone = await axiosInst.get<DatasetShort[]>("/dataset", { transformResponse: [axiosParseWithDates] });
         return new SuccessResult(respone.data);
     }
     catch(err) {
@@ -61,7 +60,7 @@ export async function fetchDatasets(): RequestResult<DatasetShort[]> {
 
 export async function fetchDataset(id: string): RequestResult<DatasetDetailed> {
     try {
-        const response = await axiosInst.get<DatasetDetailed>(`/dataset/${id}`);
+        const response = await axiosInst.get<DatasetDetailed>(`/dataset/${id}`, { transformResponse: [axiosParseWithDates] });
         return new SuccessResult(response.data);
     }
     catch(err) {
@@ -72,7 +71,7 @@ export async function fetchDataset(id: string): RequestResult<DatasetDetailed> {
 
 export async function fetchMarkups(): RequestResult<MarkupForExpert[]> {
     try {
-        const response = await axiosInst.get<MarkupForExpert[]>("/markup");
+        const response = await axiosInst.get<MarkupForExpert[]>("/markup", { transformResponse: [axiosParseWithDates] });
         return new SuccessResult(response.data);
     }
     catch(err) {
@@ -86,7 +85,10 @@ export async function fetchNextMarkupItem(markupId: string): RequestResult<Marku
         return new SuccessResult(response.data);
     }
     catch(err) {
-        // TODO: рассмотреть вариант ошибки 404 - означает, что у пользователя закончились элементы для разметки
+        if (isAxiosError(err) && err.response?.status === 404) {
+            return new ErrorResult(CustomErrorType.NOT_FOUND, err);
+        }
+
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
@@ -109,7 +111,12 @@ export async function fetchMarkup(id: string): RequestResult<MarkupForExpert> {
     return new SuccessResult(markup);
 }
 
-export async function postMarkupItemResult(markupId: string, result: MarkupItemResult): RequestResult<{}> {
-    await Promise.resolve();
-    return new SuccessResult({});
+export async function postMarkupItemResult(markupId: string, result: MarkupItemResult): RequestResult<null> {
+    try {
+        await axiosInst.post(`/markup/${markupId}/item`, { result });
+        return new SuccessResult(null);
+    }
+    catch(err) {
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
 }

@@ -1,15 +1,24 @@
 export type MarkupType = "classification" | "recognition";
 
-export type Markup = {
-    id: string,
-    type: MarkupType,
-    createDate: Date
-};
+export type ClassificationConfig = string[];
+export type RecognitionConfig = null;
+export type MarkupConfig = ClassificationConfig | RecognitionConfig;
 
-export type MarkupForExpert = {
+type MarkupBase = {
     id: string,
-    type: MarkupType,
-    // логин
-    owner: string,
     createDate: Date
 }
+
+export type Markup = MarkupBase & (
+    {
+        type: "classification",
+        config: ClassificationConfig
+    } | {
+        type: "recognition",
+        config: RecognitionConfig
+    }
+);
+
+export type MarkupForExpert = Markup & {
+    owner: string
+};

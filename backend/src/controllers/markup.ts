@@ -148,7 +148,9 @@ export async function getForExpert(
                 id: markup.id,
                 type: markup.type,
                 owner: markup.dataset.user.login,
-                createDate: markup.createDate
+                createDate: markup.createDate,
+                // TODO: вообще пользователю в более общем случае лучше не отправлять в исходном виде
+                config: markup.config
             })
         );
 

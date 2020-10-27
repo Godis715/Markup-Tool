@@ -17,10 +17,10 @@ export default function ArrayUniqueByProp(uniqueProp: string, validationOptions?
             options: validationOptions,
             constraints: ["arrayUniqueByProp"],
             validator: {
-                validate(values: any[], args: ValidationArguments) {
+                validate(valueArr: any[], args: ValidationArguments) {
                     const unqiuePropValues = new Set();
-                    for(const v of values) {
-                        const propValue = values[uniqueProp];
+                    for(const value of valueArr) {
+                        const propValue = value[uniqueProp];
                         if(unqiuePropValues.has(propValue)) {
                             return false;
                         }

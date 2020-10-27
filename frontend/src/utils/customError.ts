@@ -1,6 +1,7 @@
 export enum CustomErrorType {
     UNEXPECTED_ERROR = "UNEXPECTED_ERROR",
-    AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR"
+    AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR",
+    NOT_FOUND = "NOT_FOUND"
 }
 
 export class CustomError extends Error {
