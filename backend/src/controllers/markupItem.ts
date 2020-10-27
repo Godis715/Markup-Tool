@@ -1,18 +1,23 @@
 import { validateOrReject } from "class-validator";
-import express from "express";
+import express, { Request, Response } from "express";
 import { getManager } from "typeorm";
 import { Appointment } from "../entity/Appointment";
 import { DatasetItem } from "../entity/DatasetItem";
 import { Markup } from "../entity/Markup";
 import { MarkupItem } from "../entity/MarkupItem";
 import { User } from "../entity/User";
+import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
 
 /**
  * Получение экспертом объекта для разметки
  */
+export type GetMarkupItemRequestBody = null;
+export type GetMarkupItemResponseBody = MarkupItemData | string
+type GetMarkupItemParams = { markupId: string };
+
 export async function get(
-    request: express.Request,
-    response: express.Response,
+    request: Request<GetMarkupItemParams, GetMarkupItemResponseBody, GetMarkupItemRequestBody>,
+    response: Response<GetMarkupItemResponseBody>,
     next: express.NextFunction
 ) {
     try {
@@ -121,7 +126,7 @@ export async function get(
             }
         }
 
-        const dataToSend = {
+        const dataToSend: MarkupItemData = {
             imageSrc: appointment.datasetItem.location
         };
     
@@ -134,9 +139,13 @@ export async function get(
     }
 };
 
+export type PostMarkupItemResultRequestBody = { result: MarkupItemResult };
+export type PostMarkupItemResultResponseBody = string;
+type PostMarkupItemResultParams = { markupId: string };
+
 export async function post(
-    request: express.Request,
-    response: express.Response,
+    request: Request<PostMarkupItemResultParams, PostMarkupItemResultResponseBody, PostMarkupItemResultRequestBody>,
+    response: Response<PostMarkupItemResultResponseBody>,
     next: express.NextFunction
 ) {
     try {

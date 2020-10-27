@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import Ajv from "ajv";
 import { MarkupItem } from '../entity/MarkupItem';
-import { MarkupType } from '../enums/appEnums';
+import { MarkupTypeEnum } from '../enums/appEnums';
 
 const coordSchema = {
     type: "number",
@@ -21,14 +21,14 @@ const schemas = {
      * можно сделать параметризованную схему -
      * проверять, что строка - один из возможных вариантов
      */
-    [MarkupType.CLASSIFICATION]: {
+    [MarkupTypeEnum.CLASSIFICATION]: {
         type: "string"
     },
     /**
      * а здесь - условие на координаты и что координаты не превосходят
      * размера картинки
      */
-    [MarkupType.RECOGNITION]: {
+    [MarkupTypeEnum.RECOGNITION]: {
         type: "object",
         additionalProperties: false,
         required: ["x1", "y1", "x2", "y2"],

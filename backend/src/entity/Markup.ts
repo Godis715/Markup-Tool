@@ -11,7 +11,7 @@ import { IsIn, ArrayUnique } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
-import { MarkupType } from "../enums/appEnums";
+import { MarkupTypeEnum } from "../enums/appEnums";
 import MarkupConfig from "../validationDecorators/markupConfig";
 import ArrayUniqueByProp from "../validationDecorators/arrayUniqueByProp";
 
@@ -35,7 +35,7 @@ export class Markup {
     dataset: Dataset;
 
     @Column()
-    @IsIn(Object.values(MarkupType), {
+    @IsIn(Object.values(MarkupTypeEnum), {
         message: (args) => `Invalid markup type '${args.value}'`
     })
     type: string;

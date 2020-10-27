@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response, Request } from "express";
 import crypto from "crypto";
 import multer from "multer";
 import fs from "fs";
@@ -10,6 +10,8 @@ import { DatasetItem } from "../entity/DatasetItem";
 import { validateOrReject } from "class-validator";
 import validateAllOrReject from "../utils/validateAllOrReject";
 import { Markup } from "../entity/Markup";
+import { DatasetDetailed, DatasetShort } from "../types/dataset";
+import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
 
 /**
  * TODO:
@@ -23,8 +25,8 @@ import { Markup } from "../entity/Markup";
  * Это помогает бороться с внезапным разрывом связи с клиентом.
  */
 async function uploadData(
-    req: express.Request,
-    res: express.Response,
+    req: Request,
+    res: Response,
     next: express.NextFunction
 ) {
     // считаем количество полученный байтов
@@ -53,8 +55,8 @@ async function uploadData(
 };
 
 async function saveToDB(
-    req: express.Request,
-    res: express.Response,
+    req: Request,
+    res: Response,
     next: express.NextFunction
 ) {
     try {
@@ -146,8 +148,8 @@ export const post = [
 export const postHandleErrors = handleErrors;
 
 export async function getAll(
-    request: express.Request,
-    response: express.Response,
+    request: Request<unknown, DatasetShort[]>,
+    response: Response<DatasetShort[]>,
     next: express.NextFunction
 ) {
     try {
@@ -174,13 +176,13 @@ export async function getAll(
 }
 
 export async function getById(
-    request: express.Request,
-    response: express.Response,
+    request: Request<{ datasetId: string }, DatasetDetailed>,
+    response: Response<DatasetDetailed | string>,
     next: express.NextFunction
 ) {
     try {
         const login: string = response.locals.login;
-        const datasetId: string = request.params.datasetId;
+        const datasetId = request.params.datasetId;
         const manager = getManager();
 
         const dataset = await manager.findOne(
@@ -196,7 +198,7 @@ export async function getById(
             return;
         }
 
-        const dataToSend = {
+        const dataToSend: DatasetDetailed = {
             id: dataset.id,
             name: dataset.name,
             markups: dataset.markups.map(
@@ -209,7 +211,7 @@ export async function getById(
                     createDate: markup.createDate
                 })
             ),
-            uploadData: dataset.uploadDate
+            uploadDate: dataset.uploadDate
         };
 
         response
@@ -226,15 +228,15 @@ export async function getById(
  * валидация запроса
  */
 export async function postDatasetMarkup(
-    request: express.Request,
-    response: express.Response,
+    request: Request<{ datasetId: string }, string, { config: MarkupConfig }, { type: string }>,
+    response: Response<string>,
     next: express.NextFunction
 ) {
     try {
         const manager = getManager();
 
         const datasetId = request.params.datasetId;
-        const type = request.query.type as string;
+        const type = request.query.type;
         const { login } = response.locals;
         const { config } = request.body;
         
@@ -291,8 +293,8 @@ export async function postDatasetMarkup(
 }
 
 export async function getDatasetMarkup(
-    request: express.Request,
-    response: express.Response,
+    request: Request<{ datasetId: string }, MarkupForCustomer[] | string>,
+    response: Response<MarkupForCustomer[] | string>,
     next: express.NextFunction
 ) {
     try {
@@ -323,7 +325,10 @@ export async function getDatasetMarkup(
         
         const markupData = dataset.markups.map(
             (markup) => ({
-                id: markup.id
+                id: markup.id,
+                type: markup.type as MarkupType,
+                config: markup.config,
+                createDate: markup.createDate
             })
         );
 

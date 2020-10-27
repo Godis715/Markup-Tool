@@ -6,12 +6,12 @@ import {
     ValidatorConstraintInterface
 } from 'class-validator';
 import Ajv from "ajv";
-import { MarkupType } from '../enums/appEnums';
+import { MarkupTypeEnum } from '../enums/appEnums';
 import { Markup } from '../entity/Markup';
 
 // JSON-схемы для параметров разметки различных типов
 const schemas = {
-    [MarkupType.CLASSIFICATION]: {
+    [MarkupTypeEnum.CLASSIFICATION]: {
         type: "array",
         uniqueItems: true,
         minItems: 2,

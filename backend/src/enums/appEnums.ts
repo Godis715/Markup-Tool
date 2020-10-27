@@ -1,4 +1,4 @@
-export enum MarkupType {
+export enum MarkupTypeEnum {
     // классификация изображений
     CLASSIFICATION = "classification",
     // поиск заданного объекта

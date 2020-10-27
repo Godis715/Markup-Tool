@@ -1,16 +1,21 @@
 import { validateOrReject } from "class-validator";
-import express from "express";
+import express, { Request, Response } from "express";
 import { getManager } from "typeorm";
 import { Markup } from "../entity/Markup";
 import { User } from "../entity/User";
 import { UserRole } from "../enums/appEnums";
+import { MarkupConfig, MarkupForExpert, MarkupType } from "../types/markup";
 
 /**
  * Получение заданий на разметку, в которые назначен данный эксперт
  */
+export type GetMarkupForExpertRequestBody = {};
+export type GetMarkupForExpertResponseBody = MarkupForExpert[];
+type GetMarkupForExpertParams = {};
+
 export async function getForExpert(
-    request: express.Request,
-    response: express.Response,
+    request: Request,
+    response: Response,
     next: express.NextFunction
 ) {
     try {
@@ -47,23 +52,29 @@ export async function getForExpert(
     }
 }
 
+export type PostExpertsRequestBody = {
+    toAdd?: string[],
+    toRemove?: string[]
+};
+export type PostExpertsResponseBody = string;
+export type PostExpertsParams = { markupId: string };
 /**
  * TODO:
  * подумать, может, стоит разделить на два метода:
  * удалить экспертов, добавить экспертов
  */
 export async function updateExperts(
-    request: express.Request,
-    response: express.Response,
+    request: Request<PostExpertsParams, PostExpertsResponseBody, PostExpertsRequestBody>,
+    response: Response<PostExpertsResponseBody>,
     next: express.NextFunction
 ) {
     try {
         const manager = getManager();
 
         const login: string = response.locals.login;
-        const markupId: string = request.params.markupId;
-        const toAdd: string[] = request.body.toAdd || [];
-        const toRemove: string[] = request.body.toRemove || [];
+        const markupId = request.params.markupId;
+        const toAdd = request.body.toAdd || [];
+        const toRemove = request.body.toRemove || [];
 
         // уникальные id из списков toAdd, toRemove
         const userIds = [...new Set(toAdd.concat(toRemove))];
