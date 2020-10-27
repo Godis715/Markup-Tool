@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkup, fetchNextMarkupItem, postMarkupItemResult } from "../../remote/api";
 import { MarkupForExpert } from "../../types/markup";
-import { MarkupItem, MarkupItemResult } from "../../types/markupItem";
+import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
 
@@ -23,7 +23,7 @@ type Action = {
     type: ActionType.START_FETCHING_MARKUP_ITEM
 } | {
     type: ActionType.RECIEVE_MARKUP_ITEM,
-    markupItem: MarkupItem
+    markupItem: MarkupItemData
 } | {
     type: ActionType.START_SENDING_RESULT
 } | {
@@ -36,7 +36,7 @@ type State = {
     // null, когда markup & markupItem не были загружен
     markup: MarkupForExpert | null,
     recievingMarkup: boolean,
-    markupItem: MarkupItem | null,
+    markupItem: MarkupItemData | null,
     recievingMarkupItem: boolean,
     sendingResult: boolean,
     isFinished: boolean

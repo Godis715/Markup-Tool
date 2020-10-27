@@ -12,6 +12,7 @@ import validateAllOrReject from "../utils/validateAllOrReject";
 import { Markup } from "../entity/Markup";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
+import { config } from "process";
 
 /**
  * TODO:
@@ -204,11 +205,12 @@ export async function getById(
             markups: dataset.markups.map(
                 (markup) => ({
                     id: markup.id,
-                    type: markup.type,
+                    type: markup.type as MarkupType,
                     experts: markup.experts.map(
                         (expert) => expert.login
                     ),
-                    createDate: markup.createDate
+                    createDate: markup.createDate,
+                    config: markup.config
                 })
             ),
             uploadDate: dataset.uploadDate

@@ -1,4 +1,4 @@
-import { Markup } from "./markup";
+import { MarkupForCustomer } from "./markup";
 
 export type DatasetShort = {
     id: string,
@@ -7,5 +7,5 @@ export type DatasetShort = {
 };
 
 export type DatasetDetailed = DatasetShort & {
-    markups: Markup[]
+    markups: MarkupForCustomer[]
 };

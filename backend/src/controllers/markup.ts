@@ -4,7 +4,7 @@ import { getManager } from "typeorm";
 import { Markup } from "../entity/Markup";
 import { User } from "../entity/User";
 import { UserRole } from "../enums/appEnums";
-import { MarkupConfig, MarkupForExpert, MarkupType } from "../types/markup";
+import { MarkupForExpert } from "../types/markup";
 
 /**
  * Получение заданий на разметку, в которые назначен данный эксперт
@@ -77,15 +77,15 @@ export async function updateExperts(
         const toRemove = request.body.toRemove || [];
 
         // уникальные id из списков toAdd, toRemove
-        const userIds = [...new Set(toAdd.concat(toRemove))];
+        const userLogins = [...new Set(toAdd.concat(toRemove))];
         // все пользователи с переданнами айдишниками
         const users = await manager.find(User, {
             relations: ["roles"],
-            where: userIds.map((id) => ({ id }))
+            where: userLogins.map((login) => ({ login }))
         });
 
         // проверка, все ли пользователи нашлись
-        if (userIds.length !== users.length) {
+        if (userLogins.length !== users.length) {
             response
                 .status(400)
                 .send("Not all user ids are valid");
@@ -93,18 +93,18 @@ export async function updateExperts(
         }
 
         // поиск пользователь не-экспертов
-        const nonExpertIds = users
+        const nonExpertLogins = users
             .filter(
                 (user) => !user.roles
                     .map(({ name }) => name)
                     .includes(UserRole.EXPERT)
             )
-            .map(({ id }) => id);
+            .map(({ login }) => login);
 
-        if (nonExpertIds.length > 0) {
+        if (nonExpertLogins.length > 0) {
             response
                 .status(400)
-                .send(`Not all users have expert rights: ${nonExpertIds}`);
+                .send(`Not all users have expert rights: ${nonExpertLogins}`);
             return;
         }
 
@@ -129,22 +129,22 @@ export async function updateExperts(
         }
 
         // поиск поьзователей, которых нужно удалить, но их и не было в списке экспертов
-        const notPresentedIds = toRemove.filter(
-            (id) => !markup.experts.some((user) => user.id === id)
+        const notPresentedLogins = toRemove.filter(
+            (login) => !markup.experts.some((user) => user.login === login)
         );
 
-        if (notPresentedIds.length > 0) {
+        if (notPresentedLogins.length > 0) {
             response
                 .status(400)
-                .send(`These experts are not participants: ${notPresentedIds}`);
+                .send(`These experts are not participants: ${notPresentedLogins}`);
             return; 
         }
 
         // сначала удаляем пользователей, потом добавляем
-        markup.experts = markup.experts.filter(({ id }) => !toRemove.includes(id));
+        markup.experts = markup.experts.filter(({ login }) => !toRemove.includes(login));
         markup.experts = toAdd
             .map(
-                (id) => users.find((user) => user.id === id)
+                (login) => users.find((user) => user.login === login)
             )
             .concat(markup.experts);
 
@@ -168,8 +168,8 @@ export async function updateExperts(
 }
 
 export async function getResult(
-    request: express.Request,
-    response: express.Response,
+    request: Request,
+    response: Response,
     next: express.NextFunction
 ) {
     try {

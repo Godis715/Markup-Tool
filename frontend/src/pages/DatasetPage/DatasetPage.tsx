@@ -70,7 +70,7 @@ export default function DatasetPage(props: Props): JSX.Element {
                     <div>{state.dataset?.name}</div>
                     <div>Markups:</div>
                     <ul>{
-                        state.dataset?.markups.map(
+                        state.dataset?.markups?.map(
                             (markup) => <li key={markup.id}>
                                 <div>{markup.id} </div>
                                 <div>{markup.type} </div>

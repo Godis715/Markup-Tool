@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { DatasetDetailed, DatasetShort } from "../../../backend/src/types/dataset";
-import { MarkupForExpert } from "../../../backend/src/types/markup";
-import { MarkupItemData, MarkupItemResult } from "../../../backend/src/types/markupItem";
+import { DatasetDetailed, DatasetShort } from "../types/dataset";
+import { MarkupForExpert } from "../types/markup";
+import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
 import axiosParseWithDates from "../utils/axiosParseWithDates";
 import {
     CustomErrorType,
