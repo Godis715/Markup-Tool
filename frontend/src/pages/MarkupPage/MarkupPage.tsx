@@ -5,6 +5,12 @@ import { MarkupForExpert } from "../../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
+import RecognitionTool from "./RecognitionTool/RecognitionTool";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -162,44 +168,46 @@ export default function MarkupPage(props: Props): JSX.Element {
 
     const absImageSrc = state.markupItem && `http://localhost:8000/images/${state.markupItem?.imageSrc}`;
 
-    return <div>
-        <Link to="/markup">Back to markups</Link>
-        <div>
-            {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
-            {
-                state.recievingMarkup &&
-                <div>Загрузка данных...</div>
-            }
-            {
-                isFinished &&
-                <div>Больше нет элементов для разметки</div>
-            }
-            {
-                !isFinished &&
-                !state.recievingMarkup &&
-                <>
-                    <div>
-                        <div>type: {state.markup?.type}</div>
-                        <div>owner: {state.markup?.owner}</div>
-                        <div>create date: {state.markup?.createDate.toLocaleDateString("ru")}</div>
-                    </div>
-
-                    {
-                        /** TODO: добавить условие на то, если вдруг элемент еще загружается */
-                        absImageSrc && // чтобы типовыводилка не жаловалась
-                        state.markup?.type === "classification" &&
-                        <ClassificationTool
-                            imageSrc={absImageSrc}
-                            classes={state.markup.config}
-                            onSubmit={onSendResult}
-                        />
-                    }
-                    {
-                        state.markup?.type === "recognition" &&
-                        <div>four number inputs ...</div>
-                    }
-                </>
-            }
-        </div>
-    </div>;
+    return <>
+        <Link to="/markup">
+            <Button className="mb-4">Назад к заданиям</Button>
+        </Link>
+        <Card>
+            <Card.Header>Разметка изображения</Card.Header>
+            <Card.Body>
+                {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
+                {
+                    state.recievingMarkup &&
+                    <Card.Text>Загрузка данных...</Card.Text>
+                }
+                {
+                    isFinished &&
+                    <Card.Text>Больше нет элементов для разметки</Card.Text>
+                }
+                {
+                    !isFinished &&
+                    !state.recievingMarkup &&
+                    absImageSrc &&
+                    <>
+                        {
+                            /** TODO: добавить условие на то, если вдруг элемент еще загружается */
+                            state.markup?.type === "classification" &&
+                            <ClassificationTool
+                                imageSrc={absImageSrc}
+                                classes={state.markup.config}
+                                onSubmit={onSendResult}
+                            />
+                        }
+                        {
+                            state.markup?.type === "recognition" &&
+                            <RecognitionTool
+                                imageSrc={absImageSrc}
+                                onSubmit={onSendResult}
+                            />
+                        }
+                    </>
+                }
+            </Card.Body>
+        </Card>
+    </>;
 }

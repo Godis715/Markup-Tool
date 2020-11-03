@@ -1,11 +1,15 @@
 import React from "react";
-
-type ClassificationResult = string;
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import { ClassificationItemResult } from "../../../types/markupItem";
 
 type Props = {
     classes: string[],
     imageSrc: string,
-    onSubmit: (result: ClassificationResult) => void
+    onSubmit: (result: ClassificationItemResult) => void
 };
 
 /**
@@ -17,17 +21,26 @@ export default function ClassificationTool(props: Props): JSX.Element {
         props.onSubmit(className);
     };
 
-    return <div>
-        <div>На изображении находится:</div>
-        <div>{
-            props.classes.map(
-                (className) => <button
-                    key={className}
-                    onClick={() => onClassNameClick(className)}>
-                    {className}
-                </button>
-            )
-        }</div>
-        <img src={props.imageSrc} alt="Изображение для классификации" />
-    </div>;
+    return <Container className="pl-0">
+        <Row>
+            <Col md="auto">
+                <img src={props.imageSrc} style={{ border: "1px solid lightgray" }} />
+            </Col>
+            <Col className="pl-0">
+                <Card.Title>На изображении находится:</Card.Title>
+                {
+                    props.classes.map(
+                        (className) => <Button
+                            key={className}
+                            onClick={() => onClassNameClick(className)}
+                            variant="light"
+                            className="mr-2 mb-2"
+                        >
+                            {className}
+                        </Button>
+                    )
+                }
+            </Col>
+        </Row>
+    </Container>;
 }

@@ -2,6 +2,12 @@ import React, { useEffect, useReducer } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkups } from "../../remote/api";
 import { MarkupForExpert } from "../../types/markup";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import CardColumns from "react-bootstrap/CardColumns";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 
 enum ActionType {
     RECIEVE_MARKUPS
@@ -55,22 +61,27 @@ export default function MarkupExplorerPage(): JSX.Element {
         effect();
     }, []);
 
-    return <div>
-        <div>Markups:</div>
-        {
+    return <>
+        <h3 className="mb-4">Задания</h3>
+        <CardColumns>{
             state.recievingMarkups
                 ? "Loading..."
-                : <ul>{
-                    state.markups.map(
-                        (markup) => <li key={markup.id}>
-                            <div>{markup.id}</div>
-                            <div>type: {markup.type}</div>
-                            <div>owner: {markup.owner}</div>
-                            <div>create date: {markup.createDate.toLocaleDateString("ru")}</div>
-                            <Link to={`markup/${markup.id}`}>Open</Link>
-                        </li>
-                    )
-                }</ul>
-        }
-    </div>;
+                : state.markups.map(
+                    (markup) => <Card key={markup.id} className="mb-2">
+                        <Card.Header>Разметка изображения</Card.Header>
+                        <Card.Body>
+                            <Card.Text>
+                                Тип: {markup.type}
+                            </Card.Text>
+                            <Link to={`markup/${markup.id}`}>
+                                <Button>Открыть</Button>
+                            </Link>
+                        </Card.Body>
+                        <Card.Footer>
+                            <small className="text-muted">Создано {markup.createDate.toLocaleDateString("ru")}, {markup.owner}</small>
+                        </Card.Footer>
+                    </Card>
+                )
+        }</CardColumns>
+    </>;
 }

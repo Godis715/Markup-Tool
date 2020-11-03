@@ -15,6 +15,10 @@ import DatasetExplorerPage from "../DatasetExplorerPage/DatasetExplorerPage";
 import DatasetPage from "../DatasetPage/DatasetPage";
 import MarkupExplorerPage from "../MarkupExplorerPage/MarkupExplorerPage";
 import MarkupPage from "../MarkupPage/MarkupPage";
+import Header from "../../components/Header/Header";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 
 enum AuthState {
     LOADING,
@@ -78,60 +82,73 @@ function App(): JSX.Element {
         }
     };
 
+    const onLogout = () => {
+        localStorage.removeItem("Csrf-Access-Token");
+        setAuth(AuthState.NOT_AUTHENTICATED);
+    };
+
     return <>
-        {
-            auth === AuthState.LOADING &&
-            <div>Loading</div>
-        }
-        {
-            auth === AuthState.NOT_AUTHENTICATED &&
-            <LoginPage
-                errorMessage={error?.type}
-                onLogin={onLogin}
-            />
-        }
-        {
-            auth === AuthState.IS_AUTHENTICATED &&
-            <Router>
-                <Switch>
-                    <Route exact path="/dataset">
-                        {
-                            roles.includes(UserRole.CUSTOMER)
-                                ? <DatasetExplorerPage />
-                                : <Redirect to="/" />
-                        }
-                    </Route>
-                    <Route exact path="/dataset/:datasetId">
-                        {
-                            roles.includes(UserRole.CUSTOMER)
-                                // такая конструкция нужна, чтобы передать параметр :datasetId
-                                ? (props: RouteComponentProps<{ datasetId: string }>) =>
-                                    <DatasetPage
-                                        datasetId={props.match.params.datasetId}
-                                    />
-                                : <Redirect to="/" />
-                        }
-                    </Route>
-                    <Route exact path="/markup">
-                        {
-                            roles.includes(UserRole.EXPERT)
-                                ? <MarkupExplorerPage />
-                                : <Redirect to="/" />
-                        }
-                    </Route>
-                    <Route exact path="/markup/:markupId">
-                        {
-                            roles.includes(UserRole.EXPERT)
-                                ? (props: RouteComponentProps<{ markupId: string }>) =>
-                                    <MarkupPage
-                                        markupId={props.match.params.markupId}
-                                    />
-                                : <Redirect to="/" />
-                        }
-                    </Route>
-                </Switch>
-            </Router>
-        }
+        <Header
+            isAuthenticated={auth === AuthState.IS_AUTHENTICATED}
+            login={"Вася Пупкин"}
+            onLogout={onLogout}
+        />
+        <Container>
+            <Row>
+                <Col>
+                    {
+                        auth === AuthState.LOADING &&
+                        <div>Loading</div>
+                    }
+                    {
+                        auth === AuthState.NOT_AUTHENTICATED &&
+                        <LoginPage
+                            errorMessage={error?.type}
+                            onLogin={onLogin}
+                        />
+                    }
+                    {
+                        auth === AuthState.IS_AUTHENTICATED &&
+                        <Router>
+                            {
+                                roles.includes(UserRole.CUSTOMER) &&
+                                <Switch>
+                                    <Route exact path="/dataset">
+                                        <DatasetExplorerPage />
+                                    </Route>
+
+                                    <Route exact path="/dataset/:datasetId">
+                                        {
+                                            (props: RouteComponentProps<{ datasetId: string }>) =>
+                                                <DatasetPage
+                                                    datasetId={props.match.params.datasetId}
+                                                />
+                                        }
+                                    </Route>
+                                </Switch>
+                            }
+                            {
+                                roles.includes(UserRole.EXPERT) &&
+                                <Switch>
+                                    <Route exact path="/markup">
+                                        <MarkupExplorerPage />
+                                    </Route>
+
+                                    <Route exact path="/markup/:markupId">
+                                        {
+                                            (props: RouteComponentProps<{ markupId: string }>) =>
+                                                <MarkupPage
+                                                    markupId={props.match.params.markupId}
+                                                />
+                                        }
+                                    </Route>
+                                </Switch>
+                            }
+                        </Router>
+                    }
+                </Col>
+            </Row>
+        </Container>
     </>;
 }
 
