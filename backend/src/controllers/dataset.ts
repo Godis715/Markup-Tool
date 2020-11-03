@@ -230,7 +230,7 @@ export async function getById(
  * валидация запроса
  */
 export async function postDatasetMarkup(
-    request: Request<{ datasetId: string }, string, { config: MarkupConfig }, { type: string }>,
+    request: Request<{ datasetId: string }, string, { config: MarkupConfig, description: string }, { type: string }>,
     response: Response<string>,
     next: express.NextFunction
 ) {
@@ -240,7 +240,7 @@ export async function postDatasetMarkup(
         const datasetId = request.params.datasetId;
         const type = request.query.type;
         const { login } = response.locals;
-        const { config } = request.body;
+        const { config, description } = request.body;
         
         const dataset = await manager.findOne(
             Dataset,
@@ -266,6 +266,7 @@ export async function postDatasetMarkup(
         markup.dataset = dataset;
         markup.type = type;
         markup.config = config;
+        markup.description = description;
         markup.experts = [];
 
         try {

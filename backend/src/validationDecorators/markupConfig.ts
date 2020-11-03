@@ -18,6 +18,15 @@ const schemas = {
         items: {
             type: "string"
         }
+    },
+    [MarkupTypeEnum.RECOGNITION]: {
+        type: "object",
+        properties: {
+            // название объекта, который нужно найти на изображении
+            objectToRecognize: {
+                type: "string"
+            }
+        }
     }
 };
 

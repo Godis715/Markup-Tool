@@ -49,6 +49,9 @@ export class Markup {
     @ArrayUniqueByProp("id", { message: "Markup must have unique experts" })
     experts: User[];
 
+    @Column()
+    description: string;
+
     @MarkupConfig()
     @Column("simple-json", { nullable: true })
     config?: any;
