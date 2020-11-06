@@ -19,6 +19,7 @@ import Header from "../../components/Header/Header";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
+import MarkupConfigPage from "../MarkupConfigPage/MarkupConfigPage";
 
 enum AuthState {
     LOADING,
@@ -93,7 +94,7 @@ function App(): JSX.Element {
             login={"Вася Пупкин"}
             onLogout={onLogout}
         />
-        <Container>
+        <Container className="mt-5">
             <Row>
                 <Col>
                     {
@@ -122,6 +123,16 @@ function App(): JSX.Element {
                                             (props: RouteComponentProps<{ datasetId: string }>) =>
                                                 <DatasetPage
                                                     datasetId={props.match.params.datasetId}
+                                                />
+                                        }
+                                    </Route>
+
+                                    <Route exact path="/dataset/:datasetId/markup/:markupId">
+                                        {
+                                            (props: RouteComponentProps<{ datasetId: string, markupId: string }>) =>
+                                                <MarkupConfigPage
+                                                    datasetId={props.match.params.datasetId}
+                                                    markupId={props.match.params.markupId}
                                                 />
                                         }
                                     </Route>

@@ -5,9 +5,7 @@ import { MarkupForExpert } from "../../types/markup";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import CardColumns from "react-bootstrap/CardColumns";
-import Container from "react-bootstrap/Container";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 
 enum ActionType {
     RECIEVE_MARKUPS
@@ -71,7 +69,7 @@ export default function MarkupExplorerPage(): JSX.Element {
                         <Card.Header>Разметка изображения</Card.Header>
                         <Card.Body>
                             <Card.Text>
-                                Тип: {markup.type}
+                                Тип: {MARKUP_TYPE_LITERALS[markup.type]}
                             </Card.Text>
                             <Link to={`markup/${markup.id}`}>
                                 <Button>Открыть</Button>

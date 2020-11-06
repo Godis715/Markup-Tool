@@ -1,5 +1,8 @@
 import React, { useEffect, useReducer } from "react";
 import { Link } from "react-router-dom";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
+import ListGroup from "react-bootstrap/ListGroup";
+import Alert from "react-bootstrap/Alert";
 import { fetchDatasets } from "../../remote/api";
 import { DatasetShort } from "../../types/dataset";
 
@@ -55,20 +58,34 @@ export default function DatasetExplorerPage(): JSX.Element {
         effect();
     }, []);
 
+    if (state.recievingDatasets) {
+        return <div>Загрузка...</div>;
+    }
+
     return <div>
-        <div>Datasets:</div>
-        {
-            state.recievingDatasets
-                ? "Loading..."
-                : <ul>{
-                    state.datasets.map(
-                        (dataset) => <li key={dataset.id}>
-                            <div>{dataset.name}</div>
-                            <div>{dataset.uploadDate.toLocaleDateString("ru")}</div>
-                            <Link to={`dataset/${dataset.id}`}>Open</Link>
-                        </li>
-                    )
-                }</ul>
-        }
+        <Breadcrumb>
+            <Breadcrumb.Item>
+                <Link to="/">Главная</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item active>
+                Датасеты
+            </Breadcrumb.Item>
+        </Breadcrumb>
+        <h2 className="mt-4">Датасеты</h2>
+        <Alert variant="secondary">
+            Для загрузки датасетов используйте <a href="https://github.com/Godis715/Markup-Tool/tree/main/client-cli">интерфейс командной строки</a>
+        </Alert>
+        <ListGroup className="mt-3">
+            {
+                state.datasets.map(
+                    (dataset) => <ListGroup.Item key={dataset.id}>
+                        <Link to={`dataset/${dataset.id}`}>
+                            <h4>{dataset.name}</h4>
+                        </Link>
+                        <small className="text-muted">Дата загрузки: {dataset.uploadDate.toLocaleDateString("ru")}</small>
+                    </ListGroup.Item>
+                )
+            }
+        </ListGroup>
     </div>;
 }

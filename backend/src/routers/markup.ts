@@ -10,7 +10,7 @@ const markupRouter = Router();
 markupRouter.get("/", allowForRoles(UserRole.EXPERT), markup.getForExpert);
 
 // TODO: дописать этот метод
-markupRouter.get("/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOMER), () => {});
+markupRouter.get("/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOMER), markup.getMarkupById);
 
 // управление экспертами данной разметки
 markupRouter.post("/:markupId/experts", allowForRoles(UserRole.CUSTOMER), markup.updateExperts);

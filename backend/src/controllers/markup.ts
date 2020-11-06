@@ -4,7 +4,7 @@ import { getManager } from "typeorm";
 import { Markup } from "../entity/Markup";
 import { User } from "../entity/User";
 import { UserRole } from "../enums/appEnums";
-import { MarkupForExpert } from "../types/markup";
+import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
 
 /**
  * Получение заданий на разметку, в которые назначен данный эксперт
@@ -213,6 +213,65 @@ export async function getResult(
         response
             .status(200)
             .send({ result });
+    }
+    catch(err) {
+        next(err);
+    }
+}
+
+// разная структура для разных ролей
+export async function getMarkupById(
+    request: Request<{ markupId: string }, MarkupForCustomer | MarkupForExpert | string>,
+    response: Response<MarkupForCustomer | MarkupForExpert | string>,
+    next: express.NextFunction
+) {
+    try {
+        const manager = getManager();
+        const { login } = response.locals;
+        const { markupId } = request.params;
+
+        let markup: Markup;
+        try {
+            markup = await manager.findOneOrFail(Markup, markupId, { relations: ["dataset", "dataset.user", "experts"] });
+        }
+        catch(err) {
+            response.sendStatus(404);
+        }
+
+        const user = await manager.findOneOrFail(User, { login }, { relations: ["roles"] });
+        const roles = user.roles.map(({ name }) => name);
+
+        if (roles.includes(UserRole.CUSTOMER)) {
+            const markupData: MarkupForCustomer = {
+                id: markup.id,
+                type: markup.type as MarkupType,
+                config: markup.config,
+                createDate: markup.createDate,
+                description: markup.description,
+                experts: markup.experts.map(({ login }) => login)
+            };
+
+            response
+                .status(200)
+                .send(markupData);
+        }
+        else if (roles.includes(UserRole.EXPERT)) {
+            const markupData: MarkupForExpert = {
+                id: markup.id,
+                type: markup.type as MarkupType,
+                config: markup.config,
+                createDate: markup.createDate,
+                description: markup.description,
+                owner: markup.dataset.user.login
+            };
+
+            response
+                .status(200)
+                .send(markupData);
+        }
+        else {
+            response.status(403);
+        }
     }
     catch(err) {
         next(err);

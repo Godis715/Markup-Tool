@@ -1,7 +1,18 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchDataset } from "../../remote/api";
+import { fetchDataset, postMarkup } from "../../remote/api";
 import { DatasetDetailed } from "../../types/dataset";
+import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Table from "react-bootstrap/Table";
+import { LinkContainer } from "react-router-bootstrap";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
+import CreateMarkupModal from "./CreateMarkupModal";
+import "./style.scss";
+import { MarkupConfig, MarkupType } from "../../../../backend/src/types/markup";
+import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 
 enum ActionType {
     RECIEVE_DATASET
@@ -42,6 +53,11 @@ export default function DatasetPage(props: Props): JSX.Element {
         recievingDataset: true
     });
 
+    const [showModal, setShowModal] = useState(false);
+
+    const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
+
     // получение датасетов с сервера единожды при загрузке страницы
     useEffect(() => {
         const effect = async () => {
@@ -61,26 +77,84 @@ export default function DatasetPage(props: Props): JSX.Element {
         effect();
     }, []);
 
-    return <div>
-        <Link to="/dataset">Back to datasets</Link>
+    const onSubmitMarkup = (type: MarkupType, description: string, config: MarkupConfig) => {
+        postMarkup(props.datasetId, type, description, config).then(closeModal);
+    };
+
+    return <>
+        <CreateMarkupModal
+            show={showModal}
+            onHide={closeModal}
+            onSubmit={onSubmitMarkup}
+        />
         {
             state.recievingDataset
                 ? "Loading..."
-                : <div>
-                    <div>{state.dataset?.name}</div>
-                    <div>Markups:</div>
-                    <ul>{
-                        state.dataset?.markups.map(
-                            (markup) => <li key={markup.id}>
-                                <div>{markup.id} </div>
-                                <div>{markup.type} </div>
-                                <div>{markup.createDate.toLocaleDateString("ru")}</div>
-                                <Link to={`markup/${markup.id}`}>Open</Link>
-                            </li>
-                        )
-                    }</ul>
-                    <div>{state.dataset?.uploadDate.toLocaleDateString("ru")}</div>
-                </div>
+                : <Container className="px-0">
+                    <Breadcrumb>
+                        <Breadcrumb.Item>
+                            <Link to="/">Главная</Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>
+                            <Link to="/dataset">Датасеты</Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item active>
+                            {state.dataset?.name}
+                        </Breadcrumb.Item>
+                    </Breadcrumb>
+
+                    <Row className="mt-4">
+                        <Col as="h2">{state.dataset?.name}</Col>
+                    </Row>
+
+                    <Row>
+                        <Col as="small" className="text-muted">Дата загрузки: {state.dataset?.uploadDate.toLocaleDateString("ru")}</Col>
+                    </Row>
+
+                    <Row className="mt-4">
+                        <Col as="h5">Разметка</Col>
+                        <Col className="d-flex justify-content-end">
+                            <Button variant="outline-primary" onClick={openModal}>Добавить разметку</Button>
+                        </Col>
+                    </Row>
+
+                    <Row className="mt-2">
+                        <Col>
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th>№</th>
+                                        <th>Тип</th>
+                                        <th>Дата создания</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        state.dataset?.markups.length === 0 &&
+                                        <tr>
+                                            <td align="center" colSpan={4}>Разметка датасета отсутствует</td>
+                                        </tr>
+                                    }
+                                    {
+                                        state.dataset?.markups.map(
+                                            (markup, i) => <LinkContainer to={`/dataset/${props.datasetId}/markup/${markup.id}`} key={markup.id}>
+                                                <tr>
+                                                    <td>{i + 1}</td>
+                                                    <td>{MARKUP_TYPE_LITERALS[markup.type]} </td>
+                                                    <td>{markup.createDate.toLocaleDateString("ru")}</td>
+                                                    <td>
+                                                        Завершен
+                                                    </td>
+                                                </tr>
+                                            </LinkContainer>
+                                        )
+                                    }
+                                </tbody>
+                            </Table>
+                        </Col>
+                    </Row>
+                </Container>
         }
-    </div>;
+    </>;
 }

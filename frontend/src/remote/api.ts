@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { MarkupConfig, MarkupForCustomer, MarkupType } from "../../../backend/src/types/markup";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
@@ -96,26 +97,39 @@ export async function fetchNextMarkupItem(markupId: string): RequestResult<Marku
 }
 
 // FIX ME: это костыльный вариант для получения markup по id
-export async function fetchMarkup(id: string): RequestResult<MarkupForExpert> {
-    const result = await fetchMarkups();
-    if (!result.isSuccess) {
-        return result;
+export async function fetchMarkup(markupId: string): RequestResult<MarkupForExpert|MarkupForCustomer> {
+    try {
+        const { data } = await axiosInst.get<MarkupForExpert|MarkupForCustomer>(`/markup/${markupId}`, parseDatesConfig);
+        return new SuccessResult(data);
     }
-
-    const markup = result.data.find(
-        ({ id: markupId }) => markupId === id
-    );
-
-    if (!markup) {
+    catch(err) {
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, new Error("markup not found"));
     }
-
-    return new SuccessResult(markup);
 }
 
 export async function postMarkupItemResult(markupId: string, result: MarkupItemResult): RequestResult<null> {
     try {
         await axiosInst.post(`/markup/${markupId}/item`, { result });
+        return new SuccessResult(null);
+    }
+    catch(err) {
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
+}
+
+export async function addExpertsToMarkup(markupId: string, expert: string): RequestResult<null> {
+    try {
+        await axiosInst.post(`/markup/${markupId}/experts`, { toAdd: [expert] });
+        return new SuccessResult(null);
+    }
+    catch(err) {
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
+}
+
+export async function postMarkup(datasetId: string, type: MarkupType, description: string, config: MarkupConfig): RequestResult<null> {
+    try {
+        await axiosInst.post(`/dataset/${datasetId}/markup`, { config, description }, { params: { type } });
         return new SuccessResult(null);
     }
     catch(err) {

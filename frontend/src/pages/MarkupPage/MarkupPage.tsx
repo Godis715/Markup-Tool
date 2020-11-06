@@ -6,11 +6,9 @@ import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
 import RecognitionTool from "./RecognitionTool/RecognitionTool";
-import Container from "react-bootstrap/Container";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
+import { ClassificationConfig } from "../../../../backend/src/types/markup";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -158,7 +156,7 @@ export default function MarkupPage(props: Props): JSX.Element {
 
             dispatch({
                 type: ActionType.RECIEVE_MARKUP,
-                markup: result.data
+                markup: result.data as MarkupForExpert
             });
         };
 
@@ -166,7 +164,7 @@ export default function MarkupPage(props: Props): JSX.Element {
         startFetchingMarkup();
     }, []);
 
-    const absImageSrc = state.markupItem && `http://localhost:8000/images/${state.markupItem?.imageSrc}`;
+    const absImageSrc = state.markupItem && `http://localhost:8000/${state.markupItem?.imageSrc}`;
 
     return <>
         <Link to="/markup">
@@ -194,7 +192,7 @@ export default function MarkupPage(props: Props): JSX.Element {
                             state.markup?.type === "classification" &&
                             <ClassificationTool
                                 imageSrc={absImageSrc}
-                                classes={state.markup.config}
+                                classes={state.markup.config as ClassificationConfig}
                                 onSubmit={onSendResult}
                             />
                         }

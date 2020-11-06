@@ -11,8 +11,8 @@ import { validateOrReject } from "class-validator";
 import validateAllOrReject from "../utils/validateAllOrReject";
 import { Markup } from "../entity/Markup";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
-import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
-import { config } from "process";
+import { MarkupConfig, MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
+import { UserRole } from "../enums/appEnums";
 
 /**
  * TODO:
@@ -46,7 +46,8 @@ async function uploadData(
 
     // имя директории, в которую будут загружаться файлы
     const dirName = crypto.randomBytes(10).toString("hex");
-    const dirPath = `./${dirName}`;
+    // TODO: вынести в константы или переменные окружения путь к папке
+    const dirPath = `./images/${dirName}`;
     // сохраняем путь к директории для последующей работы
     res.locals.dirPath = dirPath;
 
@@ -210,7 +211,8 @@ export async function getById(
                         (expert) => expert.login
                     ),
                     createDate: markup.createDate,
-                    config: markup.config
+                    config: markup.config,
+                    description: markup.description
                 })
             ),
             uploadDate: dataset.uploadDate
@@ -306,6 +308,7 @@ export async function getDatasetMarkup(
         const datasetId = request.params.datasetId;
         const { login } = response.locals;
         
+        // FIX ME: внизу идет проверка, однако она никогда не выполнится
         const dataset = await manager.findOneOrFail(
             Dataset,
             { id: datasetId },
@@ -331,7 +334,9 @@ export async function getDatasetMarkup(
                 id: markup.id,
                 type: markup.type as MarkupType,
                 config: markup.config,
-                createDate: markup.createDate
+                createDate: markup.createDate,
+                description: markup.description,
+                experts: markup.experts.map(({ login }) => login)
             })
         );
 
@@ -343,4 +348,8 @@ export async function getDatasetMarkup(
         next(err);
     }
 }
+
+
+
+
 
