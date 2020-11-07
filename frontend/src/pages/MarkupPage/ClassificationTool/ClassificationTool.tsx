@@ -9,7 +9,8 @@ import { ClassificationItemResult } from "../../../types/markupItem";
 type Props = {
     classes: string[],
     imageSrc: string,
-    onSubmit: (result: ClassificationItemResult) => void
+    onSubmit: (result: ClassificationItemResult) => void,
+    description: string
 };
 
 /**
@@ -23,11 +24,9 @@ export default function ClassificationTool(props: Props): JSX.Element {
 
     return <Container className="pl-0">
         <Row>
-            <Col md="auto">
-                <img src={props.imageSrc} style={{ border: "1px solid lightgray" }} />
-            </Col>
-            <Col className="pl-0">
-                <Card.Title>На изображении находится:</Card.Title>
+            <Col>
+                <Card.Text>{props.description}</Card.Text>
+                <Card.Text>Изображение относится к классу:</Card.Text>
                 {
                     props.classes.map(
                         (className) => <Button
@@ -40,6 +39,13 @@ export default function ClassificationTool(props: Props): JSX.Element {
                         </Button>
                     )
                 }
+            </Col>
+        </Row>
+        <Row>
+            <Col md="auto">
+                <div className="markup-image-container">
+                    <img src={props.imageSrc} className="markup-image" />
+                </div>
             </Col>
         </Row>
     </Container>;

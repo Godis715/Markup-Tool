@@ -1,7 +1,10 @@
 import { validateOrReject } from "class-validator";
 import express, { Request, Response } from "express";
 import { getManager } from "typeorm";
+import { Dataset } from "../entity/Dataset";
+import { DatasetItem } from "../entity/DatasetItem";
 import { Markup } from "../entity/Markup";
+import { MarkupItem } from "../entity/MarkupItem";
 import { User } from "../entity/User";
 import { UserRole } from "../enums/appEnums";
 import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
@@ -40,7 +43,8 @@ export async function getForExpert(
                 createDate: markup.createDate,
                 // TODO: вообще пользователю в более общем случае лучше не отправлять в исходном виде
                 config: markup.config,
-                description: markup.description
+                description: markup.description,
+                datasetName: markup.dataset.name
             })
         );
 
@@ -242,13 +246,27 @@ export async function getMarkupById(
         const roles = user.roles.map(({ name }) => name);
 
         if (roles.includes(UserRole.CUSTOMER)) {
+            const totalDatasetItems = await manager.count(DatasetItem, {
+                where: {
+                    dataset: { id: markup.dataset.id }
+                }
+            });
+            const totalMarkupItems = await manager.count(MarkupItem, {
+                where: {
+                    markup: { id: markup.id }
+                }
+            });
             const markupData: MarkupForCustomer = {
                 id: markup.id,
                 type: markup.type as MarkupType,
                 config: markup.config,
                 createDate: markup.createDate,
                 description: markup.description,
-                experts: markup.experts.map(({ login }) => login)
+                experts: markup.experts.map(({ login }) => login),
+                progress: {
+                    all: totalDatasetItems,
+                    done: totalMarkupItems
+                }
             };
 
             response
@@ -262,7 +280,8 @@ export async function getMarkupById(
                 config: markup.config,
                 createDate: markup.createDate,
                 description: markup.description,
-                owner: markup.dataset.user.login
+                owner: markup.dataset.user.login,
+                datasetName: markup.dataset.name
             };
 
             response

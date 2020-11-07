@@ -7,6 +7,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Table from "react-bootstrap/Table";
+import Badge from "react-bootstrap/Badge";
 import { LinkContainer } from "react-router-bootstrap";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import CreateMarkupModal from "./CreateMarkupModal";
@@ -144,7 +145,8 @@ export default function DatasetPage(props: Props): JSX.Element {
                                                     <td>{MARKUP_TYPE_LITERALS[markup.type]} </td>
                                                     <td>{markup.createDate.toLocaleDateString("ru")}</td>
                                                     <td>
-                                                        Завершен
+                                                        {/** <Badge variant="success">Завершен</Badge> */}
+                                                        <Badge variant="primary">В процессе</Badge>
                                                     </td>
                                                 </tr>
                                             </LinkContainer>

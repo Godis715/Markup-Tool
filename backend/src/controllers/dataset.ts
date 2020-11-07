@@ -200,6 +200,10 @@ export async function getById(
             return;
         }
 
+        // TODO: вынести в отдельную функцию
+        // сбор статистики по каждой разметке
+
+
         const dataToSend: DatasetDetailed = {
             id: dataset.id,
             name: dataset.name,
@@ -212,10 +216,16 @@ export async function getById(
                     ),
                     createDate: markup.createDate,
                     config: markup.config,
-                    description: markup.description
+                    description: markup.description,
+                    // FIX ME: доделать
+                    progress: {
+                        done: 0,
+                        all: 0
+                    }
                 })
             ),
             uploadDate: dataset.uploadDate
+
         };
 
         response
@@ -336,7 +346,12 @@ export async function getDatasetMarkup(
                 config: markup.config,
                 createDate: markup.createDate,
                 description: markup.description,
-                experts: markup.experts.map(({ login }) => login)
+                experts: markup.experts.map(({ login }) => login),
+                // FIX ME: дописать
+                progress: {
+                    done: 0,
+                    all: 0
+                }
             })
         );
 

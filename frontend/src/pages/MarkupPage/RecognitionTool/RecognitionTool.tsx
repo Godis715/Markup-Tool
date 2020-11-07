@@ -6,7 +6,9 @@ import Card from "react-bootstrap/Card";
 
 type Props = {
     imageSrc: string,
-    onSubmit: (result: RecognitionItemResult) => void
+    onSubmit: (result: RecognitionItemResult) => void,
+    objectToFind: string,
+    description: string
 };
 
 type Rect = {
@@ -14,6 +16,26 @@ type Rect = {
     y1: number,
     x2: number,
     y2: number
+}
+
+class ConditionalClassName {
+    private classes: string[];
+
+    constructor(className?: string) {
+        this.classes = className ? [className] : [];
+    }
+
+    public addClassIf(className: string, predicate: boolean): ConditionalClassName {
+        if (predicate) {
+            this.classes.push(className);
+        }
+
+        return this;
+    }
+
+    public getClassName(): string {
+        return this.classes.join(" ");
+    }
 }
 
 export default function RecognitionTool(props: Props): ReactElement {
@@ -72,9 +94,19 @@ export default function RecognitionTool(props: Props): ReactElement {
         setIsMouseDown(false);
     };
 
+    const left = rect ? `${Math.min(rect.x1, rect.x2)}px` : null;
+    const top = rect ? `${Math.min(rect.y1, rect.y2)}px` : null;
+    const width = rect ? `${Math.abs(rect.x1 - rect.x2)}px` : null;
+    const height = rect ? `${Math.abs(rect.y1 - rect.y2)}px` : null;
+
+    const rectSelectClassName = new ConditionalClassName("rect-select")
+        .addClassIf("rect-select_blured", Boolean(rect) && !isMouseDown)
+        .getClassName();
+
     return <div className="recognition-tool">
-        <Card.Title>Выделите что-то</Card.Title>
-        <div className="overlaying">
+        <Card.Text>{props.description}</Card.Text>
+        <Card.Text>Выделите &quot;{props.objectToFind}&quot;</Card.Text>
+        <div className="overlaying markup-image-container">
             {/** TODO: Добавить image.onError */}
             <img
                 className="overlaying__back"
@@ -82,23 +114,22 @@ export default function RecognitionTool(props: Props): ReactElement {
             />
             <div className="overlaying__front">
                 <div
-                    className="rect-select"
+                    className={rectSelectClassName}
                     onMouseDown={onMouseDown}
                     onMouseUp={onFinishRectDraw}
                     onMouseMove={onMouseMove}
                     ref={rectSelectRef}
+                    style={{
+                        // @ts-ignore
+                        "--left": left,
+                        "--top": top,
+                        "--width": width,
+                        "--height": height
+                    }}
                 >
                     {
                         rect &&
-                        <div
-                            className="rect-select__rect"
-                            style={{
-                                left: `${Math.min(rect.x1, rect.x2)}px`,
-                                top: `${Math.min(rect.y1, rect.y2)}px`,
-                                width: `${Math.abs(rect.x1 - rect.x2)}px`,
-                                height: `${Math.abs(rect.y1 - rect.y2)}px`
-                            }}
-                        />
+                        <div className="rect-select__rect" />
                     }
                 </div>
             </div>

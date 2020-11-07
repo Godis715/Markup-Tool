@@ -13,12 +13,18 @@ type MarkupBase = {
 export type MarkupForCustomer = MarkupBase & {
     type: MarkupType,
     config: MarkupConfig,
-    experts: string[]
+    // TODO: может, сделать отдельно API
+    experts: string[],
+    progress: {
+        all: number,
+        done: number
+    }
 };
 
 export type MarkupForExpert = MarkupBase & {
     type: MarkupType,
     config: MarkupConfig,
     // логин создателя разметки
-    owner: string
+    owner: string,
+    datasetName: string
 };

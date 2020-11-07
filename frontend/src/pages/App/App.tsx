@@ -136,6 +136,10 @@ function App(): JSX.Element {
                                                 />
                                         }
                                     </Route>
+
+                                    <Route exact path="*">
+                                        <Redirect to="/dataset" />
+                                    </Route>
                                 </Switch>
                             }
                             {
@@ -152,6 +156,10 @@ function App(): JSX.Element {
                                                     markupId={props.match.params.markupId}
                                                 />
                                         }
+                                    </Route>
+
+                                    <Route exact path="*">
+                                        <Redirect to="/markup" />
                                     </Route>
                                 </Switch>
                             }

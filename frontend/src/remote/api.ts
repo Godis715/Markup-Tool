@@ -95,8 +95,6 @@ export async function fetchNextMarkupItem(markupId: string): RequestResult<Marku
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
-
-// FIX ME: это костыльный вариант для получения markup по id
 export async function fetchMarkup(markupId: string): RequestResult<MarkupForExpert|MarkupForCustomer> {
     try {
         const { data } = await axiosInst.get<MarkupForExpert|MarkupForCustomer>(`/markup/${markupId}`, parseDatesConfig);

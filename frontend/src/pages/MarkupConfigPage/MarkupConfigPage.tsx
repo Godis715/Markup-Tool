@@ -121,7 +121,15 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
         </Container>
 
         <h5>Прогресс</h5>
-        <ProgressBar className="mt-2" now={60} label="12/20" />
+        <ProgressBar
+            className="mt-2"
+            now={
+                markup.progress.all === 0
+                    ? 0
+                    : 100 * markup.progress.done / markup.progress.all
+            }
+            label={`${markup.progress.done}/${markup.progress.all}`}
+        />
 
         <hr className="col-xs-12" />
 

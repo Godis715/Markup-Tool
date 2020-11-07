@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkup, fetchNextMarkupItem, postMarkupItemResult } from "../../remote/api";
-import { MarkupForExpert } from "../../types/markup";
+import { MarkupForExpert, RecognitionConfig } from "../../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
@@ -9,6 +9,9 @@ import RecognitionTool from "./RecognitionTool/RecognitionTool";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import { ClassificationConfig } from "../../../../backend/src/types/markup";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
+import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
+import "./style.scss";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -166,10 +169,23 @@ export default function MarkupPage(props: Props): JSX.Element {
 
     const absImageSrc = state.markupItem && `http://localhost:8000/${state.markupItem?.imageSrc}`;
 
+    if (!state.markup) {
+        return <div>Загрузка...</div>;
+    }
+
     return <>
-        <Link to="/markup">
-            <Button className="mb-4">Назад к заданиям</Button>
-        </Link>
+        <Breadcrumb>
+            <Breadcrumb.Item>
+                <Link to="/">Главная</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+                <Link to="/markup">Задания</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item active>
+                {state.markup.datasetName} - {MARKUP_TYPE_LITERALS[state.markup.type]}
+            </Breadcrumb.Item>
+        </Breadcrumb>
+
         <Card>
             <Card.Header>Разметка изображения</Card.Header>
             <Card.Body>
@@ -194,6 +210,7 @@ export default function MarkupPage(props: Props): JSX.Element {
                                 imageSrc={absImageSrc}
                                 classes={state.markup.config as ClassificationConfig}
                                 onSubmit={onSendResult}
+                                description={state.markup.description}
                             />
                         }
                         {
@@ -201,6 +218,8 @@ export default function MarkupPage(props: Props): JSX.Element {
                             <RecognitionTool
                                 imageSrc={absImageSrc}
                                 onSubmit={onSendResult}
+                                objectToFind={(state.markup.config as RecognitionConfig).objectToFind}
+                                description={state.markup.description}
                             />
                         }
                     </>

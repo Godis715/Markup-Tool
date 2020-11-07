@@ -2,9 +2,8 @@ import React, { useEffect, useReducer } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkups } from "../../remote/api";
 import { MarkupForExpert } from "../../types/markup";
-import Button from "react-bootstrap/Button";
-import Card from "react-bootstrap/Card";
-import CardColumns from "react-bootstrap/CardColumns";
+import ListGroup from "react-bootstrap/ListGroup";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 
 enum ActionType {
@@ -59,27 +58,32 @@ export default function MarkupExplorerPage(): JSX.Element {
         effect();
     }, []);
 
+    if (state.recievingMarkups) {
+        return <div>Загрузка...</div>;
+    }
+
     return <>
+        <Breadcrumb>
+            <Breadcrumb.Item>
+                <Link to="/">Главная</Link>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item active>
+                Задания
+            </Breadcrumb.Item>
+        </Breadcrumb>
         <h3 className="mb-4">Задания</h3>
-        <CardColumns>{
-            state.recievingMarkups
-                ? "Loading..."
-                : state.markups.map(
-                    (markup) => <Card key={markup.id} className="mb-2">
-                        <Card.Header>Разметка изображения</Card.Header>
-                        <Card.Body>
-                            <Card.Text>
-                                Тип: {MARKUP_TYPE_LITERALS[markup.type]}
-                            </Card.Text>
-                            <Link to={`markup/${markup.id}`}>
-                                <Button>Открыть</Button>
-                            </Link>
-                        </Card.Body>
-                        <Card.Footer>
-                            <small className="text-muted">Создано {markup.createDate.toLocaleDateString("ru")}, {markup.owner}</small>
-                        </Card.Footer>
-                    </Card>
-                )
-        }</CardColumns>
+        <ListGroup>{
+            state.markups.map(
+                (markup) => <ListGroup.Item key={markup.id} className="mb-2">
+                    <Link to={`markup/${markup.id}`}>
+                        <h4>{markup.datasetName} / {MARKUP_TYPE_LITERALS[markup.type]}</h4>
+                    </Link>
+                    <small className="text-muted">
+                        Создано: {markup.createDate.toLocaleDateString("ru")}, 
+                        Владелец: {markup.owner}
+                    </small>
+                </ListGroup.Item>
+            )
+        }</ListGroup>
     </>;
 }
