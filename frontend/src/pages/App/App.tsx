@@ -3,7 +3,6 @@ import { authenticate, checkIsAuth } from "../../remote/auth";
 import { CustomError } from "../../utils/customError";
 import LoginPage from "../LoginPage/LoginPage";
 import {
-    BrowserRouter as Router,
     Switch,
     Route,
     Redirect,
@@ -20,6 +19,7 @@ import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import MarkupConfigPage from "../MarkupConfigPage/MarkupConfigPage";
+import MainPage from "../ManPage/MainPage";
 
 enum AuthState {
     LOADING,
@@ -93,6 +93,7 @@ function App(): JSX.Element {
             isAuthenticated={auth === AuthState.IS_AUTHENTICATED}
             login={"Вася Пупкин"}
             onLogout={onLogout}
+            roles={roles}
         />
         <Container className="mt-5">
             <Row>
@@ -110,10 +111,13 @@ function App(): JSX.Element {
                     }
                     {
                         auth === AuthState.IS_AUTHENTICATED &&
-                        <Router>
+                        <>
                             {
                                 roles.includes(UserRole.CUSTOMER) &&
                                 <Switch>
+                                    <Route exact path="/">
+                                        <MainPage />
+                                    </Route>
                                     <Route exact path="/dataset">
                                         <DatasetExplorerPage />
                                     </Route>
@@ -138,13 +142,17 @@ function App(): JSX.Element {
                                     </Route>
 
                                     <Route exact path="*">
-                                        <Redirect to="/dataset" />
+                                        <Redirect to="/" />
                                     </Route>
                                 </Switch>
                             }
                             {
                                 roles.includes(UserRole.EXPERT) &&
                                 <Switch>
+                                    <Route exact path="/">
+                                        <MainPage />
+                                    </Route>
+
                                     <Route exact path="/markup">
                                         <MarkupExplorerPage />
                                     </Route>
@@ -159,11 +167,11 @@ function App(): JSX.Element {
                                     </Route>
 
                                     <Route exact path="*">
-                                        <Redirect to="/markup" />
+                                        <Redirect to="/" />
                                     </Route>
                                 </Switch>
                             }
-                        </Router>
+                        </>
                     }
                 </Col>
             </Row>
