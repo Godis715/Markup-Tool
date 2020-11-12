@@ -92,7 +92,7 @@ export async function updateExperts(
         // проверка, все ли пользователи нашлись
         if (userLogins.length !== users.length) {
             response
-                .status(400)
+                .status(404)
                 .send("Not all user ids are valid");
             return;
         }

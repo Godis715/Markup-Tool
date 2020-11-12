@@ -101,7 +101,7 @@ export async function fetchMarkup(markupId: string): RequestResult<MarkupForExpe
         return new SuccessResult(data);
     }
     catch(err) {
-        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, new Error("markup not found"));
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
 
@@ -121,6 +121,10 @@ export async function addExpertsToMarkup(markupId: string, expert: string): Requ
         return new SuccessResult(null);
     }
     catch(err) {
+        if (isAxiosError(err) && err.response?.status === 404) {
+            return new ErrorResult(CustomErrorType.NOT_FOUND, err);
+        }
+
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }

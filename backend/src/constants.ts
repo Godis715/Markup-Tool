@@ -1,0 +1,1 @@
+const FOLDER_FOR_DATASETS = "./images";

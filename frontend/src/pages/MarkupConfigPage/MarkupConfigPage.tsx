@@ -74,7 +74,7 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
             setExpertLogin("");
         }
         else {
-            // TODO: выводить ошибку на экран
+            // TODO: выводить ошибку на экран, проверка на 404
             console.error(result.error);
         }
 

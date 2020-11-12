@@ -1,4 +1,5 @@
 import express, { Response, Request } from "express";
+import path from "path";
 import crypto from "crypto";
 import multer from "multer";
 import fs from "fs";
@@ -12,24 +13,23 @@ import validateAllOrReject from "../utils/validateAllOrReject";
 import { Markup } from "../entity/Markup";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupConfig, MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
-import { UserRole } from "../enums/appEnums";
 
 /**
  * TODO:
  * Валидация запроса
  */
 
-/**
- * Устанавливаем обработчики, которые проверяют,
- * чтобы количество фактически переданных байтов соответствовало
- * заявленному объему данных.
- * Это помогает бороться с внезапным разрывом связи с клиентом.
- */
 async function uploadData(
     req: Request,
     res: Response,
     next: express.NextFunction
 ) {
+    /**
+     * Устанавливаем обработчики, которые проверяют,
+     * чтобы количество фактически переданных байтов соответствовало
+     * заявленному объему данных.
+     * Это помогает бороться с внезапным разрывом связи с клиентом.
+     */
     // считаем количество полученный байтов
     let writtenLen = 0;
     req.on("data", (data) => writtenLen += data.length);
@@ -46,8 +46,7 @@ async function uploadData(
 
     // имя директории, в которую будут загружаться файлы
     const dirName = crypto.randomBytes(10).toString("hex");
-    // TODO: вынести в константы или переменные окружения путь к папке
-    const dirPath = `./images/${dirName}`;
+    const dirPath = path.resolve(FOLDER_FOR_DATASETS, dirName);
     // сохраняем путь к директории для последующей работы
     res.locals.dirPath = dirPath;
 

@@ -23,7 +23,6 @@ import ArrayUniqueByProp from "../validationDecorators/arrayUniqueByProp";
  * 
  * TODO:
  * - Добавить поле "название" для задания
- * - Добавить поле "описание" для задания
  */
 @Entity()
 export class Markup {

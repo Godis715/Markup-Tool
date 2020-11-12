@@ -9,7 +9,7 @@ const markupRouter = Router();
 // получение всех разметок экперта
 markupRouter.get("/", allowForRoles(UserRole.EXPERT), markup.getForExpert);
 
-// TODO: дописать этот метод
+// получение разметки по id, результат раличный для эксперта и заказчика
 markupRouter.get("/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOMER), markup.getMarkupById);
 
 // управление экспертами данной разметки
