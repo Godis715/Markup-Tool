@@ -7,6 +7,7 @@ import { createConnection } from "typeorm";
 import authRouter from "./routers/auth";
 import datasetRouter from "./routers/dataset";
 import markupRouter from "./routers/markup";
+import { FOLDER_FOR_DATASETS } from "./constants";
 
 const PORT = 8000;
 const ORIGIN = "http://localhost:3000";
@@ -38,7 +39,7 @@ app.use(cors(corsOptions));
 // раздаем статику react-а
 app.use(express.static("../frontend/build"));
 // раздаем картинки
-app.use("/images", express.static("./images"));
+app.use("/images", express.static(FOLDER_FOR_DATASETS));
 // чтобы express не парсил параметры запроса в объекты
 app.set("query parser", "simple");
 

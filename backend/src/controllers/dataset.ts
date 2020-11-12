@@ -12,7 +12,8 @@ import { validateOrReject } from "class-validator";
 import validateAllOrReject from "../utils/validateAllOrReject";
 import { Markup } from "../entity/Markup";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
-import { MarkupConfig, MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
+import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
+import { FOLDER_FOR_DATASETS } from "../constants";
 
 /**
  * TODO:
@@ -321,7 +322,7 @@ export async function getDatasetMarkup(
         const dataset = await manager.findOneOrFail(
             Dataset,
             { id: datasetId },
-            { relations: ["user", "markups"] }
+            { relations: ["user", "markups", "markups.experts"] }
         );
 
         if (!dataset) {

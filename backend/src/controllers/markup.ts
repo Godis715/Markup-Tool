@@ -1,20 +1,19 @@
 import { validateOrReject } from "class-validator";
 import express, { Request, Response } from "express";
 import { getManager } from "typeorm";
-import { Dataset } from "../entity/Dataset";
 import { DatasetItem } from "../entity/DatasetItem";
 import { Markup } from "../entity/Markup";
 import { MarkupItem } from "../entity/MarkupItem";
 import { User } from "../entity/User";
 import { UserRole } from "../enums/appEnums";
 import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
+import { createObjectCsvStringifier } from "csv-writer";
 
 /**
  * Получение заданий на разметку, в которые назначен данный эксперт
  */
 export type GetMarkupForExpertRequestBody = {};
 export type GetMarkupForExpertResponseBody = MarkupForExpert[];
-type GetMarkupForExpertParams = {};
 
 export async function getForExpert(
     request: Request,
@@ -182,6 +181,9 @@ export async function getResult(
 
         const login: string = response.locals.login;
         const markupId: string = request.params.markupId;
+        // в какой формат сконвертировать результат
+        const resultExt = request.query.ext || "json";
+
         const markup =  await manager.findOne(
             Markup,
             { id: markupId },
@@ -202,21 +204,53 @@ export async function getResult(
             return;
         }
 
+        console.log(markup.items);
+
         const result = markup.items.map(
             (item) => ({
                 url: item.datasetItem.location,
                 name: item.datasetItem.name,
-                markup: item.result
+                // FIX ME: временное решение
+                markup: JSON.stringify(item.result)
             })
         );
 
-        /**
-         * TODO:
-         * сделать подсчет прогресса
-         */
-        response
-            .status(200)
-            .send({ result });
+        switch(resultExt) {
+            case "csv": {
+                // TODO: сделать "более умную конвертацию в csv результата (не в виде json значения)"
+                const csvStringifier = createObjectCsvStringifier({
+                    header: [
+                        { id: "url", title: "IMAGE_URL" },
+                        { id: "name", title: "ORIGINAL_NAME" },
+                        { id: "markup", title: "MARKUP_RESULT" }
+                    ]
+                });
+                const dataToSend = csvStringifier.getHeaderString().concat(csvStringifier.stringifyRecords(result));
+                response
+                    .status(200)
+                    .set({
+                        "Content-Disposition": 'attachment; filename="result.csv"',
+                        "Content-type": "text/csv"
+                    })
+                    .send(dataToSend);
+            }
+            case "json":
+            default: {
+                /**
+                 * TODO:
+                 * сделать подсчет прогресса
+                 */
+                const dataToSend = JSON.stringify(result);
+                    response
+                        .status(200)
+                        .set({
+                            "Content-Disposition": 'attachment; filename="result.json"',
+                            "Content-type": "application/json"
+                        })
+                        .send(dataToSend);
+                }
+        }
+
     }
     catch(err) {
         next(err);

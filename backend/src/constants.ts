@@ -1,1 +1,1 @@
-const FOLDER_FOR_DATASETS = "./images";
+export const FOLDER_FOR_DATASETS = "./images";
