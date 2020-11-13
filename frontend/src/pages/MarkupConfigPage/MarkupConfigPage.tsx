@@ -6,13 +6,15 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MarkupForCustomer } from "../../types/markup";
-import { addExpertsToMarkup, fetchDataset, fetchMarkup } from "../../remote/api";
-import { DatasetDetailed } from "../../../../backend/src/types/dataset";
+import { addExpertsToMarkup, fetchDataset, fetchMarkup, downloadMarkupResult } from "../../remote/api";
+import { DatasetDetailed } from "../../types/dataset";
 import ListGroup from "react-bootstrap/ListGroup";
 import InputGroup from "react-bootstrap/InputGroup";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { Form } from "react-bootstrap";
+import Form from "react-bootstrap/Form";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
+import ResultDownloader from "./ResultDownloader";
+import Divider from "../../components/Divider/Divider";
 
 type Props = {
     datasetId: string,
@@ -131,7 +133,13 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
             label={`${markup.progress.done}/${markup.progress.all}`}
         />
 
-        <hr className="col-xs-12" />
+        <ResultDownloader
+            markupId={props.markupId}
+            className="mt-3"
+            disabled={markup.progress.done === 0}
+        />
+
+        <Divider />
 
         <Container className="px-0">
             <Row className="mt-3" noGutters>

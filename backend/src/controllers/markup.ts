@@ -204,8 +204,6 @@ export async function getResult(
             return;
         }
 
-        console.log(markup.items);
-
         const result = markup.items.map(
             (item) => ({
                 url: item.datasetItem.location,
@@ -233,6 +231,7 @@ export async function getResult(
                         "Content-type": "text/csv"
                     })
                     .send(dataToSend);
+                break;
             }
             case "json":
             default: {

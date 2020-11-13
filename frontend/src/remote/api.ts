@@ -138,3 +138,25 @@ export async function postMarkup(datasetId: string, type: MarkupType, descriptio
         return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
     }
 }
+
+export async function downloadMarkupResult(markupId: string, ext: "json"|"csv" = "json"): RequestResult<null> {
+    try {
+        // https://gist.github.com/javilobo8/097c30a233786be52070986d8cdb1743
+        const response = await axiosInst.get<string>(`/markup/${markupId}/result`, { params: { ext }, responseType: "blob" });
+        // способ загрузки файлов
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([response.data]));
+        console.log(response.headers);
+        const filename = (response.headers["content-disposition"] as string)
+            .split("filename=")[1]
+            .split(";")[0]
+            .replaceAll('"', "");
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        return new SuccessResult(null);
+    }
+    catch(err) {
+        return new ErrorResult(CustomErrorType.UNEXPECTED_ERROR, err);
+    }
+}

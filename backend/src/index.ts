@@ -34,6 +34,7 @@ app.use(express.json());
 const corsOptions = {
     origin: [ORIGIN],
     credentials: true,
+    exposedHeaders: ["Content-Disposition"]
 } as CorsOptions;
 app.use(cors(corsOptions));
 // раздаем статику react-а
