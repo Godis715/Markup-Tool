@@ -62,7 +62,7 @@ export const verify = [
         res
             .status(200)
             .send({ roles });
-    } 
+    }
 ];
 
 export async function refresh(request: Request, response: Response) {

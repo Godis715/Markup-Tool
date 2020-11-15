@@ -18,6 +18,7 @@ export default function ArrayUniqueByProp(uniqueProp: string, validationOptions?
             constraints: ["arrayUniqueByProp"],
             validator: {
                 validate(valueArr: any[], args: ValidationArguments) {
+                    // TODO: можно переписать с использованием map, Set и Set.size
                     const unqiuePropValues = new Set();
                     for(const value of valueArr) {
                         const propValue = value[uniqueProp];

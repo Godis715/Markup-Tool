@@ -12,8 +12,8 @@ markupRouter.get("/", allowForRoles(UserRole.EXPERT), markup.getForExpert);
 // получение разметки по id, результат раличный для эксперта и заказчика
 markupRouter.get("/:markupId", allowForRoles(UserRole.EXPERT, UserRole.CUSTOMER), markup.getMarkupById);
 
-// управление экспертами данной разметки
-markupRouter.post("/:markupId/experts", allowForRoles(UserRole.CUSTOMER), markup.updateExperts);
+// добавить эксперта к разметке. Принимает параметр запроса id: /:markupId/experts?login=...
+markupRouter.put("/:markupId/experts", allowForRoles(UserRole.CUSTOMER), markup.addExpertByLogin);
 
 // получение разметки в виде текста
 markupRouter.get("/:markupId/result", allowForRoles(UserRole.CUSTOMER), markup.getResult);

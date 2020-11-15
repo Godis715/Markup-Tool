@@ -4,7 +4,6 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { downloadMarkupResult } from "../../remote/api";
 
-
 type Props = {
     markupId: string,
     className?: string,

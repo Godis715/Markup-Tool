@@ -115,9 +115,9 @@ export async function postMarkupItemResult(markupId: string, result: MarkupItemR
     }
 }
 
-export async function addExpertsToMarkup(markupId: string, expert: string): RequestResult<null> {
+export async function addExpertsToMarkup(markupId: string, expertLogin: string): RequestResult<null> {
     try {
-        await axiosInst.post(`/markup/${markupId}/experts`, { toAdd: [expert] });
+        await axiosInst.put(`/markup/${markupId}/experts`, null, { params: { login: expertLogin } });
         return new SuccessResult(null);
     }
     catch(err) {

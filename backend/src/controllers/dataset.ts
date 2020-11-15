@@ -159,7 +159,7 @@ export async function getAll(
         const manager = getManager();
 
         const user = await manager.findOne(User, { login }, { relations: ["datasets"] });
-
+    
         const dataToSend = user.datasets.map(
             (dataset) => ({
                 id: dataset.id,
@@ -183,7 +183,6 @@ export async function getById(
     next: express.NextFunction
 ) {
     try {
-        const login: string = response.locals.login;
         const datasetId = request.params.datasetId;
         const manager = getManager();
 
@@ -193,7 +192,7 @@ export async function getById(
             { relations: ["user", "markups", "markups.experts"] }
         );
 
-        if (dataset.user.login !== login) {
+        if (dataset.user.login !== response.locals.login) {
             response
                 .status(403)
                 .send("User is not an owner of the dataset");
@@ -202,7 +201,6 @@ export async function getById(
 
         // TODO: вынести в отдельную функцию
         // сбор статистики по каждой разметке
-
 
         const dataToSend: DatasetDetailed = {
             id: dataset.id,

@@ -56,101 +56,48 @@ export async function getForExpert(
     }
 }
 
-export type PostExpertsRequestBody = {
-    toAdd?: string[],
-    toRemove?: string[]
-};
-export type PostExpertsResponseBody = string;
-export type PostExpertsParams = { markupId: string };
-/**
- * TODO:
- * подумать, может, стоит разделить на два метода:
- * удалить экспертов, добавить экспертов
- */
-export async function updateExperts(
-    request: Request<PostExpertsParams, PostExpertsResponseBody, PostExpertsRequestBody>,
-    response: Response<PostExpertsResponseBody>,
+export async function addExpertByLogin(
+    request: Request<{ markupId: string }, string, {}, { login: string }>,
+    response: Response<string>,
     next: express.NextFunction
 ) {
     try {
         const manager = getManager();
+        const { markupId } = request.params;
+        const { login: expertLogin } = request.query;
 
-        const login: string = response.locals.login;
-        const markupId = request.params.markupId;
-        const toAdd = request.body.toAdd || [];
-        const toRemove = request.body.toRemove || [];
-
-        // уникальные id из списков toAdd, toRemove
-        const userLogins = [...new Set(toAdd.concat(toRemove))];
-        // все пользователи с переданнами айдишниками
-        const users = await manager.find(User, {
-            relations: ["roles"],
-            where: userLogins.map((login) => ({ login }))
-        });
-
-        // проверка, все ли пользователи нашлись
-        if (userLogins.length !== users.length) {
-            response
-                .status(404)
-                .send("Not all user ids are valid");
-            return;
-        }
-
-        // поиск пользователь не-экспертов
-        const nonExpertLogins = users
-            .filter(
-                (user) => !user.roles
-                    .map(({ name }) => name)
-                    .includes(UserRole.EXPERT)
-            )
-            .map(({ login }) => login);
-
-        if (nonExpertLogins.length > 0) {
-            response
-                .status(400)
-                .send(`Not all users have expert rights: ${nonExpertLogins}`);
-            return;
-        }
-
-        const markup = await manager.findOne(
-            Markup,
-            { id: markupId },
-            { relations: ["experts", "dataset", "dataset.user"] }
-        );
+        const markup = await manager.findOne(Markup, markupId, { relations: ["dataset", "dataset.user", "experts"] });
         if (!markup) {
             response
-                .status(400)
-                .send(`Markup with id '${markupId}' doesn't exist`);
-            return;       
+                .status(404)
+                .send(`Markup with id "${markupId} is not found"`);
+            return;
         }
 
-        // проверка, является ли пользователь создателем
-        if (markup.dataset.user.login !== login) {
+        if (markup.dataset.user.login !== response.locals.login) {
             response
                 .status(403)
-                .send("This user is not an author of the markup");
-            return; 
+                .send("User is not an author of the dataset");
+            return;
         }
 
-        // поиск поьзователей, которых нужно удалить, но их и не было в списке экспертов
-        const notPresentedLogins = toRemove.filter(
-            (login) => !markup.experts.some((user) => user.login === login)
-        );
+        const expert = await manager.findOne(User, { login: expertLogin }, { relations: ["roles"] });
+        if (!expert) {
+            response
+                .status(404)
+                .send("Expert is not found");
+            return;
+        }
 
-        if (notPresentedLogins.length > 0) {
+        const isExpert = Boolean(expert.roles.find((role) => role.name === UserRole.EXPERT));
+        if (!isExpert) {
             response
                 .status(400)
-                .send(`These experts are not participants: ${notPresentedLogins}`);
-            return; 
+                .send(`User with login '${expertLogin} is not an expert'`);
+            return;
         }
 
-        // сначала удаляем пользователей, потом добавляем
-        markup.experts = markup.experts.filter(({ login }) => !toRemove.includes(login));
-        markup.experts = toAdd
-            .map(
-                (login) => users.find((user) => user.login === login)
-            )
-            .concat(markup.experts);
+        markup.experts.push(expert);
 
         try {
             await validateOrReject(markup, { validationError: { target: false, value: false } });
@@ -179,7 +126,6 @@ export async function getResult(
     try {
         const manager = getManager();
 
-        const login: string = response.locals.login;
         const markupId: string = request.params.markupId;
         // в какой формат сконвертировать результат
         const resultExt = request.query.ext || "json";
@@ -197,7 +143,7 @@ export async function getResult(
             return;
         }
 
-        if(markup.dataset.user.login !== login) {
+        if(markup.dataset.user.login !== response.locals.login) {
             response
                 .status(403)
                 .send("This user is not an author of the markup");
