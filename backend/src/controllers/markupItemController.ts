@@ -1,53 +1,47 @@
 import { validateOrReject } from "class-validator";
-import express, { Request, Response } from "express";
+import {
+    JsonController,
+    Get,
+    CurrentUser,
+    Body,
+    Post,
+    Authorized,
+    Param,
+    BadRequestError,
+    ForbiddenError,
+    OnUndefined
+} from "routing-controllers";
 import { getManager } from "typeorm";
 import { Appointment } from "../entity/Appointment";
 import { DatasetItem } from "../entity/DatasetItem";
 import { Markup } from "../entity/Markup";
 import { MarkupItem } from "../entity/MarkupItem";
 import { User } from "../entity/User";
+import { UserRole } from "../enums/appEnums";
 import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
 
-/**
- * Получение экспертом объекта для разметки
- */
-export type GetMarkupItemRequestBody = null;
-export type GetMarkupItemResponseBody = MarkupItemData | string
-type GetMarkupItemParams = { markupId: string };
-
-export async function get(
-    request: Request<GetMarkupItemParams, GetMarkupItemResponseBody, GetMarkupItemRequestBody>,
-    response: Response<GetMarkupItemResponseBody>,
-    next: express.NextFunction
-) {
-    try {
+@JsonController("/api/markup/:markupId/item")
+export default class MarkupItemController {
+    @Get("/")
+    @Authorized(UserRole.EXPERT)
+    async getNextItem(
+        @Param("markupId") markupId: string,
+        @CurrentUser({ required: true }) user: User
+    ): Promise<MarkupItemData|null> {
         const manager = getManager();
 
-        const { markupId } = request.params;
-        const { login } = response.locals;
+        const markup = await manager.findOne(Markup, markupId, {
+            relations: ["experts", "dataset"]
+        });
 
-        const user = await manager.findOne(User, { login });
-        if (!user) {
-            response
-                .status(400)
-                .send(`User with login '${login}' doesn't exist}`);
-            return;
-        }
-
-        const markup = await manager.findOne(Markup, { id: markupId }, { relations: ["experts", "dataset"] });
         if (!markup) {
-            response
-                .status(400)
-                .send(`Markup with id '${markupId}' doesn't exist}`);
-            return;
+            // 404 предназначается для случая, когда у пользователя нет назначения
+            throw new BadRequestError(`Markup with id '${markupId}' doesn't exist}`);
         }
 
         const isParticipant = markup.experts.some(({ id }) => user.id === id);
         if (!isParticipant) {
-            response
-                .status(403)
-                .send(`User is not an expert in this markup`);
-            return;
+            throw new ForbiddenError(`User is not an expert in this markup`);
         }
 
         // ищем следующий объект в назначениях
@@ -116,59 +110,36 @@ export async function get(
 
             const datasetItem = await datasetItemSubQb.getOne();
 
-            if (datasetItem) {
-                appointment.datasetItem = datasetItem;
-                await manager.save(appointment);
+            if (!datasetItem) {
+                return null;
             }
-            else {
-                response.sendStatus(404);
-                return;
-            }
+            
+            appointment.datasetItem = datasetItem;
+            await manager.save(appointment);
         }
 
-        const dataToSend: MarkupItemData = {
+        return {
             imageSrc: appointment.datasetItem.location
         };
-    
-        response
-            .status(200)
-            .send(dataToSend);
     }
-    catch(err) {
-        next(err);
-    }
-};
 
-export type PostMarkupItemResultRequestBody = { result: MarkupItemResult };
-export type PostMarkupItemResultResponseBody = string;
-type PostMarkupItemResultParams = { markupId: string };
-
-export async function post(
-    request: Request<PostMarkupItemResultParams, PostMarkupItemResultResponseBody, PostMarkupItemResultRequestBody>,
-    response: Response<PostMarkupItemResultResponseBody>,
-    next: express.NextFunction
-) {
-    try {
+    @Post("/")
+    @OnUndefined(200)
+    @Authorized(UserRole.EXPERT)
+    async post(
+        @Param("markupId") markupId: string,
+        @Body() body: { result: MarkupItemResult },
+        @CurrentUser({ required: true }) user: User
+    ) {
         const manager = getManager();
+        const { result } = body;
 
-        const { markupId } = request.params;
-        const { login } = response.locals;
-        const { result } = request.body;
+        const markup = await manager.findOne(Markup, markupId, {
+            relations: ["items"]
+        });
 
-        const user = await manager.findOne(User, { login });
-        if (!user) {
-            response
-                .status(400)
-                .send(`User with login '${login}' doesn't exist}`);
-            return;
-        }
-
-        const markup = await manager.findOne(Markup, { id: markupId }, { relations: ["items"] });
         if (!markup) {
-            response
-                .status(400)
-                .send(`Markup with id '${markupId}' doesn't exist}`);
-            return;
+            return null;
         }
 
         // ищем следующий объект в назначениях
@@ -181,10 +152,7 @@ export async function post(
         });
 
         if (!appointment) {
-            response
-                .status(404)
-                .send("Appointment for the user is not found");
-            return;
+            return null;
         }
 
         const markupItem = new MarkupItem();
@@ -199,23 +167,20 @@ export async function post(
             await validateOrReject(markupItem, { validationError: { target: false } });
         }
         catch(errors) {
-            response
-                .status(400)
-                .send(errors);
-            return;
+            throw new BadRequestError(JSON.stringify(errors));
         }
 
-        await manager.transaction(
-            async (transactionManager) => {
-                await transactionManager.save(markup);
-                await transactionManager.save(markupItem);
-                await transactionManager.remove(appointment);
-            }
-        );
-
-        response.sendStatus(200);
-    }
-    catch(err) {
-        next(err);
+        try {
+            await manager.transaction(
+                async (transactionManager) => {
+                    await transactionManager.save(markup);
+                    await transactionManager.save(markupItem);
+                    await transactionManager.remove(appointment);
+                }
+            );
+        }
+        catch(err) {
+            throw new BadRequestError(err);
+        }
     }
 }
