@@ -27,6 +27,8 @@ createConnection()
 const app = express()
     // чтобы работать с телом запроса
     .use(express.json())
+    // чтоб работать с параметрами запроса
+    .use(express.urlencoded({ extended: false }))
     // чтобы работать с куки ответа
     .use(cookieParser())
     // раздаем картинки

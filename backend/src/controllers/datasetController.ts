@@ -11,7 +11,7 @@ import {
     Authorized,
     UseBefore,
     UseAfter,
-    BadRequestError, Req, OnUndefined, QueryParam, Get, Param, ForbiddenError, Body
+    BadRequestError, Req, OnUndefined, QueryParam, Get, Param, ForbiddenError, Body, HeaderParam
 } from "routing-controllers";
 import { FOLDER_FOR_DATASETS } from "../constants";
 import { User } from "../entity/User";
@@ -24,20 +24,6 @@ import validateAllOrReject from "../utils/validateAllOrReject";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
 import { Markup } from "../entity/Markup";
-
-async function validateUploadRequest(
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-) {
-    const datasetName = req.query.name;
-    if (!datasetName || datasetName === "") {
-        res.status(400).send("Dataset name must be specified");
-        return;
-    }
-
-    next();
-}
 
 async function handleInterruption(
     req: express.Request,
@@ -114,23 +100,26 @@ export default class DatasetController {
     @OnUndefined(200)
     @UseBefore(saveFileStream)
     @UseBefore(handleInterruption)
-    @UseBefore(validateUploadRequest)
     @UseAfter(handleErrors)
     @Authorized(UserRole.CUSTOMER)
     async upload(
         @Req() request: express.Request,
         @Res() response: express.Response,
-        @CurrentUser({ required: true }) user: User,
-        @QueryParam("name", { required: true }) datasetName: string
+        @CurrentUser({ required: true }) user: User
     ) {
         const manager = getManager();
         user = await manager.findOneOrFail(User, user.id, { relations: ["datasets"] });
     
         const datasetPath = response.locals.dirPath;
+        const datasetName = request.body["Dataset-Name"];
+
+        if (!datasetName || datasetName === "") {
+            throw new BadRequestError("Dataset name must be specified");
+        }
 
         const dataset = new Dataset();
-        dataset.name = datasetName;
         dataset.user = user;
+        dataset.name = datasetName;
         dataset.location = datasetPath;
         dataset.items = [];
     

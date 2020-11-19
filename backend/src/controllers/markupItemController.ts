@@ -80,14 +80,14 @@ export default class MarkupItemController {
                 .createQueryBuilder()
                 .select("di")
                 .from(DatasetItem, "di")
-                .where('di."datasetId" = :datasetId')
+                .where('di.datasetId = :datasetId')
                 .andWhere(
                     (qb) => {
                         const subQuery = qb
                             .subQuery()
-                            .select('app."datasetItemId"')
+                            .select('app.datasetItemId')
                             .from(Appointment, "app")
-                            .where('app."markupId" = :markupId')
+                            .where('app.markupId = :markupId')
                             .getQuery();
                     
                         return `di.id NOT IN ${subQuery}`;
@@ -97,9 +97,9 @@ export default class MarkupItemController {
                     (qb) => {
                         const subQuery = qb
                             .subQuery()
-                            .select('item."datasetItemId"')
+                            .select('item.datasetItemId')
                             .from(MarkupItem, "item")
-                            .where('item."markupId" = :markupId')
+                            .where('item.markupId = :markupId')
                             .getQuery();
 
                         return `di.id NOT IN ${subQuery}`;
