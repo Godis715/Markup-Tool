@@ -1,71 +1,127 @@
 import axios from "axios";
-import commander from "commander";
-import { prompt } from "inquirer";
+import inquirer, { prompt } from "inquirer";
 import { uploadDataset } from "./upload";
+import fs from "fs";
 import path from "path";
+import cliProgress from "cli-progress";
 
 const DEFAULT_HOST = "localhost";
-const DEFAULT_PORT = 8000;
+const DEFAULT_PORT = "8000";
 
-commander
-    .version("1.0.0")
-    .description("CLI administration panel.");
+const baseURL = `http://${DEFAULT_HOST}:${DEFAULT_PORT}/api`;
+const axiosInst = axios.create({ baseURL });
 
-commander
-    .command("upload-dataset [name] [path]")
-    .description("Uploading dataset into the service")
-    .option("-h, --host <string>", `Host name, default '${DEFAULT_HOST}'`, DEFAULT_HOST)
-    .option("-p, --port <number>", `Port, default '${DEFAULT_PORT}'`, DEFAULT_PORT.toString())
-    .action(
-        async (name, dirPath, cmdObj) => {
-            try {
-                const { login, password } = await prompt([
+(async () => {
+    try {
+        const { action } = await inquirer.prompt([
+            {
+                name: "action",
+                message: "Выберите действие",
+                type: "list",
+                choices: [
                     {
-                        type: "login",
-                        message: "Enter a login",
-                        name: "login"
+                        name: "Загрузить датасет",
+                        value: "uploadDataset"
+                    }
+                ]
+            }
+        ]);
+    
+        switch(action) {
+            case "uploadDataset": {
+                const { datasetPath, datasetName } = await inquirer.prompt([
+                    {
+                        name: "datasetPath",
+                        message: "Укажите путь к папке с датасетом",
+                        validate: (path) => {
+                            if (!fs.existsSync(path)) {
+                                return "Указанного пути не существует";
+                            }
+                            
+                            if(!fs.lstatSync(path).isDirectory()) {
+                                return "Указанный путь не является папкой";
+                            }
+    
+                            if (fs.readdirSync(path).length === 0) {
+                                return "Папка пуста";
+                            }
+    
+                            return true;
+                        }
                     },
                     {
-                        type: "password",
-                        mask: "*",
-                        message: "Enter a password",
-                        name: "password"
+                        name: "datasetName",
+                        message: "Укажите название датасета",
+                        validate: (name) => {
+                            if (name === "") {
+                                return "Название датасета не должно быть пустым";
+                            }
+    
+                            return true;
+                        }
                     }
                 ]);
-
-                const baseURL = `http://${cmdObj.host}:${cmdObj.port}/api`;
-                console.log(`Service's API URL: ${baseURL}`);
-                const absDirPath = path.resolve(dirPath);
-                console.log(`Absolute path to dataset: ${absDirPath}`);
-                console.log(`Dataset name: ${name}`);
-
-                const axiosInst = axios.create({ baseURL });
     
-                const response = await axiosInst.post("/auth/login", { login, password });
-                const setCookies = response.headers["set-cookie"];
-            
+                let tokens;
+                let setCookies;
+                while(true) {
+                    const { login, password } = await prompt([
+                        {
+                            type: "login",
+                            message: "Введите свой логин",
+                            name: "login"
+                        },
+                        {
+                            type: "password",
+                            mask: "*",
+                            message: "Введите пароль",
+                            name: "password"
+                        }
+                    ]);
+    
+                    try {
+                        const response = await axiosInst.post("/auth/login", { login, password });
+                        tokens = response.data.tokens;
+                        setCookies = response.headers["set-cookie"];
+                        break;
+                    }
+                    catch(err) {
+                        if (err.message) {
+                            console.error(err.message);
+                        }
+                        else {
+                            console.error(err);
+                        }
+                    }
+                }
+
+                const progressBar = new cliProgress.SingleBar({ stopOnComplete: true }, cliProgress.Presets.shades_classic);
+                progressBar.start(1, 0);
+
+                const handleProgress = (currentProgress: number) => {
+                    progressBar.update(currentProgress);
+                }
+
                 await uploadDataset(
-                    absDirPath,
-                    name,
+                    path.resolve(datasetPath),
+                    datasetName,
                     {
                         "Cookie": setCookies,
-                        "Csrf-Access-Token": response.data.tokens.csrfAccessToken
+                        "Csrf-Access-Token": tokens.csrfAccessToken
                     },
-                    cmdObj.host,
-                    cmdObj.port
+                    DEFAULT_HOST,
+                    DEFAULT_PORT,
+                    handleProgress
                 );
-
-                console.log(`Dataset '${name}' have been successfully uploaded.`);
-            }
-            catch(err) {
-                if (err.message) {
-                    console.error(err.message);
-                }
-                else {
-                    console.error("Unknown error occured");
-                }
+    
+                console.log(`Датасет '${datasetName}' был успешно загружен.`);
             }
         }
-    );
-
-commander.parse(process.argv);
+    }
+    catch(err) {
+        console.error("Произошла неизвестная ошибка");
+        if (err.message) {
+            console.error(err.message);
+        }
+    }
+})();
