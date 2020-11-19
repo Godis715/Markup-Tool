@@ -8,7 +8,6 @@ import {
     Redirect,
     RouteComponentProps
 } from "react-router-dom";
-import "./App.css";
 import { setUnauthorizedListener } from "../../remote/api";
 import DatasetExplorerPage from "../DatasetExplorerPage/DatasetExplorerPage";
 import DatasetPage from "../DatasetPage/DatasetPage";
@@ -20,6 +19,9 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import MarkupConfigPage from "../MarkupConfigPage/MarkupConfigPage";
 import MainPage from "../ManPage/MainPage";
+import FAQPage from "../FAQPage/FAQPage";
+
+import "./App.scss";
 
 enum AuthState {
     LOADING,
@@ -111,68 +113,66 @@ function App(): JSX.Element {
                     }
                     {
                         auth === AuthState.IS_AUTHENTICATED &&
-                        <>
+                        <Switch>
+                            <Route exact path="/">
+                                <Redirect to="/faq/about" />
+                            </Route>
+
+                            <Route path="/faq">
+                                <FAQPage />
+                            </Route>
                             {
                                 roles.includes(UserRole.CUSTOMER) &&
-                                <Switch>
-                                    <Route exact path="/">
-                                        <MainPage />
-                                    </Route>
-                                    <Route exact path="/dataset">
-                                        <DatasetExplorerPage />
-                                    </Route>
-
-                                    <Route exact path="/dataset/:datasetId">
-                                        {
-                                            (props: RouteComponentProps<{ datasetId: string }>) =>
-                                                <DatasetPage
-                                                    datasetId={props.match.params.datasetId}
-                                                />
-                                        }
-                                    </Route>
-
-                                    <Route exact path="/dataset/:datasetId/markup/:markupId">
-                                        {
-                                            (props: RouteComponentProps<{ datasetId: string, markupId: string }>) =>
-                                                <MarkupConfigPage
-                                                    datasetId={props.match.params.datasetId}
-                                                    markupId={props.match.params.markupId}
-                                                />
-                                        }
-                                    </Route>
-
-                                    <Route exact path="*">
-                                        <Redirect to="/" />
-                                    </Route>
-                                </Switch>
+                                <Route exact path="/dataset">
+                                    <DatasetExplorerPage />
+                                </Route>
+                            }
+                            {
+                                roles.includes(UserRole.CUSTOMER) &&
+                                <Route exact path="/dataset/:datasetId">
+                                    {
+                                        (props: RouteComponentProps<{ datasetId: string }>) =>
+                                            <DatasetPage
+                                                datasetId={props.match.params.datasetId}
+                                            />
+                                    }
+                                </Route>
+                            }
+                            {
+                                roles.includes(UserRole.CUSTOMER) &&
+                                <Route exact path="/dataset/:datasetId/markup/:markupId">
+                                    {
+                                        (props: RouteComponentProps<{ datasetId: string, markupId: string }>) =>
+                                            <MarkupConfigPage
+                                                datasetId={props.match.params.datasetId}
+                                                markupId={props.match.params.markupId}
+                                            />
+                                    }
+                                </Route>
                             }
                             {
                                 roles.includes(UserRole.EXPERT) &&
-                                <Switch>
-                                    <Route exact path="/">
-                                        <MainPage />
-                                    </Route>
-
-                                    <Route exact path="/markup">
-                                        <MarkupExplorerPage />
-                                    </Route>
-
-                                    <Route exact path="/markup/:markupId">
-                                        {
-                                            (props: RouteComponentProps<{ markupId: string }>) =>
-                                                <MarkupPage
-                                                    markupId={props.match.params.markupId}
-                                                />
-                                        }
-                                    </Route>
-
-                                    <Route exact path="*">
-                                        <Redirect to="/" />
-                                    </Route>
-                                </Switch>
+                                <Route exact path="/markup">
+                                    <MarkupExplorerPage />
+                                </Route>
                             }
-                        </>
+                            {
+                                roles.includes(UserRole.EXPERT) &&
+                                <Route exact path="/markup/:markupId">
+                                    {
+                                        (props: RouteComponentProps<{ markupId: string }>) =>
+                                            <MarkupPage
+                                                markupId={props.match.params.markupId}
+                                            />
+                                    }
+                                </Route>
+                            }
+                            <Route exact path="*">
+                                <Redirect to="/faq/about" />
+                            </Route>
+                        </Switch>
                     }
+
                 </Col>
             </Row>
         </Container>
