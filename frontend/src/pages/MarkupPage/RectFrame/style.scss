@@ -1,0 +1,45 @@
+.rect-frame {
+    $border-size: 2px;
+    $neg-border-size: calc(-#{$border-size});
+
+    position: absolute;
+    border: $border-size solid black;
+    box-sizing: border-box;
+
+    &::before {
+        position: absolute;
+        content: "";
+        top: $neg-border-size;
+        left: $neg-border-size;
+        bottom: $neg-border-size;
+        right: $neg-border-size;
+        border: $border-size dashed rgb(255, 200, 97);
+    }
+
+    &__remove-btn {
+        position: absolute;
+        right: $neg-border-size;
+        content: "";
+        $size: 16px;
+        width: $size;
+        height: $size;
+        top: calc(-#{$size} - #{$border-size});
+        background-color: rgb(255, 200, 97);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 999;
+
+        &::after {
+            content: "";
+            display: block;
+            $size: 12px;
+            height: $size;
+            width: $size;
+            background-size: $size;
+            background-image: url(https://www.flaticon.com/svg/static/icons/svg/59/59836.svg);
+            background-repeat: no-repeat;
+        }
+    }
+}

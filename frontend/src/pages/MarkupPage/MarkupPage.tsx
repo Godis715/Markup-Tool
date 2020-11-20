@@ -12,6 +12,7 @@ import { ClassificationConfig } from "../../../../backend/src/types/markup";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 import "./style.scss";
+import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {

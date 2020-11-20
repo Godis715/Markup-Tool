@@ -1,10 +1,9 @@
 import React, { ReactElement, useEffect, useReducer, useRef } from "react";
-import { RecognitionItemResult } from "../../../types/markupItem";
-import Button from "react-bootstrap/Button";
-import "./style.scss";
 import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
+import { MultiRecognitionItemResult, RecognitionItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
-import RectFrameOuterFilter from "../RectFrameOuterFilter/RectFrameOuterFilter";
+import "./style.scss";
 
 type Props = {
     imageSrc: string,
@@ -21,8 +20,8 @@ type Rect = {
 }
 
 type State = {
-    rect: Rect | null,
-    isDrawing: boolean
+    drawingRect: Rect | null,
+    rects: Rect[]
 }
 
 type Action = {
@@ -34,34 +33,58 @@ type Action = {
 } | {
     type: "FINISH_DRAWING"
 } | {
+    type: "RESET_DRAWING"
+} | {
     type: "RESET_STATE"
+} | {
+    type: "REMOVE_RECT",
+    index: number
 }
 
-function reducer(state: State, action: Action) {
+function reducer(state: State, action: Action): State {
     switch(action.type) {
         case "START_DRAWING": {
             return {
                 ...state,
-                rect: action.rect,
-                isDrawing: true
+                drawingRect: action.rect
             };
         }
         case "DRAW_RECT": {
             return {
                 ...state,
-                rect: action.rect
+                drawingRect: action.rect
             };
         }
         case "FINISH_DRAWING": {
+            if (!state.drawingRect) {
+                return state;
+            }
+
             return {
                 ...state,
-                isDrawing: false
+                rects: state.rects.concat(state.drawingRect),
+                drawingRect: null
+            };
+        }
+        case "RESET_DRAWING": {
+            return {
+                ...state,
+                drawingRect: null
+            };
+        }
+        case "REMOVE_RECT": {
+            return {
+                ...state,
+                rects: [
+                    ...state.rects.slice(0, action.index),
+                    ...state.rects.slice(action.index + 1)
+                ]
             };
         }
         case "RESET_STATE": {
             return {
-                rect: null,
-                isDrawing: false
+                drawingRect: null,
+                rects: []
             };
         }
         default: {
@@ -70,13 +93,31 @@ function reducer(state: State, action: Action) {
     }
 }
 
-export default function RecognitionTool(props: Props): ReactElement {
-    const [state, dispatch] = useReducer(reducer, {
-        rect: null,
-        isDrawing: false
-    });
+function squareDistToRectBorder(rect: Rect, point: { x: number, y: number }): number {
+    let dist = Infinity;
+    if (rect.y1 <= point.y && point.y <= rect.y2) {
+        dist = Math.min((rect.x1 - point.x) ** 2, (rect.x2 - point.x) ** 2);
+    }
+    
+    if (rect.x1 <= point.x && point.x <= rect.x2) {
+        dist = Math.min(dist, (rect.y1 - point.y) ** 2, (rect.y2 - point.y) ** 2);
+    }
 
-    const { rect, isDrawing } = state;
+    [[rect.x1, rect.y1], [rect.x1, rect.y2], [rect.x2, rect.y1], [rect.x2, rect.y2]].forEach(
+        ([x, y]) => {
+            dist = Math.min(dist, (x - point.x) ** 2 + (y - point.y) ** 2);
+        }
+    )
+
+    return dist;
+}
+
+
+export default function MultiRecognitionTool(props: Props): ReactElement {
+    const [{ rects, drawingRect }, dispatch] = useReducer(reducer, {
+        drawingRect: null,
+        rects: []
+    });
 
     const workspaceRef = useRef<HTMLDivElement>(null);
 
@@ -101,16 +142,16 @@ export default function RecognitionTool(props: Props): ReactElement {
     };
 
     const onMouseUp = () => {
-        if (rect && rect.x1 !== rect.x2 && rect.y1 !== rect.y2) {
+        if (drawingRect && drawingRect.x1 !== drawingRect.x2 && drawingRect.y1 !== drawingRect.y2) {
             dispatch({ type: "FINISH_DRAWING" });
         }
         else {
-            dispatch({ type: "RESET_STATE" });
+            dispatch({ type: "RESET_DRAWING" });
         }
     };
 
     const onMouseMove = (ev: Event) => {
-        if (!isDrawing || !rect || !workspaceRef.current) {
+        if (!drawingRect || !workspaceRef.current) {
             return;
         }
 
@@ -123,16 +164,12 @@ export default function RecognitionTool(props: Props): ReactElement {
         dispatch({
             type: "DRAW_RECT",
             rect: {
-                ...rect,
+                ...drawingRect,
                 x2: x,
                 y2: y
             }
         });
     };
-
-    const onRemoveRect = () => {
-        dispatch({ type: "RESET_STATE" });
-    }
 
     useEffect(() => {
         document.addEventListener("mousemove", onMouseMove);
@@ -145,47 +182,63 @@ export default function RecognitionTool(props: Props): ReactElement {
     }, [onMouseMove, onMouseUp]);
 
     const onSubmitClick = () => {
-        if (!rect) {
-            return;
-        }
-
-        props.onSubmit(rect);
+        props.onSubmit({
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 0
+        });
         dispatch({ type: "RESET_STATE" });
     };
 
-    return <div className="recognition-tool">
+    return <div className="multi-recognition-tool">
         <Card.Text>{props.description}</Card.Text>
         <Card.Text>Выделите &quot;{props.objectToFind}&quot;</Card.Text>
         <div
             ref={workspaceRef}
-            className="recognition-tool__workspace overlay"
+            className="multi-recognition-tool__workspace overlay"
             onMouseDown={onMouseDown}
         >
-            {/*src={props.imageSrc}*/}
-            <img src="https://i.insider.com/5eec1603f0f41958496c8176?width=1100&amp;format=jpeg&amp;auto=webp" />
+            <img src={"https://img3.stockfresh.com/files/k/kurhan/m/58/385167_stock-photo-business-people.jpg"} />
             {
-                rect &&
+                drawingRect &&
                 <RectFrame
-                    rect={rect}
+                    rect={drawingRect}
                     className="overlay__layer"
-                    onClose={!isDrawing ? onRemoveRect : undefined}
                 />
             }
             {
+                rects.map(
+                    (r, i) => <RectFrame
+                        rect={r}
+                        className="overlay__layer"
+                        onClose={() => {
+                            dispatch({
+                                type: "REMOVE_RECT",
+                                index: i
+                            });
+                        }}
+                    />
+                )
+            }
+            {/*
                 !isDrawing && rect &&
                 <RectFrameOuterFilter
-                    rect={rect}
-                    filter={"invert(30%)"}
+                    left={left}
+                    top={top}
+                    width={width}
+                    height={height}
+                    filter={"blur(10px)"}
                     className="overlay__layer"
                 />
-            }
+            */}
         </div>
         <Button
             onClick={onSubmitClick}
-            disabled={!rect}
             className="mt-2"
         >
             Отправить
         </Button>
     </div>;
 }
+
