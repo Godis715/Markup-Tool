@@ -1,13 +1,13 @@
 import React, { ReactElement, useEffect, useReducer, useRef } from "react";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-import { MultiRecognitionItemResult, RecognitionItemResult } from "../../../types/markupItem";
+import { MultiRecognitionItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
 import "./style.scss";
 
 type Props = {
     imageSrc: string,
-    onSubmit: (result: RecognitionItemResult) => void,
+    onSubmit: (result: MultiRecognitionItemResult) => void,
     objectToFind: string,
     description: string
 };
@@ -93,12 +93,12 @@ function reducer(state: State, action: Action): State {
     }
 }
 
-function squareDistToRectBorder(rect: Rect, point: { x: number, y: number }): number {
+/* function squareDistToRectBorder(rect: Rect, point: { x: number, y: number }): number {
     let dist = Infinity;
     if (rect.y1 <= point.y && point.y <= rect.y2) {
         dist = Math.min((rect.x1 - point.x) ** 2, (rect.x2 - point.x) ** 2);
     }
-    
+
     if (rect.x1 <= point.x && point.x <= rect.x2) {
         dist = Math.min(dist, (rect.y1 - point.y) ** 2, (rect.y2 - point.y) ** 2);
     }
@@ -110,8 +110,7 @@ function squareDistToRectBorder(rect: Rect, point: { x: number, y: number }): nu
     )
 
     return dist;
-}
-
+} */
 
 export default function MultiRecognitionTool(props: Props): ReactElement {
     const [{ rects, drawingRect }, dispatch] = useReducer(reducer, {
@@ -177,18 +176,20 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
 
         return () => {
             document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp)
-        }
+            document.removeEventListener("mouseup", onMouseUp);
+        };
     }, [onMouseMove, onMouseUp]);
 
     const onSubmitClick = () => {
         props.onSubmit({
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 0
+            status: "SUCCESS",
+            rectangles: rects
         });
         dispatch({ type: "RESET_STATE" });
+    };
+
+    const onCannotFindClick = () => {
+        props.onSubmit({ status: "CANNOT_DETECT_OBJECT" });
     };
 
     return <div className="multi-recognition-tool">
@@ -199,7 +200,7 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
             className="multi-recognition-tool__workspace overlay"
             onMouseDown={onMouseDown}
         >
-            <img src={"https://img3.stockfresh.com/files/k/kurhan/m/58/385167_stock-photo-business-people.jpg"} />
+            <img src={props.imageSrc} />
             {
                 drawingRect &&
                 <RectFrame
@@ -233,12 +234,20 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
                 />
             */}
         </div>
-        <Button
-            onClick={onSubmitClick}
-            className="mt-2"
-        >
-            Отправить
-        </Button>
+        <div className="mt-2">
+            <Button
+                onClick={onSubmitClick}
+            >
+                Отправить
+            </Button>
+            <Button
+                className="ml-1"
+                variant="outline-danger"
+                onClick={onCannotFindClick}
+            >
+                Объекты отсутствуют
+            </Button>
+        </div>
     </div>;
 }
 

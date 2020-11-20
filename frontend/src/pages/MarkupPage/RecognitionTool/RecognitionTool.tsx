@@ -132,7 +132,7 @@ export default function RecognitionTool(props: Props): ReactElement {
 
     const onRemoveRect = () => {
         dispatch({ type: "RESET_STATE" });
-    }
+    };
 
     useEffect(() => {
         document.addEventListener("mousemove", onMouseMove);
@@ -140,8 +140,8 @@ export default function RecognitionTool(props: Props): ReactElement {
 
         return () => {
             document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp)
-        }
+            document.removeEventListener("mouseup", onMouseUp);
+        };
     }, [onMouseMove, onMouseUp]);
 
     const onSubmitClick = () => {
@@ -149,8 +149,15 @@ export default function RecognitionTool(props: Props): ReactElement {
             return;
         }
 
-        props.onSubmit(rect);
+        props.onSubmit({
+            status: "SUCCESS",
+            rectangle: rect
+        });
         dispatch({ type: "RESET_STATE" });
+    };
+
+    const onCannotFindClick = () => {
+        props.onSubmit({ status: "CANNOT_DETECT_OBJECT" });
     };
 
     return <div className="recognition-tool">
@@ -161,8 +168,7 @@ export default function RecognitionTool(props: Props): ReactElement {
             className="recognition-tool__workspace overlay"
             onMouseDown={onMouseDown}
         >
-            {/*src={props.imageSrc}*/}
-            <img src="https://i.insider.com/5eec1603f0f41958496c8176?width=1100&amp;format=jpeg&amp;auto=webp" />
+            <img src={props.imageSrc} />
             {
                 rect &&
                 <RectFrame
@@ -180,12 +186,19 @@ export default function RecognitionTool(props: Props): ReactElement {
                 />
             }
         </div>
-        <Button
-            onClick={onSubmitClick}
-            disabled={!rect}
-            className="mt-2"
-        >
-            Отправить
-        </Button>
+        <div className="mt-2">
+            <Button
+                onClick={onSubmitClick}
+            >
+                Отправить
+            </Button>
+            <Button
+                className="ml-1"
+                variant="outline-danger"
+                onClick={onCannotFindClick}
+            >
+                Объект отсутствует
+            </Button>
+        </div>
     </div>;
 }

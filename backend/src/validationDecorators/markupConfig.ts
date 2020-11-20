@@ -10,7 +10,7 @@ import { MarkupTypeEnum } from '../enums/appEnums';
 import { Markup } from '../entity/Markup';
 
 // JSON-схемы для параметров разметки различных типов
-const schemas = {
+const schemas: { [T in MarkupTypeEnum]: object } = {
     [MarkupTypeEnum.CLASSIFICATION]: {
         type: "array",
         uniqueItems: true,
@@ -23,6 +23,14 @@ const schemas = {
         type: "object",
         properties: {
             // название объекта, который нужно найти на изображении
+            objectToRecognize: {
+                type: "string"
+            }
+        }
+    },
+    [MarkupTypeEnum.MULTI_RECOGNITION]: {
+        type: "object",
+        properties: {
             objectToRecognize: {
                 type: "string"
             }

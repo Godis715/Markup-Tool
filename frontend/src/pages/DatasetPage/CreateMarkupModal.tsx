@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import Alert from "react-bootstrap/Alert";
 import { ValueType } from "react-select";
 import { MarkupConfig, MarkupType } from "../../types/markup";
+import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 
 type Props = {
     show: boolean,
@@ -15,7 +16,8 @@ type Props = {
 
 enum MarkupTypeEnum {
     CLASSIFICATION = "classification",
-    RECOGNITION = "recognition"
+    RECOGNITION = "recognition",
+    MULTI_RECOGNITION = "multi-recognition"
 }
 
 type Option = {
@@ -92,11 +94,13 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
                 <Form.Group>
                     <Form.Label>Тип разметки</Form.Label>
                     <Form.Control as="select" value={markupType} onChange={onMarkupTypeChange}>
-                        <option value={MarkupTypeEnum.CLASSIFICATION}>Классификация</option>
-                        <option value={MarkupTypeEnum.RECOGNITION}>Распознавание</option>
+                        {
+                            Object.values(MarkupTypeEnum).map(
+                                (type) => <option value={type} key={type}>{MARKUP_TYPE_LITERALS[type]}</option>
+                            )
+                        }
                     </Form.Control>
                 </Form.Group>
-
                 {
                     markupType === MarkupTypeEnum.CLASSIFICATION &&
                     <Alert variant="secondary">
@@ -106,7 +110,15 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
                 {
                     markupType === MarkupTypeEnum.RECOGNITION &&
                     <Alert variant="secondary">
-                        При данном типе разметки эксперты должны выделить требуемый объект на изображении прямоугольной рамкой
+                        При данном типе разметки эксперты должны выделить требуемый объект на изображении прямоугольной рамкой,
+                        либо указать, что объект нельзя выделить
+                    </Alert>
+                }
+                {
+                    markupType === MarkupTypeEnum.MULTI_RECOGNITION &&
+                    <Alert variant="secondary">
+                        При данном типе разметки эксперты должны выделить все требуемые объекты на изображении, либо указать,
+                        что объекты выделить нельзя
                     </Alert>
                 }
 
@@ -140,7 +152,10 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
                     </Form.Group>
                 }
                 {
-                    markupType === MarkupTypeEnum.RECOGNITION &&
+                    (
+                        markupType === MarkupTypeEnum.MULTI_RECOGNITION ||
+                        markupType === MarkupTypeEnum.RECOGNITION
+                    ) &&
                     <Form.Group>
                         <Form.Label>Объект, который должен отметить эксперт</Form.Label>
                         <Form.Control
@@ -158,7 +173,8 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
                 onClick={onSubmit}
                 disabled={
                     (markupType === MarkupTypeEnum.CLASSIFICATION && options.length < 2) ||
-                    (markupType === MarkupTypeEnum.RECOGNITION && objectToFind === "")
+                    (markupType === MarkupTypeEnum.RECOGNITION && objectToFind === "") ||
+                    (markupType === MarkupTypeEnum.MULTI_RECOGNITION && objectToFind === "")
                 }
             >Создать</Button>
             <Button variant="secondary" onClick={props.onHide}>Отмена</Button>

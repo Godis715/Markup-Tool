@@ -5,9 +5,10 @@ import {
     ManyToOne,
     OneToMany,
     ManyToMany,
-    JoinTable, Unique, CreateDateColumn
+    JoinTable,
+    CreateDateColumn
 } from "typeorm";
-import { IsIn, ArrayUnique } from "class-validator";
+import { IsIn } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
