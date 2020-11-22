@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
@@ -26,19 +27,24 @@ export default function ClassificationTool(props: Props): JSX.Element {
         <Row>
             <Col>
                 <Card.Text>{props.description}</Card.Text>
-                <Card.Text>Изображение относится к классу:</Card.Text>
-                {
-                    props.classes.map(
-                        (className) => <Button
-                            key={className}
-                            onClick={() => onClassNameClick(className)}
-                            variant="light"
-                            className="mr-2 mb-2"
-                        >
-                            {className}
-                        </Button>
-                    )
-                }
+                <Card.Text>Выберите один из предложенных вариантов:</Card.Text>
+                <ButtonGroup className="mb-2">
+                    {
+                        props.classes.map(
+                            (className) => <Button
+                                key={className}
+                                onClick={() => {
+                                    onClassNameClick(className);
+                                }}
+                                variant="outline-primary"
+                                active={false}
+                            >
+                                {className}
+                            </Button>
+                        )
+                    }
+                </ButtonGroup>
+
             </Col>
         </Row>
         <Row>
