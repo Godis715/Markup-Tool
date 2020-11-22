@@ -1,8 +1,22 @@
 .markup-image-container {
     border: 1px solid lightgray;
     border-radius: 4px;
+    overflow-x: auto;
+    width: fit-content;
     img {
         // FIX ME: убрать это свойство
         height: 400px;
+    }
+}
+
+.overlay {
+    position: relative;
+
+    &__layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
     }
 }

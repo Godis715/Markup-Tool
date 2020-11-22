@@ -1,8 +1,15 @@
-export type MarkupType = "classification" | "recognition";
+export type MarkupType =
+    "classification" |
+    "recognition" |
+    "multi-recognition";
 
 export type ClassificationConfig = string[];
 export type RecognitionConfig = { objectToFind: string };
-export type MarkupConfig = ClassificationConfig | RecognitionConfig;
+export type MultiRecognitionConfig = { objectToFind: string };
+export type MarkupConfig =
+    ClassificationConfig |
+    RecognitionConfig |
+    MultiRecognitionConfig;
 
 type MarkupBase = {
     id: string,

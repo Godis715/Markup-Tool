@@ -1,0 +1,50 @@
+@import "~bootstrap/scss/bootstrap";
+
+.faq-page {
+    margin-bottom: 50vh;
+
+    h2 {
+        margin-bottom: 2rem;
+    }
+
+    h3 {
+        margin-bottom: 1.5rem;
+    }
+
+    h4 {
+        margin-bottom: 1.25rem;
+    }
+    
+    h5 {
+        margin-top: 1rem;
+    }
+
+    p {
+        margin-bottom: 1.25rem;
+    }
+
+    span.highlighted {
+        padding: 3.2px 6.4px;
+        background-color: $gray-200;
+        border-radius: 3px;
+    }
+
+    img {
+        margin: .5rem 0;
+    }
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    &::before {
+        background-image: url(/GitHub-Mark-32px.png);
+        height: 24px;
+        width: 24px;
+        background-size: 24px;
+        display: block;
+        content: "";
+        margin-right: 8px;
+    }
+}
+

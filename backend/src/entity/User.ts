@@ -29,6 +29,7 @@ export class User {
     @ArrayUniqueByProp("id", { message: "User must have unique roles" })
     roles: Role[];
 
+    // TODO: удалить это поле, а то оно не особо логично, ведь у экспертов его нет
     @OneToMany(() => Dataset, (dataset) => dataset.user)
     datasets: Dataset[];
 }

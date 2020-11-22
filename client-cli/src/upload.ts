@@ -9,7 +9,7 @@ function printTheSameLine(message: string){
     process.stdout.write(message);
 }
 
-export async function uploadDataset(dirPath: string, datasetName: string, requestHeaders, host: string, port: string) {
+export async function uploadDataset(dirPath: string, datasetName: string, requestHeaders, host: string, port: string, handleProgress: (progress: number) => void) {
     const files = fs.readdirSync(dirPath, { withFileTypes: true })
         .filter(
             (f) => f.isFile()
@@ -36,18 +36,15 @@ export async function uploadDataset(dirPath: string, datasetName: string, reques
         let len = 0;
         form.on("data", (data) => {
             len += data.length;
-            printTheSameLine(`written ${len} of ${length} bytes (${(len / length * 100).toFixed(2)}%)`);
+            handleProgress(len / length);
         });
-
-        // поставить в конце перенос строки
-        form.on("end", () => console.log());
     });
 
     const requestOptions = {
         hostname: host,
-        path: "/api/dataset",
+        path: `/api/dataset`,
         port,
-        headers: requestHeaders
+        headers: requestHeaders,
     };
 
     return new Promise((resolve, reject) => {

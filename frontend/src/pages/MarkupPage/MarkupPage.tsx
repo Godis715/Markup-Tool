@@ -1,17 +1,18 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMarkup, fetchNextMarkupItem, postMarkupItemResult } from "../../remote/api";
-import { MarkupForExpert, RecognitionConfig } from "../../types/markup";
+import { MarkupForExpert, MultiRecognitionConfig, RecognitionConfig } from "../../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
 import RecognitionTool from "./RecognitionTool/RecognitionTool";
-import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import { ClassificationConfig } from "../../../../backend/src/types/markup";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 import "./style.scss";
+import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
+import BitmapMaskTool from "./BitmapMaskTool/BitmapMaskTool";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -219,6 +220,15 @@ export default function MarkupPage(props: Props): JSX.Element {
                                 imageSrc={absImageSrc}
                                 onSubmit={onSendResult}
                                 objectToFind={(state.markup.config as RecognitionConfig).objectToFind}
+                                description={state.markup.description}
+                            />
+                        }
+                        {
+                            state.markup?.type === "multi-recognition" &&
+                            <MultiRecognitionTool
+                                imageSrc={absImageSrc}
+                                onSubmit={onSendResult}
+                                objectToFind={(state.markup.config as MultiRecognitionConfig).objectToFind}
                                 description={state.markup.description}
                             />
                         }

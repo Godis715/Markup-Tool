@@ -15,7 +15,7 @@ const coordSchema = {
 };
 
 // JSON-схемы для результатов разметки различных типов
-const schemas = {
+const schemas: { [T in MarkupTypeEnum]: object } = {
     /**
      * TODO:
      * можно сделать параметризованную схему -
@@ -29,15 +29,49 @@ const schemas = {
      * размера картинки
      */
     [MarkupTypeEnum.RECOGNITION]: {
-        type: "object",
-        additionalProperties: false,
-        required: ["x1", "y1", "x2", "y2"],
         properties: {
-            x1: coordSchema,
-            y1: coordSchema,
-            x2: coordSchema,
-            y2: coordSchema
-        }
+            status: {
+                type: "string",
+                enum: ["SUCCESS", "CANNOT_DETECT_OBJECT"]
+            },
+            rectangle: {
+                type: "object",
+                required: ["x1", "y1", "x2", "y2"],
+                properties: {
+                    x1: coordSchema,
+                    y1: coordSchema,
+                    x2: coordSchema,
+                    y2: coordSchema
+                },
+                additionalProperties: false
+            }
+        },
+        additionalProperties: false
+    },
+
+    [MarkupTypeEnum.MULTI_RECOGNITION]: {
+        properties: {
+            status: {
+                type: "string",
+                enum: ["SUCCESS", "CANNOT_DETECT_OBJECT"]
+            },
+            rectangles: {
+                type: "array",
+                minItems: 1,
+                items: {
+                    type: "object",
+                    required: ["x1", "y1", "x2", "y2"],
+                    properties: {
+                        x1: coordSchema,
+                        y1: coordSchema,
+                        x2: coordSchema,
+                        y2: coordSchema
+                    },
+                    additionalProperties: false
+                }
+            }
+        },
+        additionalProperties: false
     }
 };
 

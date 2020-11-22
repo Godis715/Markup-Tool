@@ -72,9 +72,7 @@ export default function DatasetExplorerPage(): JSX.Element {
             </Breadcrumb.Item>
         </Breadcrumb>
         <h2 className="mt-4">Датасеты</h2>
-        <Alert variant="secondary">
-            Для загрузки датасетов используйте <a href="https://github.com/Godis715/Markup-Tool/tree/main/client-cli">интерфейс командной строки</a>
-        </Alert>
+        {/** TODO: добавить возможность искать датасет по названию, навигацию по страницам */}
         <ListGroup className="mt-3">
             {
                 state.datasets.map(
