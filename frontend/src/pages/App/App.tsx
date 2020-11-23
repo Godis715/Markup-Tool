@@ -97,7 +97,7 @@ function App(): JSX.Element {
             onLogout={onLogout}
             roles={roles}
         />
-        <Container className="mt-5">
+        <Container className="mt-5 app">
             <Row>
                 <Col>
                     {

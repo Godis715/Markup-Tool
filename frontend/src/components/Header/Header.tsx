@@ -34,7 +34,7 @@ export default function Header(props: Props): ReactElement {
                     <Nav.Link as={Link} to="/faq">FAQ</Nav.Link>
                 </Nav>
                 <div className="d-flex">
-                    <Navbar.Text>{props.login}</Navbar.Text>
+                    {/* <Navbar.Text>{props.login}</Navbar.Text> */}
                     <Button onClick={props.onLogout} variant="outline-primary" className="ml-2">Выход</Button>
                 </div>
             </Navbar.Collapse>

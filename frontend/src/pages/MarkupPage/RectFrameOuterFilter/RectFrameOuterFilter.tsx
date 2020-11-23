@@ -8,11 +8,10 @@ type Props = {
         x2: number,
         y2: number
     },
-    filter: string,
     className?: string
 }
 
-export default function RectFrameOuterFilter({ rect, className, filter }: Props) {
+export default function RectFrameOuterFilter({ rect, className }: Props) {
     const left = `${Math.min(rect.x1, rect.x2)}px`;
     const top = `${Math.min(rect.y1, rect.y2)}px`;
     const width = `${Math.abs(rect.x1 - rect.x2)}px`;
@@ -25,8 +24,7 @@ export default function RectFrameOuterFilter({ rect, className, filter }: Props)
             "--left": left,
             "--top": top,
             "--width": width,
-            "--height": height,
-            backdropFilter: filter
+            "--height": height
         }}
     />;
 }

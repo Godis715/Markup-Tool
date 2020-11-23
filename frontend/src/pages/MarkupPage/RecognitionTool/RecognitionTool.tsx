@@ -86,7 +86,7 @@ export default function RecognitionTool(props: Props): ReactElement {
         }
 
         const elemRect = workspaceRef.current.getBoundingClientRect();
-        const localX = ev.clientX - elemRect.left;
+        const localX = ev.clientX - elemRect.left + workspaceRef.current.scrollLeft;
         const localY = ev.clientY - elemRect.top;
 
         dispatch({
@@ -117,7 +117,7 @@ export default function RecognitionTool(props: Props): ReactElement {
         const elemRect = workspaceRef.current.getBoundingClientRect();
         const mouseEv = ev as MouseEvent;
 
-        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width));
+        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width)) + workspaceRef.current.scrollLeft;
         const y = Math.max(0, Math.min(mouseEv.clientY - elemRect.top, elemRect.height));
 
         dispatch({
@@ -163,32 +163,35 @@ export default function RecognitionTool(props: Props): ReactElement {
     return <div className="recognition-tool">
         <Card.Text>{props.description}</Card.Text>
         <Card.Text>Выделите &quot;{props.objectToFind}&quot;</Card.Text>
-        <div
-            ref={workspaceRef}
-            className="recognition-tool__workspace overlay"
-            onMouseDown={onMouseDown}
-        >
-            <img src={props.imageSrc} />
-            {
-                rect &&
-                <RectFrame
-                    rect={rect}
-                    className="overlay__layer"
-                    onClose={!isDrawing ? onRemoveRect : undefined}
-                />
-            }
-            {
-                !isDrawing && rect &&
-                <RectFrameOuterFilter
-                    rect={rect}
-                    filter={"invert(30%)"}
-                    className="overlay__layer"
-                />
-            }
+        <div className="workspace">
+            <div
+                ref={workspaceRef}
+                className="recognition-tool__workspace overlay markup-image-container"
+                onMouseDown={onMouseDown}
+            >
+                <img src={/* props.imageSrc */ "https://learnenglishteens.britishcouncil.org/sites/teens/files/styles/article/public/field/image/rs930_135120665-low.jpg?itok=g5LI5W4C"} />
+                {
+                    rect &&
+                    <RectFrame
+                        rect={rect}
+                        className="overlay__layer"
+                        onClose={!isDrawing ? onRemoveRect : undefined}
+                        color={"orange"}
+                    />
+                }
+                {
+                    !isDrawing && rect &&
+                    <RectFrameOuterFilter
+                        rect={rect}
+                        className="overlay__layer"
+                    />
+                }
+            </div>
         </div>
         <div className="mt-2">
             <Button
                 onClick={onSubmitClick}
+                disabled={!rect || isDrawing}
             >
                 Отправить
             </Button>
@@ -196,6 +199,7 @@ export default function RecognitionTool(props: Props): ReactElement {
                 className="ml-1"
                 variant="outline-danger"
                 onClick={onCannotFindClick}
+                disabled={Boolean(rect)}
             >
                 Объект отсутствует
             </Button>

@@ -13,6 +13,7 @@ import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 import "./style.scss";
 import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
 import BitmapMaskTool from "./BitmapMaskTool/BitmapMaskTool";
+import { IMAGE_HOST } from "../../constants/urls";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -168,7 +169,7 @@ export default function MarkupPage(props: Props): JSX.Element {
         startFetchingMarkup();
     }, []);
 
-    const absImageSrc = state.markupItem && `http://localhost:8000/${state.markupItem?.imageSrc}`;
+    const absImageSrc = state.markupItem && `${IMAGE_HOST}/${state.markupItem?.imageSrc}`;
 
     if (!state.markup) {
         return <div>Загрузка...</div>;
@@ -187,54 +188,49 @@ export default function MarkupPage(props: Props): JSX.Element {
             </Breadcrumb.Item>
         </Breadcrumb>
 
-        <Card>
-            <Card.Header>Разметка изображения</Card.Header>
-            <Card.Body>
-                {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
+        {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
+        {
+            state.recievingMarkup &&
+            <Card.Text>Загрузка данных...</Card.Text>
+        }
+        {
+            isFinished &&
+            <Card.Text>Больше нет элементов для разметки</Card.Text>
+        }
+        {
+            !isFinished &&
+            !state.recievingMarkup &&
+            absImageSrc &&
+            <>
                 {
-                    state.recievingMarkup &&
-                    <Card.Text>Загрузка данных...</Card.Text>
+                    /** TODO: добавить условие на то, если вдруг элемент еще загружается */
+                    state.markup?.type === "classification" &&
+                    <ClassificationTool
+                        imageSrc={absImageSrc}
+                        classes={state.markup.config as ClassificationConfig}
+                        onSubmit={onSendResult}
+                        description={state.markup.description}
+                    />
                 }
                 {
-                    isFinished &&
-                    <Card.Text>Больше нет элементов для разметки</Card.Text>
+                    state.markup?.type === "recognition" &&
+                    <RecognitionTool
+                        imageSrc={absImageSrc}
+                        onSubmit={onSendResult}
+                        objectToFind={(state.markup.config as RecognitionConfig).objectToFind}
+                        description={state.markup.description}
+                    />
                 }
                 {
-                    !isFinished &&
-                    !state.recievingMarkup &&
-                    absImageSrc &&
-                    <>
-                        {
-                            /** TODO: добавить условие на то, если вдруг элемент еще загружается */
-                            state.markup?.type === "classification" &&
-                            <ClassificationTool
-                                imageSrc={absImageSrc}
-                                classes={state.markup.config as ClassificationConfig}
-                                onSubmit={onSendResult}
-                                description={state.markup.description}
-                            />
-                        }
-                        {
-                            state.markup?.type === "recognition" &&
-                            <RecognitionTool
-                                imageSrc={absImageSrc}
-                                onSubmit={onSendResult}
-                                objectToFind={(state.markup.config as RecognitionConfig).objectToFind}
-                                description={state.markup.description}
-                            />
-                        }
-                        {
-                            state.markup?.type === "multi-recognition" &&
-                            <MultiRecognitionTool
-                                imageSrc={absImageSrc}
-                                onSubmit={onSendResult}
-                                objectToFind={(state.markup.config as MultiRecognitionConfig).objectToFind}
-                                description={state.markup.description}
-                            />
-                        }
-                    </>
+                    state.markup?.type === "multi-recognition" &&
+                    <MultiRecognitionTool
+                        imageSrc={absImageSrc}
+                        onSubmit={onSendResult}
+                        objectToFind={(state.markup.config as MultiRecognitionConfig).objectToFind}
+                        description={state.markup.description}
+                    />
                 }
-            </Card.Body>
-        </Card>
+            </>
+        }
     </>;
 }

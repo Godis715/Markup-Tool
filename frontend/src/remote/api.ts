@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { MarkupConfig, MarkupForCustomer, MarkupType } from "../../../backend/src/types/markup";
+import { API_URL } from "../constants/urls";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
@@ -12,14 +13,8 @@ import {
 } from "../utils/customError";
 import { isAxiosError } from "./axiosErrorHelpers";
 
-const BASE_URL = process.env.REACT_APP_BASE_URL;
-
-if (!BASE_URL) {
-    throw new Error("REACT_APP_BASE_URL must be provided");
-}
-
 const axiosInst = axios.create({
-    baseURL: `${BASE_URL}/api`,
+    baseURL: API_URL,
     withCredentials: true
 });
 

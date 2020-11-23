@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import { MultiRecognitionItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
 import "./style.scss";
+import Alert from "react-bootstrap/Alert";
 
 type Props = {
     imageSrc: string,
@@ -42,6 +43,9 @@ type Action = {
 }
 
 function reducer(state: State, action: Action): State {
+    if (action.type !== "DRAW_RECT") {
+        console.log(state, action);
+    }
     switch(action.type) {
         case "START_DRAWING": {
             return {
@@ -112,6 +116,15 @@ function reducer(state: State, action: Action): State {
     return dist;
 } */
 
+const colors = [
+    "#05b8ff",
+    "#ffd105",
+    "#ff055d",
+    "#ffbc05",
+    "#f705ff",
+    "#8aff05"
+];
+
 export default function MultiRecognitionTool(props: Props): ReactElement {
     const [{ rects, drawingRect }, dispatch] = useReducer(reducer, {
         drawingRect: null,
@@ -121,6 +134,9 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
     const workspaceRef = useRef<HTMLDivElement>(null);
 
     const onMouseDown = (ev: React.MouseEvent<HTMLDivElement>) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("On mouse down");
         if (!workspaceRef.current) {
             return;
         }
@@ -140,7 +156,7 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
         });
     };
 
-    const onMouseUp = () => {
+    const onMouseUp = (ev: Event) => {
         if (drawingRect && drawingRect.x1 !== drawingRect.x2 && drawingRect.y1 !== drawingRect.y2) {
             dispatch({ type: "FINISH_DRAWING" });
         }
@@ -188,64 +204,81 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
         dispatch({ type: "RESET_STATE" });
     };
 
+    const onResetClick = () => {
+        dispatch({ type: "RESET_STATE" });
+    }
+
     const onCannotFindClick = () => {
         props.onSubmit({ status: "CANNOT_DETECT_OBJECT" });
     };
 
     return <div className="multi-recognition-tool">
-        <Card.Text>{props.description}</Card.Text>
-        <Card.Text>Выделите &quot;{props.objectToFind}&quot;</Card.Text>
-        <div
-            ref={workspaceRef}
-            className="multi-recognition-tool__workspace overlay"
-            onMouseDown={onMouseDown}
-        >
-            <img src={props.imageSrc} />
-            {
-                drawingRect &&
-                <RectFrame
-                    rect={drawingRect}
-                    className="overlay__layer"
-                />
-            }
-            {
-                rects.map(
-                    (r, i) => <RectFrame
-                        rect={r}
-                        className="overlay__layer"
-                        onClose={() => {
-                            dispatch({
-                                type: "REMOVE_RECT",
-                                index: i
-                            });
-                        }}
-                    />
-                )
-            }
-            {/*
-                !isDrawing && rect &&
-                <RectFrameOuterFilter
-                    left={left}
-                    top={top}
-                    width={width}
-                    height={height}
-                    filter={"blur(10px)"}
-                    className="overlay__layer"
-                />
-            */}
-        </div>
-        <div className="mt-2">
-            <Button
-                onClick={onSubmitClick}
+        <Alert variant="secondary">Выделите &quot;{props.objectToFind}&quot;</Alert>
+        <div className="workspace mt-2">
+            <div
+                ref={workspaceRef}
+                className="multi-recognition-tool__workspace overlay markup-image-container"
+                onMouseDown={onMouseDown}
             >
-                Отправить
-            </Button>
+                <img src={/* props.imageSrc */ "https://learnenglishteens.britishcouncil.org/sites/teens/files/styles/article/public/field/image/rs930_135120665-low.jpg?itok=g5LI5W4C"} />
+                {
+                    drawingRect &&
+                    <RectFrame
+                        rect={drawingRect}
+                        className="overlay__layer"
+                        color={colors[rects.length % colors.length]}
+                    />
+                }
+                {
+                    rects.map(
+                        (r, i) => <RectFrame
+                            rect={r}
+                            className="overlay__layer"
+                            onClose={() => {
+                                dispatch({
+                                    type: "REMOVE_RECT",
+                                    index: i
+                                });
+                            }}
+                            color={colors[i % colors.length]}
+                        />
+                    )
+                }
+                {/*
+                    !isDrawing && rect &&
+                    <RectFrameOuterFilter
+                        left={left}
+                        top={top}
+                        width={width}
+                        height={height}
+                        filter={"blur(10px)"}
+                        className="overlay__layer"
+                    />
+                */}
+            </div>
+        </div>
+        <div className="mt-2 d-flex justify-content-between">
             <Button
-                className="ml-1"
-                variant="outline-danger"
+                variant="secondary"
+                disabled={rects.length === 0}
+                onClick={onResetClick}
+            >
+                Сбросить
+            </Button>
+            <div className="flex-grow-1"></div>
+            <Button
+                variant="danger"
                 onClick={onCannotFindClick}
+                disabled={rects.length > 0}
             >
                 Объекты отсутствуют
+            </Button>
+            <Button
+                onClick={onSubmitClick}
+                disabled={rects.length === 0}
+                className="ml-1"
+            >
+                Отправить
             </Button>
         </div>
     </div>;

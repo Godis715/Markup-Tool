@@ -1,12 +1,22 @@
 .markup-image-container {
-    border: 1px solid lightgray;
-    border-radius: 4px;
-    overflow-x: auto;
-    width: fit-content;
+    box-shadow: 0 0 0 1px lightgray;
+    //overflow: hidden;
+    display: inline-block;
     img {
         // FIX ME: убрать это свойство
-        height: 400px;
+        height: 500px;
+        // чтобы картинка не перетаскивалась
+        pointer-events: none;
+        line-height: 0;
     }
+}
+
+.workspace {
+    overflow: auto;
+    border: 1px solid lightgray;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
 }
 
 .overlay {

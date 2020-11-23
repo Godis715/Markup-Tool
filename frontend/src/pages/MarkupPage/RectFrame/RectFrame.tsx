@@ -8,11 +8,12 @@ type Props = {
         x2: number,
         y2: number
     },
+    color: string,
     className?: string,
     onClose?: () => void
 }
 
-export default function RectFrame({ rect, className, onClose }: Props) {
+export default function RectFrame({ rect, className, onClose, color }: Props): JSX.Element {
     const left = `${Math.min(rect.x1, rect.x2)}px`;
     const top = `${Math.min(rect.y1, rect.y2)}px`;
     const width = `${Math.abs(rect.x1 - rect.x2)}px`;
@@ -26,11 +27,12 @@ export default function RectFrame({ rect, className, onClose }: Props) {
         ev.preventDefault();
         ev.stopPropagation();
         onClose();
-    }
+    };
 
     return <div
         className={`rect-frame ${className || ""}`}
-        style={{ left, top, width, height }}
+        // @ts-ignore
+        style={{ left, top, width, height, "--color": color }}
     >
         {
             onClose &&
