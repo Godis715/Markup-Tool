@@ -8,7 +8,10 @@ import cliProgress from "cli-progress";
 const DEFAULT_HOST = "localhost";
 const DEFAULT_PORT = "8000";
 
-const baseURL = `http://${DEFAULT_HOST}:${DEFAULT_PORT}/api`;
+const HOST = process.env.MARKUPTOOL_HOST || DEFAULT_HOST;
+const PORT = process.env.MARKUPTOOL_PORT || DEFAULT_PORT;
+
+const baseURL = `http://${HOST}:${PORT}/api`;
 const axiosInst = axios.create({ baseURL });
 
 (async () => {
@@ -109,8 +112,8 @@ const axiosInst = axios.create({ baseURL });
                         "Cookie": setCookies,
                         "Csrf-Access-Token": tokens.csrfAccessToken
                     },
-                    DEFAULT_HOST,
-                    DEFAULT_PORT,
+                    HOST,
+                    PORT,
                     handleProgress
                 );
     

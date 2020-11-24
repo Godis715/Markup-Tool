@@ -169,7 +169,7 @@ export default function RecognitionTool(props: Props): ReactElement {
                 className="recognition-tool__workspace overlay markup-image-container"
                 onMouseDown={onMouseDown}
             >
-                <img src={/* props.imageSrc */ "https://learnenglishteens.britishcouncil.org/sites/teens/files/styles/article/public/field/image/rs930_135120665-low.jpg?itok=g5LI5W4C"} />
+                <img src={props.imageSrc} />
                 {
                     rect &&
                     <RectFrame

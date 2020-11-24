@@ -1,10 +1,11 @@
-import React, { ReactElement, useEffect, useReducer, useRef } from "react";
-import Card from "react-bootstrap/Card";
+import React from "react";
 import Button from "react-bootstrap/Button";
 import { MultiRecognitionItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
 import "./style.scss";
 import Alert from "react-bootstrap/Alert";
+import Form from "react-bootstrap/Form";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 
 type Props = {
     imageSrc: string,
@@ -25,6 +26,16 @@ type State = {
     rects: Rect[]
 }
 
+type ClassState = {
+    drawingRect: Rect | null,
+    rects: Rect[],
+    imgOrigSize: {
+        width: number,
+        height: number
+    } | undefined,
+    scaleIndex: number
+}
+
 type Action = {
     type: "START_DRAWING",
     rect: Rect
@@ -43,16 +54,8 @@ type Action = {
 }
 
 function reducer(state: State, action: Action): State {
-    if (action.type !== "DRAW_RECT") {
-        console.log(state, action);
-    }
     switch(action.type) {
-        case "START_DRAWING": {
-            return {
-                ...state,
-                drawingRect: action.rect
-            };
-        }
+        case "START_DRAWING":
         case "DRAW_RECT": {
             return {
                 ...state,
@@ -125,58 +128,97 @@ const colors = [
     "#8aff05"
 ];
 
-export default function MultiRecognitionTool(props: Props): ReactElement {
-    const [{ rects, drawingRect }, dispatch] = useReducer(reducer, {
-        drawingRect: null,
-        rects: []
-    });
+const scales = [
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2.5,
+    4
+];
 
-    const workspaceRef = useRef<HTMLDivElement>(null);
+export default class MultiRecognitionTool extends React.PureComponent<Props, ClassState> {
+    public state: ClassState;
+    public workspaceRef: React.RefObject<HTMLDivElement>;
 
-    const onMouseDown = (ev: React.MouseEvent<HTMLDivElement>) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("On mouse down");
-        if (!workspaceRef.current) {
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            drawingRect: null,
+            rects: [],
+            imgOrigSize: undefined,
+            scaleIndex: 3
+        };
+
+        this.workspaceRef = React.createRef<HTMLDivElement>();
+    }
+
+    componentDidMount(): void {
+        document.addEventListener("mouseup", this.onMouseUp);
+        document.addEventListener("mousemove", this.onMouseMove);
+    }
+
+    componentWillUnmount(): void {
+        document.removeEventListener("mouseup", this.onMouseUp);
+        document.removeEventListener("mousemove", this.onMouseMove);
+    }
+
+    dispatch = (action: Action): void => {
+        this.setState(
+            reducer(this.state, action)
+        );
+    }
+
+    onMouseDown = (ev: React.MouseEvent<HTMLDivElement>) => {
+        if (!this.workspaceRef.current) {
             return;
         }
 
-        const elemRect = workspaceRef.current.getBoundingClientRect();
+        const imgScale = scales[this.state.scaleIndex];
+
+        const elemRect = this.workspaceRef.current.getBoundingClientRect();
         const localX = ev.clientX - elemRect.left;
         const localY = ev.clientY - elemRect.top;
 
-        dispatch({
+        this.dispatch({
             type: "START_DRAWING",
             rect: {
-                x1: localX,
-                y1: localY,
-                x2: localX,
-                y2: localY
+                x1: localX / imgScale,
+                y1: localY / imgScale,
+                x2: localX / imgScale,
+                y2: localY / imgScale
             }
         });
     };
 
-    const onMouseUp = (ev: Event) => {
+    onMouseUp = (ev: Event) => {
+        const { drawingRect } = this.state;
+
         if (drawingRect && drawingRect.x1 !== drawingRect.x2 && drawingRect.y1 !== drawingRect.y2) {
-            dispatch({ type: "FINISH_DRAWING" });
+            this.dispatch({ type: "FINISH_DRAWING" });
         }
         else {
-            dispatch({ type: "RESET_DRAWING" });
+            this.dispatch({ type: "RESET_DRAWING" });
         }
     };
 
-    const onMouseMove = (ev: Event) => {
-        if (!drawingRect || !workspaceRef.current) {
+    onMouseMove = (ev: Event) => {
+        const { drawingRect } = this.state;
+
+        if (!drawingRect || !this.workspaceRef.current) {
             return;
         }
 
-        const elemRect = workspaceRef.current.getBoundingClientRect();
+        const elemRect = this.workspaceRef.current.getBoundingClientRect();
         const mouseEv = ev as MouseEvent;
 
-        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width));
-        const y = Math.max(0, Math.min(mouseEv.clientY - elemRect.top, elemRect.height));
+        const imgScale = scales[this.state.scaleIndex];
+        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width)) / imgScale;
+        const y = Math.max(0, Math.min(mouseEv.clientY - elemRect.top, elemRect.height)) / imgScale;
 
-        dispatch({
+        this.dispatch({
             type: "DRAW_RECT",
             rect: {
                 ...drawingRect,
@@ -186,101 +228,126 @@ export default function MultiRecognitionTool(props: Props): ReactElement {
         });
     };
 
-    useEffect(() => {
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-
-        return () => {
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-        };
-    }, [onMouseMove, onMouseUp]);
-
-    const onSubmitClick = () => {
-        props.onSubmit({
+    onSubmitClick = () => {
+        this.props.onSubmit({
             status: "SUCCESS",
-            rectangles: rects
+            rectangles: this.state.rects
         });
-        dispatch({ type: "RESET_STATE" });
+        this.dispatch({ type: "RESET_STATE" });
     };
 
-    const onResetClick = () => {
-        dispatch({ type: "RESET_STATE" });
-    }
-
-    const onCannotFindClick = () => {
-        props.onSubmit({ status: "CANNOT_DETECT_OBJECT" });
+    onResetClick = () => {
+        this.dispatch({ type: "RESET_STATE" });
     };
 
-    return <div className="multi-recognition-tool">
-        <Alert variant="secondary">Выделите &quot;{props.objectToFind}&quot;</Alert>
-        <div className="workspace mt-2">
-            <div
-                ref={workspaceRef}
-                className="multi-recognition-tool__workspace overlay markup-image-container"
-                onMouseDown={onMouseDown}
-            >
-                <img src={/* props.imageSrc */ "https://learnenglishteens.britishcouncil.org/sites/teens/files/styles/article/public/field/image/rs930_135120665-low.jpg?itok=g5LI5W4C"} />
-                {
-                    drawingRect &&
-                    <RectFrame
-                        rect={drawingRect}
-                        className="overlay__layer"
-                        color={colors[rects.length % colors.length]}
+    onCannotFindClick = () => {
+        this.props.onSubmit({ status: "CANNOT_DETECT_OBJECT" });
+    };
+
+    onImageLoad = (ev: React.SyntheticEvent<HTMLImageElement>) => {
+        const { width, height } = ev.target as HTMLImageElement;
+        this.setState({
+            imgOrigSize: { width, height }
+        });
+    };
+
+    increaseScale = () => {
+        if (this.state.scaleIndex < scales.length - 1) {
+            this.setState({
+                scaleIndex: this.state.scaleIndex + 1
+            });
+        }
+    };
+
+    decreaseScale = () => {
+        if (this.state.scaleIndex > 0) {
+            this.setState({
+                scaleIndex: this.state.scaleIndex - 1
+            });
+        }
+    };
+
+    render(): JSX.Element {
+        const { drawingRect, rects, scaleIndex, imgOrigSize } = this.state;
+        const imgScale = scales[scaleIndex];
+        const imgStyle = imgOrigSize && {
+            height: imgOrigSize.height * imgScale,
+            width: "auto"
+        };
+
+        return <div className="multi-recognition-tool">
+            <Alert variant="secondary">Выделите &quot;{this.props.objectToFind}&quot;</Alert>
+            <div className="workspace mt-2">
+                <div
+                    ref={this.workspaceRef}
+                    className="multi-recognition-tool__workspace overlay markup-image-container"
+                    onMouseDown={this.onMouseDown}
+                >
+                    <img
+                        src={this.props.imageSrc}
+                        style={imgStyle}
+                        onLoad={this.onImageLoad}
                     />
-                }
-                {
-                    rects.map(
-                        (r, i) => <RectFrame
-                            rect={r}
+                    {
+                        drawingRect &&
+                        <RectFrame
+                            rect={drawingRect}
                             className="overlay__layer"
-                            onClose={() => {
-                                dispatch({
-                                    type: "REMOVE_RECT",
-                                    index: i
-                                });
-                            }}
-                            color={colors[i % colors.length]}
+                            color={colors[rects.length % colors.length]}
+                            scale={imgScale}
                         />
-                    )
-                }
-                {/*
-                    !isDrawing && rect &&
-                    <RectFrameOuterFilter
-                        left={left}
-                        top={top}
-                        width={width}
-                        height={height}
-                        filter={"blur(10px)"}
-                        className="overlay__layer"
-                    />
-                */}
+                    }
+                    {
+                        rects.map(
+                            (r, i) => <RectFrame
+                                rect={r}
+                                className="overlay__layer"
+                                onClose={() => {
+                                    this.dispatch({
+                                        type: "REMOVE_RECT",
+                                        index: i
+                                    });
+                                }}
+                                color={colors[i % colors.length]}
+                                scale={imgScale}
+                            />
+                        )
+                    }
+                </div>
             </div>
-        </div>
-        <div className="mt-2 d-flex justify-content-between">
-            <Button
-                variant="secondary"
-                disabled={rects.length === 0}
-                onClick={onResetClick}
-            >
-                Сбросить
-            </Button>
-            <div className="flex-grow-1"></div>
-            <Button
-                variant="danger"
-                onClick={onCannotFindClick}
-                disabled={rects.length > 0}
-            >
-                Объекты отсутствуют
-            </Button>
-            <Button
-                onClick={onSubmitClick}
-                disabled={rects.length === 0}
-                className="ml-1"
-            >
-                Отправить
-            </Button>
-        </div>
-    </div>;
+            <div className="mt-2 d-flex justify-content-between">
+                <Button
+                    variant="secondary"
+                    disabled={rects.length === 0}
+                    onClick={this.onResetClick}
+                >
+                    Сбросить
+                </Button>
+                <Form className="ml-3">
+                    <Form.Group className="mb-0">
+                        <Form.Label>Масштаб</Form.Label>
+                        <ButtonGroup className="ml-1">
+                            <Button variant="outline-primary" onClick={this.increaseScale}>+</Button>
+                            <Button variant="outline-primary" onClick={this.decreaseScale}>-</Button>
+                        </ButtonGroup>
+                    </Form.Group>
+                </Form>
+                <div className="flex-grow-1"></div>
+                <Button
+                    variant="danger"
+                    onClick={this.onCannotFindClick}
+                    disabled={rects.length > 0}
+                >
+                    Объекты отсутствуют
+                </Button>
+                <Button
+                    onClick={this.onSubmitClick}
+                    disabled={rects.length === 0}
+                    className="ml-1"
+                >
+                    Отправить
+                </Button>
+            </div>
+        </div>;
+    }
 }
-

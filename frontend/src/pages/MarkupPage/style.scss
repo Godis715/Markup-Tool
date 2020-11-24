@@ -2,6 +2,8 @@
     box-shadow: 0 0 0 1px lightgray;
     //overflow: hidden;
     display: inline-block;
+    height: fit-content;
+    margin: auto;
     img {
         // FIX ME: убрать это свойство
         // height: 500px;
@@ -15,8 +17,8 @@
     overflow: auto;
     border: 1px solid lightgray;
     border-radius: 4px;
+    height: 500px;
     display: flex;
-    justify-content: center;
 }
 
 .overlay {
