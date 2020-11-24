@@ -130,7 +130,7 @@ export default class DatasetController {
             (f) => {
                 const datasetItem = new DatasetItem();
                 datasetItem.dataset = dataset;
-                datasetItem.location = f.path;
+                datasetItem.location = path.relative(FOLDER_FOR_DATASETS, f.path);
                 datasetItem.name = f.originalname;
                 dataset.items.push(datasetItem);
             }

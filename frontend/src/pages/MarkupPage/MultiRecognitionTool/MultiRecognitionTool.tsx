@@ -123,9 +123,9 @@ const colors = [
     "#05b8ff",
     "#ffd105",
     "#ff055d",
+    "#8aff05",
     "#ffbc05",
-    "#f705ff",
-    "#8aff05"
+    "#f705ff"
 ];
 
 const scales = [

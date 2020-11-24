@@ -169,13 +169,13 @@ export default function MarkupPage(props: Props): JSX.Element {
         startFetchingMarkup();
     }, []);
 
-    const absImageSrc = state.markupItem && `${IMAGE_HOST}/${state.markupItem?.imageSrc}`;
+    const absImageSrc = state.markupItem && `${IMAGE_HOST}/images/${state.markupItem?.imageSrc}`;
 
     if (!state.markup) {
         return <div>Загрузка...</div>;
     }
 
-    return <>
+    return <div className="mb-5">
         <Breadcrumb>
             <Breadcrumb.Item>
                 <Link to="/">Главная</Link>
@@ -232,5 +232,5 @@ export default function MarkupPage(props: Props): JSX.Element {
                 }
             </>
         }
-    </>;
+    </div>;
 }

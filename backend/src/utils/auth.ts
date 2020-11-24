@@ -6,8 +6,11 @@ import jwt from "jsonwebtoken";
 import { Role } from "../entity/Role";
 import { validateOrReject } from "class-validator";
 
-// TODO: безопасное хранение ключа
-const SECRET_KEY = "123";
+const SECRET_KEY = process.env.SECRET_KEY;
+if (!SECRET_KEY) {
+    throw "SECRET_KEY must be provided as environmental variable";
+}
+
 const ACCESS_EXPIRED_IN = "1h";
 // TODO: выяснить, можно ли так время писать
 const REFRESH_EXPIRED_IN = "30d";
