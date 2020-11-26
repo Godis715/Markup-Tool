@@ -5,6 +5,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Alert from "react-bootstrap/Alert";
 import { fetchDatasets } from "../../remote/api";
 import { DatasetShort } from "../../types/dataset";
+import Skeleton from "react-loading-skeleton";
 
 enum ActionType {
     RECIEVE_DATASETS
@@ -58,10 +59,6 @@ export default function DatasetExplorerPage(): JSX.Element {
         effect();
     }, []);
 
-    if (state.recievingDatasets) {
-        return <div>Загрузка...</div>;
-    }
-
     return <div>
         <Breadcrumb>
             <Breadcrumb.Item>
@@ -75,14 +72,22 @@ export default function DatasetExplorerPage(): JSX.Element {
         {/** TODO: добавить возможность искать датасет по названию, навигацию по страницам */}
         <ListGroup className="mt-3">
             {
-                state.datasets.map(
-                    (dataset) => <ListGroup.Item key={dataset.id}>
-                        <Link to={`dataset/${dataset.id}`}>
-                            <h4>{dataset.name}</h4>
-                        </Link>
-                        <small className="text-muted">Дата загрузки: {dataset.uploadDate.toLocaleDateString("ru")}</small>
-                    </ListGroup.Item>
-                )
+                !state.recievingDatasets
+                    ? state.datasets.map(
+                        (dataset) => <ListGroup.Item key={dataset.id}>
+                            <Link to={`dataset/${dataset.id}`}>
+                                <h4>{dataset.name}</h4>
+                            </Link>
+                            <small className="text-muted">Дата загрузки: {dataset.uploadDate.toLocaleDateString("ru")}</small>
+                        </ListGroup.Item>
+                    )
+                    // заглушка для загрузки
+                    : [1, 2, 3, 4, 5].map(
+                        (i) => <ListGroup.Item key={i}>
+                            <h4><Skeleton width="15rem" /></h4>
+                            <small><Skeleton width="10rem" /></small>
+                        </ListGroup.Item>
+                    )
             }
         </ListGroup>
     </div>;

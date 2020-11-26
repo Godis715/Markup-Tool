@@ -5,6 +5,7 @@ import { MarkupForExpert } from "../../types/markup";
 import ListGroup from "react-bootstrap/ListGroup";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
+import Skeleton from "react-loading-skeleton";
 
 enum ActionType {
     RECIEVE_MARKUPS
@@ -58,10 +59,6 @@ export default function MarkupExplorerPage(): JSX.Element {
         effect();
     }, []);
 
-    if (state.recievingMarkups) {
-        return <div>Загрузка...</div>;
-    }
-
     return <>
         <Breadcrumb>
             <Breadcrumb.Item>
@@ -73,17 +70,26 @@ export default function MarkupExplorerPage(): JSX.Element {
         </Breadcrumb>
         <h3 className="mb-4">Задания</h3>
         <ListGroup>{
-            state.markups.map(
-                (markup) => <ListGroup.Item key={markup.id} className="mb-2">
-                    <Link to={`markup/${markup.id}`}>
-                        <h4>{markup.datasetName} / {MARKUP_TYPE_LITERALS[markup.type]}</h4>
-                    </Link>
-                    <small className="text-muted">
-                        Создано: {markup.createDate.toLocaleDateString("ru")}, 
-                        Владелец: {markup.owner}
-                    </small>
-                </ListGroup.Item>
-            )
+            !state.recievingMarkups
+                ? state.markups.map(
+                    (markup) => <ListGroup.Item key={markup.id} className="mb-2">
+                        <Link to={`markup/${markup.id}`}>
+                            <h4>{markup.datasetName} / {MARKUP_TYPE_LITERALS[markup.type]}</h4>
+                        </Link>
+                        <small className="text-muted">
+                            Создано: {markup.createDate.toLocaleDateString("ru")}, 
+                            Владелец: {markup.owner}
+                        </small>
+                    </ListGroup.Item>
+                )
+                : [1, 2, 3, 4, 5].map(
+                    (i) => <ListGroup.Item key={i}>
+                        <h4><Skeleton width="15rem" /></h4>
+                        <small className="text-muted">
+                            <Skeleton width="10rem" />
+                        </small>
+                    </ListGroup.Item>
+                )
         }</ListGroup>
     </>;
 }

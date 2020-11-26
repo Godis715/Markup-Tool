@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { fetchMarkup, fetchNextMarkupItem, postMarkupItemResult } from "../../remote/api";
 import { MarkupForExpert, MultiRecognitionConfig, RecognitionConfig } from "../../types/markup";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
@@ -14,6 +14,7 @@ import "./style.scss";
 import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
 import BitmapMaskTool from "./BitmapMaskTool/BitmapMaskTool";
 import { IMAGE_HOST } from "../../constants/urls";
+import Skeleton from "react-loading-skeleton";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -85,11 +86,12 @@ function reducer(state: State, action: Action): State {
     }
 }
 
-type Props = {
+type QueryParams = {
     markupId: string
 };
 
-export default function MarkupPage(props: Props): JSX.Element {
+export default function MarkupPage(): JSX.Element {
+    const { markupId } = useParams<QueryParams>();
     const [state, dispatch] = useReducer(reducer, {
         // markup единожды запрашивается с сервера при загрузке страницы
         markup: null,
@@ -109,7 +111,7 @@ export default function MarkupPage(props: Props): JSX.Element {
             type: ActionType.START_FETCHING_MARKUP_ITEM
         });
 
-        const result = await fetchNextMarkupItem(props.markupId);
+        const result = await fetchNextMarkupItem(markupId);
         console.log(result);
 
         if (!result.isSuccess) {
@@ -134,7 +136,7 @@ export default function MarkupPage(props: Props): JSX.Element {
             type: ActionType.START_SENDING_RESULT
         });
 
-        const result = await postMarkupItemResult(props.markupId, markupItemResult);
+        const result = await postMarkupItemResult(markupId, markupItemResult);
         console.log(result);
 
         if (!result.isSuccess) {
@@ -152,7 +154,7 @@ export default function MarkupPage(props: Props): JSX.Element {
     // получение датасетов с сервера единожды при загрузке страницы
     useEffect(() => {
         const startFetchingMarkup = async () => {
-            const result = await fetchMarkup(props.markupId);
+            const result = await fetchMarkup(markupId);
 
             if (!result.isSuccess) {
                 console.error(result.error.original);
@@ -171,10 +173,6 @@ export default function MarkupPage(props: Props): JSX.Element {
 
     const absImageSrc = state.markupItem && `${IMAGE_HOST}/images/${state.markupItem?.imageSrc}`;
 
-    if (!state.markup) {
-        return <div>Загрузка...</div>;
-    }
-
     return <div className="mb-5">
         <Breadcrumb>
             <Breadcrumb.Item>
@@ -184,12 +182,17 @@ export default function MarkupPage(props: Props): JSX.Element {
                 <Link to="/markup">Задания</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item active>
-                {state.markup.datasetName} - {MARKUP_TYPE_LITERALS[state.markup.type]}
+                {
+                    state.markup
+                        ? `${state.markup?.datasetName} - ${MARKUP_TYPE_LITERALS[state.markup.type]}`
+                        : <Skeleton width="10rem" />
+                }
             </Breadcrumb.Item>
         </Breadcrumb>
 
         {/** Такое избычтоное количество условий ниже - чтобы избежать большой вложенности */}
         {
+            // TODO: сделать заглушку для инструментов разметки
             state.recievingMarkup &&
             <Card.Text>Загрузка данных...</Card.Text>
         }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -15,13 +15,15 @@ import Form from "react-bootstrap/Form";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 import ResultDownloader from "./ResultDownloader";
 import Divider from "../../components/Divider/Divider";
+import Skeleton from "react-loading-skeleton";
 
-type Props = {
+type QueryParams = {
     datasetId: string,
     markupId: string
 };
 
-export default function MarkupConfigPage(props: Props): JSX.Element {
+export default function MarkupConfigPage(): JSX.Element {
+    const { datasetId, markupId } = useParams<QueryParams>();
     const [markup, setMarkup] = useState<MarkupForCustomer|null>(null);
     const [dataset, setDataset] = useState<DatasetDetailed|null>(null);
     const [expertLogin, setExpertLogin] = useState<string>("");
@@ -29,7 +31,7 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
     useEffect(
         () => {
             const initMarkup = async () => {
-                const result = await fetchMarkup(props.markupId);
+                const result = await fetchMarkup(markupId);
                 if (!result.isSuccess) {
                     console.error(result.error);
                     return;
@@ -40,7 +42,7 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
 
             // TODO: имя датасета можно класть в markup
             const initDataset = async () => {
-                const result = await fetchDataset(props.datasetId);
+                const result = await fetchDataset(datasetId);
                 if (!result.isSuccess) {
                     console.error(result.error);
                     return;
@@ -67,7 +69,7 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
             return;
         }
 
-        const result = await addExpertsToMarkup(props.markupId, expertLogin);
+        const result = await addExpertsToMarkup(markupId, expertLogin);
         if (result.isSuccess) {
             setMarkup({
                 ...markup,
@@ -86,10 +88,6 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
         setExpertLogin(ev.target.value);
     };
 
-    if (!markup) {
-        return <></>;
-    }
-
     return <div>
         <Breadcrumb>
             <Breadcrumb.Item>
@@ -99,10 +97,19 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
                 <Link to="/dataset">Датасеты</Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-                <Link to={`/dataset/${props.datasetId}`}>{dataset?.name}</Link>
+                <Link to={`/dataset/${datasetId}`}>
+                    {
+                        dataset?.name ||
+                        <Skeleton width={50} />
+                    }
+                </Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item active>
-                {MARKUP_TYPE_LITERALS[markup.type]}
+                {
+                    markup
+                        ? MARKUP_TYPE_LITERALS[markup.type]
+                        : <Skeleton width={50} />
+                }
             </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -110,14 +117,28 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
 
         <Container className="px-0">
             <Row className="text-muted">
-                <Col as="small" md="auto">Тип: {MARKUP_TYPE_LITERALS[markup.type]}</Col>
-                <Col as="small" md="auto">Дата создания: {markup.createDate.toLocaleDateString("ru")}</Col>
+                <Col as="small" md="auto">
+                    Тип: {
+                        markup
+                            ? MARKUP_TYPE_LITERALS[markup.type]
+                            : <Skeleton width={50} />
+                    }
+                </Col>
+                <Col as="small" md="auto">
+                    Дата создания: {
+                        markup?.createDate.toLocaleDateString("ru") ||
+                        <Skeleton width={50} />
+                    }
+                </Col>
             </Row>
 
             <Row className="mt-3">
                 <Col>
                     <h5>Описание</h5>
-                    <p>{markup.description}</p>
+                    <p>{
+                        markup?.description ||
+                        <Skeleton count={3} />
+                    }</p>
                 </Col>
             </Row>
         </Container>
@@ -126,17 +147,21 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
         <ProgressBar
             className="mt-2"
             now={
-                markup.progress.all === 0
+                !markup?.progress.all
                     ? 0
                     : 100 * markup.progress.done / markup.progress.all
             }
-            label={`${markup.progress.done}/${markup.progress.all}`}
+            label={
+                markup
+                    ? `${markup.progress.done}/${markup.progress.all}`
+                    : <Skeleton width={50} />
+            }
         />
 
         <ResultDownloader
-            markupId={props.markupId}
+            markupId={markupId}
             className="mt-3"
-            disabled={markup.progress.done === 0}
+            disabled={!markup || markup.progress.done === 0}
         />
 
         <Divider />
@@ -146,14 +171,21 @@ export default function MarkupConfigPage(props: Props): JSX.Element {
                 <Col md={6}>
                     <h5>Управление экспертами</h5>
 
-                    <div className="mt-3">Все эксперты ({markup.experts.length})</div>
+                    <div className="mt-3">
+                        Все эксперты ({
+                            markup
+                                ? markup.experts.length
+                                : <Skeleton width={20} />
+                        })
+                    </div>
                     <ListGroup className="mt-2 overflow-auto" style={{ maxHeight: "400px" }}>
                         {
-                            markup.experts.length === 0
+                            // если разметка не загружена, то вообще ничего не отображается
+                            markup?.experts.length === 0
                                 ? <ListGroup.Item className="d-flex justify-content-center">
                                     Эксперты не назначены
                                 </ListGroup.Item>
-                                : markup.experts.map(
+                                : markup?.experts.map(
                                     (expert) => <ListGroup.Item key={expert}>{expert}</ListGroup.Item>
                                 )
                         }

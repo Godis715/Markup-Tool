@@ -5,8 +5,7 @@ import LoginPage from "../LoginPage/LoginPage";
 import {
     Switch,
     Route,
-    Redirect,
-    RouteComponentProps
+    Redirect
 } from "react-router-dom";
 import { setUnauthorizedListener } from "../../remote/api";
 import DatasetExplorerPage from "../DatasetExplorerPage/DatasetExplorerPage";
@@ -18,9 +17,7 @@ import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import MarkupConfigPage from "../MarkupConfigPage/MarkupConfigPage";
-import MainPage from "../ManPage/MainPage";
 import FAQPage from "../FAQPage/FAQPage";
-
 import "./App.scss";
 
 enum AuthState {
@@ -130,24 +127,13 @@ function App(): JSX.Element {
                             {
                                 roles.includes(UserRole.CUSTOMER) &&
                                 <Route exact path="/dataset/:datasetId">
-                                    {
-                                        (props: RouteComponentProps<{ datasetId: string }>) =>
-                                            <DatasetPage
-                                                datasetId={props.match.params.datasetId}
-                                            />
-                                    }
+                                    <DatasetPage />
                                 </Route>
                             }
                             {
                                 roles.includes(UserRole.CUSTOMER) &&
                                 <Route exact path="/dataset/:datasetId/markup/:markupId">
-                                    {
-                                        (props: RouteComponentProps<{ datasetId: string, markupId: string }>) =>
-                                            <MarkupConfigPage
-                                                datasetId={props.match.params.datasetId}
-                                                markupId={props.match.params.markupId}
-                                            />
-                                    }
+                                    <MarkupConfigPage />
                                 </Route>
                             }
                             {
@@ -159,12 +145,7 @@ function App(): JSX.Element {
                             {
                                 roles.includes(UserRole.EXPERT) &&
                                 <Route exact path="/markup/:markupId">
-                                    {
-                                        (props: RouteComponentProps<{ markupId: string }>) =>
-                                            <MarkupPage
-                                                markupId={props.match.params.markupId}
-                                            />
-                                    }
+                                    <MarkupPage />
                                 </Route>
                             }
                             <Route exact path="*">

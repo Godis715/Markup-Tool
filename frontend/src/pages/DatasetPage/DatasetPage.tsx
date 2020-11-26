@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { fetchDataset, postMarkup } from "../../remote/api";
 import { DatasetDetailed } from "../../types/dataset";
 import Button from "react-bootstrap/Button";
@@ -11,9 +11,10 @@ import Badge from "react-bootstrap/Badge";
 import { LinkContainer } from "react-router-bootstrap";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import CreateMarkupModal from "./CreateMarkupModal";
-import "./style.scss";
 import { MarkupConfig, MarkupType } from "../../../../backend/src/types/markup";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
+import Skeleton from "react-loading-skeleton";
+import "./style.scss";
 
 enum ActionType {
     RECIEVE_DATASET
@@ -43,11 +44,12 @@ function reducer(state: State, action: Action): State {
     }
 }
 
-type Props = {
+type QueryParams = {
     datasetId: string
 };
 
-export default function DatasetPage(props: Props): JSX.Element {
+export default function DatasetPage(): JSX.Element {
+    const { datasetId } = useParams<QueryParams>();
     // в начальном состоянии стоит флаг о том, что данные загружаются с сервера
     const [state, dispatch] = useReducer(reducer, {
         dataset: null,
@@ -62,7 +64,7 @@ export default function DatasetPage(props: Props): JSX.Element {
     // получение датасетов с сервера единожды при загрузке страницы
     useEffect(() => {
         const effect = async () => {
-            const result = await fetchDataset(props.datasetId);
+            const result = await fetchDataset(datasetId);
 
             if (!result.isSuccess) {
                 console.error(result.error.original);
@@ -79,7 +81,7 @@ export default function DatasetPage(props: Props): JSX.Element {
     }, []);
 
     const onSubmitMarkup = (type: MarkupType, description: string, config: MarkupConfig) => {
-        postMarkup(props.datasetId, type, description, config).then(closeModal);
+        postMarkup(datasetId, type, description, config).then(closeModal);
     };
 
     return <>
@@ -89,74 +91,86 @@ export default function DatasetPage(props: Props): JSX.Element {
             onSubmit={onSubmitMarkup}
         />
         {
-            state.recievingDataset
-                ? "Loading..."
-                : <Container className="px-0">
-                    <Breadcrumb>
-                        <Breadcrumb.Item>
-                            <Link to="/">Главная</Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Link to="/dataset">Датасеты</Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item active>
-                            {state.dataset?.name}
-                        </Breadcrumb.Item>
-                    </Breadcrumb>
+            <Container className="px-0">
+                <Breadcrumb>
+                    <Breadcrumb.Item>
+                        <Link to="/">Главная</Link>
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item>
+                        <Link to="/dataset">Датасеты</Link>
+                    </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                        {
+                            state.dataset?.name ||
+                            <Skeleton width={50} />
+                        }
+                    </Breadcrumb.Item>
+                </Breadcrumb>
 
-                    <Row className="mt-4">
-                        <Col as="h2">{state.dataset?.name}</Col>
-                    </Row>
+                <Row className="mt-4">
+                    <Col as="h2">{
+                        state.dataset?.name ||
+                        <Skeleton width={150} />
+                    }</Col>
+                </Row>
 
-                    <Row>
-                        <Col as="small" className="text-muted">Дата загрузки: {state.dataset?.uploadDate.toLocaleDateString("ru")}</Col>
-                    </Row>
+                <Row>
+                    <Col as="small" className="text-muted">
+                        Дата загрузки: {
+                            state.dataset?.uploadDate.toLocaleDateString("ru") ||
+                            <Skeleton width={100} />
+                        }
+                    </Col>
+                </Row>
 
-                    <Row className="mt-4">
-                        <Col as="h5">Разметка</Col>
-                        <Col className="d-flex justify-content-end">
-                            <Button variant="outline-primary" onClick={openModal}>Добавить разметку</Button>
-                        </Col>
-                    </Row>
+                <Row className="mt-4">
+                    <Col as="h5">Разметка</Col>
+                    <Col className="d-flex justify-content-end">
+                        <Button variant="outline-primary" onClick={openModal}>Добавить разметку</Button>
+                    </Col>
+                </Row>
 
-                    <Row className="mt-2">
-                        <Col>
-                            <Table hover>
-                                <thead>
+                <Row className="mt-2">
+                    <Col>
+                        <Table hover>
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Тип</th>
+                                    <th>Дата создания</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    state.dataset?.markups.length === 0 &&
                                     <tr>
-                                        <th>№</th>
-                                        <th>Тип</th>
-                                        <th>Дата создания</th>
-                                        <th>Статус</th>
+                                        <td align="center" colSpan={4}>Разметка датасета отсутствует</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        state.dataset?.markups.length === 0 &&
-                                        <tr>
-                                            <td align="center" colSpan={4}>Разметка датасета отсутствует</td>
-                                        </tr>
-                                    }
-                                    {
-                                        state.dataset?.markups.map(
-                                            (markup, i) => <LinkContainer to={`/dataset/${props.datasetId}/markup/${markup.id}`} key={markup.id}>
-                                                <tr>
-                                                    <td>{i + 1}</td>
-                                                    <td>{MARKUP_TYPE_LITERALS[markup.type]} </td>
-                                                    <td>{markup.createDate.toLocaleDateString("ru")}</td>
-                                                    <td>
-                                                        {/** <Badge variant="success">Завершен</Badge> */}
-                                                        <Badge variant="primary">В процессе</Badge>
-                                                    </td>
-                                                </tr>
-                                            </LinkContainer>
-                                        )
-                                    }
-                                </tbody>
-                            </Table>
-                        </Col>
-                    </Row>
-                </Container>
+                                }
+                                {
+                                    state.dataset?.markups.map(
+                                        (markup, i) => <LinkContainer
+                                            to={`/dataset/${datasetId}/markup/${markup.id}`}
+                                            key={markup.id}
+                                        >
+                                            <tr>
+                                                <td>{i + 1}</td>
+                                                <td>{MARKUP_TYPE_LITERALS[markup.type]} </td>
+                                                <td>{markup.createDate.toLocaleDateString("ru")}</td>
+                                                <td>
+                                                    {/** <Badge variant="success">Завершен</Badge> */}
+                                                    <Badge variant="primary">В процессе</Badge>
+                                                </td>
+                                            </tr>
+                                        </LinkContainer>
+                                    )
+                                }
+                            </tbody>
+                        </Table>
+                    </Col>
+                </Row>
+            </Container>
         }
     </>;
 }
