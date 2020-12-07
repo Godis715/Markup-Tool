@@ -4,7 +4,9 @@ export enum MarkupTypeEnum {
     // поиск заданного объекта
     RECOGNITION = "recognition",
     // поиск нескольких заданных
-    MULTI_RECOGNITION = "multi-recognition"
+    MULTI_RECOGNITION = "multi-recognition",
+    // разметка объектов на изображении (границы + подпись)
+    OBJECT_ANNOTATION = "object-annotation"
 }
 
 export enum UserRole {

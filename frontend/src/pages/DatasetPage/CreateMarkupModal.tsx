@@ -17,7 +17,8 @@ type Props = {
 enum MarkupTypeEnum {
     CLASSIFICATION = "classification",
     RECOGNITION = "recognition",
-    MULTI_RECOGNITION = "multi-recognition"
+    MULTI_RECOGNITION = "multi-recognition",
+    OBJECT_ANNOTATION = "object-annotation"
 }
 
 type Option = {
@@ -70,12 +71,28 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
     };
 
     const onSubmit = () => {
+        let config: MarkupConfig;
+
+        switch(markupType) {
+            case MarkupTypeEnum.MULTI_RECOGNITION:
+            case MarkupTypeEnum.RECOGNITION: {
+                config = { objectToFind };
+                break;
+            }
+            case MarkupTypeEnum.CLASSIFICATION: {
+                config = options;
+                break;
+            }
+            case MarkupTypeEnum.OBJECT_ANNOTATION: {
+                config = null;
+                break;
+            }
+        }
+
         props.onSubmit(
             markupType,
             description,
-            markupType === MarkupTypeEnum.CLASSIFICATION
-                ? options
-                : { objectToFind }
+            config
         );
     };
 
@@ -119,6 +136,13 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
                     <Alert variant="secondary">
                         При данном типе разметки эксперты должны выделить все требуемые объекты на изображении, либо указать,
                         что объекты выделить нельзя
+                    </Alert>
+                }
+                {
+                    markupType === MarkupTypeEnum.OBJECT_ANNOTATION &&
+                    <Alert>
+                        При данном типе разметки эксперты должны выделить все значимые отбъекты на изображении и
+                        добавить аннотацию к ним, либо указать, что объект нельзя выделить
                     </Alert>
                 }
 

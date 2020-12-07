@@ -15,6 +15,7 @@ import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
 import BitmapMaskTool from "./BitmapMaskTool/BitmapMaskTool";
 import { IMAGE_HOST } from "../../constants/urls";
 import Skeleton from "react-loading-skeleton";
+import ObjectAnbotationTool from "./ObjectAnnotationTool/ObjectAnnotationTool";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -230,6 +231,14 @@ export default function MarkupPage(): JSX.Element {
                         imageSrc={absImageSrc}
                         onSubmit={onSendResult}
                         objectToFind={(state.markup.config as MultiRecognitionConfig).objectToFind}
+                        description={state.markup.description}
+                    />
+                }
+                {
+                    state.markup?.type === "object-annotation" &&
+                    <ObjectAnbotationTool
+                        imageSrc={absImageSrc}
+                        onSubmit={onSendResult}
                         description={state.markup.description}
                     />
                 }

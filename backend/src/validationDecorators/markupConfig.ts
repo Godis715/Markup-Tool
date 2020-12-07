@@ -35,7 +35,8 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
                 type: "string"
             }
         }
-    }
+    },
+    [MarkupTypeEnum.OBJECT_ANNOTATION]: null
 };
 
 @ValidatorConstraint({ name: "markupConfig", async: false })

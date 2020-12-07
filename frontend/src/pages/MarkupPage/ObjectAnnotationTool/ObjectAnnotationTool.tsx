@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
-import { MultiRecognitionItemResult } from "../../../types/markupItem";
+import { ObjectAnnotationItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
 import Alert from "react-bootstrap/Alert";
 import Form from "react-bootstrap/Form";
@@ -9,8 +9,7 @@ import "./style.scss";
 
 type Props = {
     imageSrc: string,
-    onSubmit: (result: MultiRecognitionItemResult) => void,
-    objectToFind: string,
+    onSubmit: (result: ObjectAnnotationItemResult) => void,
     description: string
 };
 
@@ -23,7 +22,10 @@ type Rect = {
 
 type State = {
     drawingRect: Rect | null,
-    rects: Rect[],
+    objects: {
+        label: string,
+        rectangle: Rect
+    }[],
     imgOrigSize: {
         width: number,
         height: number
@@ -46,6 +48,10 @@ type Action = {
 } | {
     type: "REMOVE_RECT",
     index: number
+} | {
+    type: "SET_LABEL",
+    index: number,
+    label: string
 }
 
 function reducer(state: State, action: Action): State {
@@ -64,7 +70,10 @@ function reducer(state: State, action: Action): State {
 
             return {
                 ...state,
-                rects: state.rects.concat(state.drawingRect),
+                objects: state.objects.concat({
+                    label: "",
+                    rectangle: state.drawingRect
+                }),
                 drawingRect: null
             };
         }
@@ -77,9 +86,9 @@ function reducer(state: State, action: Action): State {
         case "REMOVE_RECT": {
             return {
                 ...state,
-                rects: [
-                    ...state.rects.slice(0, action.index),
-                    ...state.rects.slice(action.index + 1)
+                objects: [
+                    ...state.objects.slice(0, action.index),
+                    ...state.objects.slice(action.index + 1)
                 ]
             };
         }
@@ -87,7 +96,20 @@ function reducer(state: State, action: Action): State {
             return {
                 ...state,
                 drawingRect: null,
-                rects: []
+                objects: []
+            };
+        }
+        case "SET_LABEL": {
+            return {
+                ...state,
+                objects: [
+                    ...state.objects.slice(0, action.index),
+                    {
+                        rectangle: state.objects[action.index].rectangle,
+                        label: action.label
+                    },
+                    ...state.objects.slice(action.index + 1)
+                ]
             };
         }
         default: {
@@ -115,7 +137,7 @@ const scales = [
     4
 ];
 
-export default class MultiRecognitionTool extends React.PureComponent<Props, State> {
+export default class ObjectAnbotationTool extends React.PureComponent<Props, State> {
     public state: State;
     public workspaceRef: React.RefObject<HTMLDivElement>;
 
@@ -124,7 +146,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
 
         this.state = {
             drawingRect: null,
-            rects: [],
+            objects: [],
             imgOrigSize: undefined,
             scaleIndex: 3
         };
@@ -208,7 +230,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
     onSubmitClick = () => {
         this.props.onSubmit({
             status: "SUCCESS",
-            rectangles: this.state.rects
+            objects: this.state.objects
         });
         this.dispatch({ type: "RESET_STATE" });
     };
@@ -245,7 +267,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
     };
 
     render(): JSX.Element {
-        const { drawingRect, rects, scaleIndex, imgOrigSize } = this.state;
+        const { drawingRect, objects, scaleIndex, imgOrigSize } = this.state;
         const imgScale = scales[scaleIndex];
         const imgStyle = imgOrigSize && {
             height: imgOrigSize.height * imgScale,
@@ -253,7 +275,6 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
         };
 
         return <div className="multi-recognition-tool">
-            <Alert variant="secondary">Выделите &quot;{this.props.objectToFind}&quot;</Alert>
             <div className="workspace mt-2">
                 <div
                     ref={this.workspaceRef}
@@ -270,14 +291,14 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
                         <RectFrame
                             rect={drawingRect}
                             className="overlay__layer"
-                            color={colors[rects.length % colors.length]}
+                            color={colors[objects.length % colors.length]}
                             scale={imgScale}
                         />
                     }
                     {
-                        rects.map(
-                            (r, i) => <RectFrame
-                                rect={r}
+                        objects.map(
+                            ({ label, rectangle }, i) => <RectFrame
+                                rect={rectangle}
                                 className="overlay__layer"
                                 onClose={() => {
                                     this.dispatch({
@@ -287,6 +308,17 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
                                 }}
                                 color={colors[i % colors.length]}
                                 scale={imgScale}
+                                label={label}
+                                onLabelChange={
+                                    (label) => {
+                                        this.dispatch({
+                                            type: "SET_LABEL",
+                                            index: i,
+                                            label
+                                        })
+                                    }
+                                }
+                                withLabel
                             />
                         )
                     }
@@ -295,7 +327,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
             <div className="mt-2 d-flex justify-content-between">
                 <Button
                     variant="secondary"
-                    disabled={rects.length === 0}
+                    disabled={objects.length === 0}
                     onClick={this.onResetClick}
                 >
                     Сбросить
@@ -313,13 +345,13 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
                 <Button
                     variant="danger"
                     onClick={this.onCannotFindClick}
-                    disabled={rects.length > 0}
+                    disabled={objects.length > 0}
                 >
                     Объекты отсутствуют
                 </Button>
                 <Button
                     onClick={this.onSubmitClick}
-                    disabled={rects.length === 0}
+                    disabled={objects.length === 0}
                     className="ml-1"
                 >
                     Отправить

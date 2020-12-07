@@ -1,37 +1,28 @@
 .rect-frame {
     $border-size: 3px;
     $neg-border-size: calc(-#{$border-size});
+    $control-height: 16px;
+    $control-default-color: rgb(255, 200, 97);
+    $control-z-index: 997;
 
     position: absolute;
     box-sizing: border-box;
     box-shadow:
         0 0 0 1px black,
-        0 0 0 $border-size var(--color, rgb(255, 200, 97));
-
-    /*&::before {
-        position: absolute;
-        content: "";
-        top: $neg-border-size;
-        left: $neg-border-size;
-        bottom: $neg-border-size;
-        right: $neg-border-size;
-        border: $border-size dashed rgb(255, 200, 97);
-    }*/
+        0 0 0 $border-size var(--color, $control-default-color);
 
     &__remove-btn {
         position: absolute;
-        right: $neg-border-size;
-        content: "";
-        $size: 16px;
-        width: $size;
-        height: $size;
-        top: calc(-#{$size} - #{$border-size});
-        background-color: var(--color, rgb(255, 200, 97));
+        left: $neg-border-size;
+        width: $control-height;
+        height: $control-height;
+        top: calc(-#{$control-height} - #{$border-size});
+        background-color: var(--color, $control-default-color);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        z-index: 999;
+        z-index: $control-z-index;
 
         &::after {
             content: "";
@@ -41,6 +32,47 @@
             width: $size;
             background-size: $size;
             background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='121.31px' height='122.876px' viewBox='0 0 121.31 122.876' enable-background='new 0 0 121.31 122.876' xml:space='preserve'%3E%3Cg%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M90.914,5.296c6.927-7.034,18.188-7.065,25.154-0.068 c6.961,6.995,6.991,18.369,0.068,25.397L85.743,61.452l30.425,30.855c6.866,6.978,6.773,18.28-0.208,25.247 c-6.983,6.964-18.21,6.946-25.074-0.031L60.669,86.881L30.395,117.58c-6.927,7.034-18.188,7.065-25.154,0.068 c-6.961-6.995-6.992-18.369-0.068-25.397l30.393-30.827L5.142,30.568c-6.867-6.978-6.773-18.28,0.208-25.247 c6.983-6.963,18.21-6.946,25.074,0.031l30.217,30.643L90.914,5.296L90.914,5.296z'/%3E%3C/g%3E%3C/svg%3E");            background-repeat: no-repeat;
+        }
+    }
+
+    &__label {
+        position: absolute;
+        $left-indent: calc(#{$neg-border-size} + #{$control-height});
+        left: $left-indent;
+        padding: 0 0.25rem;
+        height: $control-height;
+        top: calc(-#{$control-height} - #{$border-size});
+        background-color: var(--color, $control-default-color);
+        z-index: $control-z-index;
+        font-weight: 600;
+        font-size: 0.8rem;
+        line-height: 0.8rem;
+        white-space: nowrap;
+        border: none;
+        font-family: 'Courier New', Courier, monospace;
+
+        br {
+            display: none;
+        }
+    }
+
+    &__label, &__remove-btn {
+        &:hover, &:focus {
+            border-radius: 2px;
+            outline: none;
+            box-shadow:
+                0 0 0 2px black,
+                0 0 0 3px white;
+            opacity: 1;
+            height: $control-height;
+        }
+
+        &:focus {
+            z-index: calc(#{$control-z-index} + 1);
+        }
+
+        &:hover {
+            z-index: calc(#{$control-z-index} + 2);
         }
     }
 }

@@ -50,6 +50,7 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
     },
 
     [MarkupTypeEnum.MULTI_RECOGNITION]: {
+        required: ["status", "rectangles"],
         properties: {
             status: {
                 type: "string",
@@ -72,6 +73,39 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
             }
         },
         additionalProperties: false
+    },
+
+    [MarkupTypeEnum.OBJECT_ANNOTATION]: {
+        required: ["status", "objects"],
+        properties: {
+            status: {
+                type: "string",
+                enum: ["SUCCESS", "CANNOT_DETECT_OBJECT"]
+            },
+            objects: {
+                type: "array",
+                minItems: 1,
+                items: {
+                    type: "object",
+                    required: ["label", "rectangle"],
+                    additionalProperties: false,
+                    properties: {
+                        label: { type: "string" },
+                        rectangle: {
+                            type: "object",
+                            required: ["x1", "y1", "x2", "y2"],
+                            properties: {
+                                x1: coordSchema,
+                                y1: coordSchema,
+                                x2: coordSchema,
+                                y2: coordSchema
+                            },
+                            additionalProperties: false
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 

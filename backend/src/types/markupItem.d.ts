@@ -25,7 +25,18 @@ export type MultiRecognitionItemResult = {
     status: "CANNOT_DETECT_OBJECT"
 }
 
+export type ObjectAnnotationItemResult = {
+    status: "SUCCESS",
+    objects: {
+        label: string,
+        rectangle: Rect
+    }[]
+} | {
+    status: "CANNOT_DETECT_OBJECT"
+}
+
 export type MarkupItemResult =
     ClassificationItemResult |
     RecognitionItemResult |
-    MultiRecognitionItemResult;
+    MultiRecognitionItemResult |
+    ObjectAnnotationItemResult;
