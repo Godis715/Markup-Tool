@@ -180,17 +180,15 @@ export class MarkupController {
             throw new ForbiddenError("This user is not an author of the markup");
         }
 
-        const result = markup.items.map(
-            (item) => ({
-                url: item.datasetItem.location,
-                name: item.datasetItem.name,
-                // FIX ME: временное решение
-                markup: JSON.stringify(item.result)
-            })
-        );
-
         switch(resultExt) {
             case "csv": {
+                const result = markup.items.map(
+                    (item) => ({
+                        url: item.datasetItem.location,
+                        name: item.datasetItem.name,
+                        markup: JSON.stringify(item.result)
+                    })
+                );
                 // TODO: сделать "более умную конвертацию в csv результата (не в виде json значения)"
                 const csvStringifier = createObjectCsvStringifier({
                     header: [
@@ -209,6 +207,13 @@ export class MarkupController {
             }
             case "json":
             default: {
+                const result = markup.items.map(
+                    (item) => ({
+                        url: item.datasetItem.location,
+                        name: item.datasetItem.name,
+                        markup: item.result
+                    })
+                );
                 /**
                  * TODO:
                  * сделать подсчет прогресса
