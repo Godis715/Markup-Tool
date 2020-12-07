@@ -261,7 +261,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
                     onMouseDown={this.onMouseDown}
                 >
                     <img
-                        src={"https://s.abcnews.com/images/US/160825_vod_orig_historyofdogs_16x9_992.jpg"/* this.props.imageSrc */}
+                        src={this.props.imageSrc}
                         style={imgStyle}
                         onLoad={this.onImageLoad}
                     />
