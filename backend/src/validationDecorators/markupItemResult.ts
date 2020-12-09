@@ -50,7 +50,8 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
     },
 
     [MarkupTypeEnum.MULTI_RECOGNITION]: {
-        required: ["status", "rectangles"],
+        // FIX ME: добавить две ситуации: когда объект найден и когда нет
+        //required: ["status", "rectangles"],
         properties: {
             status: {
                 type: "string",
@@ -76,7 +77,7 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
     },
 
     [MarkupTypeEnum.OBJECT_ANNOTATION]: {
-        required: ["status", "objects"],
+        //required: ["status", "objects"],
         properties: {
             status: {
                 type: "string",

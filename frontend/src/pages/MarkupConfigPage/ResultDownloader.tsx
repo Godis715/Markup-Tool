@@ -10,9 +10,9 @@ type Props = {
     disabled?: boolean
 }
 
-type ResultExtension = "json" | "csv";
+type ResultExtension = "json"|"csv"|"yolo";
 
-const EXTENSIONS: ResultExtension[] = ["json", "csv"];
+const EXTENSIONS: ResultExtension[] = ["json", "csv", "yolo"];
 
 export default function ResultDownloader(props: Props): JSX.Element {
     const [extension, setExtension] = useState<ResultExtension>("json");

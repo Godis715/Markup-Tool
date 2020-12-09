@@ -134,7 +134,7 @@ export async function postMarkup(datasetId: string, type: MarkupType, descriptio
     }
 }
 
-export async function downloadMarkupResult(markupId: string, ext: "json"|"csv" = "json"): RequestResult<null> {
+export async function downloadMarkupResult(markupId: string, ext: "json"|"csv"|"yolo" = "json"): RequestResult<null> {
     try {
         // https://gist.github.com/javilobo8/097c30a233786be52070986d8cdb1743
         const response = await axiosInst.get<string>(`/markup/${markupId}/result`, { params: { ext }, responseType: "blob" });
