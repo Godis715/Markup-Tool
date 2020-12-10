@@ -24,9 +24,7 @@ import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup"
 import sizeOfImage from "image-size";
 import { promisify } from "util";
 import { ObjectAnnotationItemResult } from "../types/markupItem";
-import { createFsFromVolume, Volume } from "memfs";
 import archiver from "archiver";
-import temp from "temp";
 import { Readable } from "stream";
 
 

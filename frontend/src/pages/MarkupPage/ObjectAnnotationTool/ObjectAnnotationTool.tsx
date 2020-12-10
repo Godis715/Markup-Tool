@@ -30,7 +30,8 @@ type State = {
         width: number,
         height: number
     } | undefined,
-    scaleIndex: number
+    scaleIndex: number,
+    colorDict: { [label: string]: string }
 }
 
 type Action = {
@@ -96,10 +97,28 @@ function reducer(state: State, action: Action): State {
             return {
                 ...state,
                 drawingRect: null,
-                objects: []
+                objects: [],
+                colorDict: {}
             };
         }
         case "SET_LABEL": {
+            const { colorDict } = state;
+            const oldLabel = state.objects[action.index].label;
+            const usesColor = state.objects.filter(
+                (obj) => obj.label === oldLabel
+            ).length;
+            const newColorDict = { ...colorDict };
+            if (usesColor === 1) {
+                if (!newColorDict[action.label]) {
+                    newColorDict[action.label] = newColorDict[oldLabel] || `hsl(${Math.random() * 360}, 100%, 65%)`;
+                }
+                delete newColorDict[oldLabel];
+            }
+            else if (!newColorDict[action.label]) {
+                console.log(`Generating new color for ${action.label}`);
+                newColorDict[action.label] = `hsl(${Math.random() * 360}, 100%, 65%)`;
+            }
+
             return {
                 ...state,
                 objects: [
@@ -109,7 +128,8 @@ function reducer(state: State, action: Action): State {
                         label: action.label
                     },
                     ...state.objects.slice(action.index + 1)
-                ]
+                ],
+                colorDict: newColorDict
             };
         }
         default: {
@@ -117,15 +137,6 @@ function reducer(state: State, action: Action): State {
         }
     }
 }
-
-const colors = [
-    "#05b8ff",
-    "#ffd105",
-    "#ff055d",
-    "#8aff05",
-    "#ffbc05",
-    "#f705ff"
-];
 
 const scales = [
     0.25,
@@ -148,7 +159,8 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
             drawingRect: null,
             objects: [],
             imgOrigSize: undefined,
-            scaleIndex: 3
+            scaleIndex: 3,
+            colorDict: {}
         };
 
         this.workspaceRef = React.createRef<HTMLDivElement>();
@@ -267,7 +279,7 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
     };
 
     render(): JSX.Element {
-        const { drawingRect, objects, scaleIndex, imgOrigSize } = this.state;
+        const { drawingRect, objects, scaleIndex, imgOrigSize, colorDict } = this.state;
         const imgScale = scales[scaleIndex];
         const imgStyle = imgOrigSize && {
             height: imgOrigSize.height * imgScale,
@@ -291,7 +303,7 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
                         <RectFrame
                             rect={drawingRect}
                             className="overlay__layer"
-                            color={colors[objects.length % colors.length]}
+                            color={"yellow"}
                             scale={imgScale}
                         />
                     }
@@ -306,7 +318,7 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
                                         index: i
                                     });
                                 }}
-                                color={colors[i % colors.length]}
+                                color={colorDict[label]}
                                 scale={imgScale}
                                 label={label}
                                 onLabelChange={
