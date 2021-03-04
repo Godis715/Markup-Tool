@@ -277,6 +277,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
                     {
                         rects.map(
                             (r, i) => <RectFrame
+                                key={JSON.stringify(r)}
                                 rect={r}
                                 className="overlay__layer"
                                 onClose={() => {

@@ -19,5 +19,5 @@ export default function AboutPageFAQ() {
                 <a href="https://github.com/Godis715/Markup-Tool">GitHub репозиторий</a>
             </div>
         </div>
-    </div>
+    </div>;
 }

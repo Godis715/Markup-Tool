@@ -77,7 +77,7 @@ export default function MarkupExplorerPage(): JSX.Element {
                             <h4>{markup.datasetName} / {MARKUP_TYPE_LITERALS[markup.type]}</h4>
                         </Link>
                         <small className="text-muted">
-                            Создано: {markup.createDate.toLocaleDateString("ru")}, 
+                            Создано: {markup.createDate.toLocaleDateString("ru")},
                             Владелец: {markup.owner}
                         </small>
                     </ListGroup.Item>

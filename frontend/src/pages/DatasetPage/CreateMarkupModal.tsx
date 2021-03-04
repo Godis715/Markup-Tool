@@ -196,9 +196,9 @@ export default function CreateMarkupModal(props: Props): JSX.Element {
             <Button
                 onClick={onSubmit}
                 disabled={
-                    (markupType === MarkupTypeEnum.CLASSIFICATION && options.length < 2) ||
-                    (markupType === MarkupTypeEnum.RECOGNITION && objectToFind === "") ||
-                    (markupType === MarkupTypeEnum.MULTI_RECOGNITION && objectToFind === "")
+                    markupType === MarkupTypeEnum.CLASSIFICATION && options.length < 2 ||
+                    markupType === MarkupTypeEnum.RECOGNITION && objectToFind === "" ||
+                    markupType === MarkupTypeEnum.MULTI_RECOGNITION && objectToFind === ""
                 }
             >Создать</Button>
             <Button variant="secondary" onClick={props.onHide}>Отмена</Button>

@@ -53,8 +53,7 @@ export default function RectFrame(props: Props): JSX.Element {
 
     return <div
         className={`rect-frame ${className || ""}`}
-        // @ts-ignore
-        style={{ left, top, width, height, "--color": color }}
+        style={{ left, top, width, height, "--color": color } as React.CSSProperties}
     >
         {
             onClose &&

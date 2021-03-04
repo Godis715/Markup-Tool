@@ -310,6 +310,7 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
                     {
                         objects.map(
                             ({ label, rectangle }, i) => <RectFrame
+                                key={JSON.stringify(rectangle)}
                                 rect={rectangle}
                                 className="overlay__layer"
                                 onClose={() => {
@@ -327,7 +328,7 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
                                             type: "SET_LABEL",
                                             index: i,
                                             label
-                                        })
+                                        });
                                     }
                                 }
                                 withLabel

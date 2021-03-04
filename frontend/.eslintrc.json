@@ -1,141 +1,34 @@
 {
     "env": {
         "browser": true,
-        "es6": true
+        "node": true,
+        "es6": true,
+        "jest": true
     },
     "extends": [
-        "plugin:react/recommended",
-        // Базовый набор правил eslint
-		"eslint:recommended",
-		// Отключаем правила из базового набора
-		"plugin:@typescript-eslint/eslint-recommended",
-		// Базовые правила для TypeScript
-		"plugin:@typescript-eslint/recommended",
-		 // Правила TS, требующие инфо о типах
-		"plugin:@typescript-eslint/recommended-requiring-type-checking"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended"
     ],
-    "parser": "@typescript-eslint/parser",
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parserOptions": {
-        // Движку нужен проект TS для правил с типами
-		"project": "./tsconfig.json",
-		"tsconfigRootDir": "."
-    },
     "plugins": [
         "react",
         "@typescript-eslint"
     ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2019,
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
     "rules": {
-        // note you must disable the base rule as it can report incorrect errors
-        // https://stackoverflow.com/questions/63818415/react-was-used-before-it-was-defined
-        "no-use-before-define": "off",
-        "@typescript-eslint/no-use-before-define": ["error"],
-        "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-floating-promises": "off",
-        "indent": ["error", 4, {
-            "SwitchCase": 1
-        }],
-        "operator-linebreak": ["error", "after", {
-            "overrides": {
-                "?": "before",
-                ":": "before"
-            }
-        }],
-        "quotes": ["error", "double", {
-            "avoidEscape": true,
-            "allowTemplateLiterals": true
-        }],
-        "quote-props": ["error", "as-needed", {
-            "keywords": true,
-            "unnecessary": true
-        }],
-        "comma-dangle": ["error", "never"],
-        "semi": ["error", "always"],
-        "@typescript-eslint/no-extra-parens": ["error"],
-        "class-methods-use-this": ["error", {
-            "exceptMethods": ["render"]
-        }],
-        "consistent-return": "error",
-        "curly": ["error", "all"],
-        "dot-location": ["error", "property"],
-        "eqeqeq": ["error", "always"],
-        "no-constructor-return": "error",
-        "no-else-return": ["error", {
-            "allowElseIf": false
-        }],
-        "no-multi-spaces": "error",
-        "no-param-reassign": ["error", {
-            "props": false
-        }],
-        "no-self-compare": "error",
-        "no-throw-literal": "error",
-        "no-unmodified-loop-condition": "error",
-        "no-unused-expressions": "error",
-        "no-useless-return": "error",
-        "@typescript-eslint/no-shadow": "error",
-        "no-shadow": "off",
-        "array-bracket-spacing": ["error", "never"],
-        "array-element-newline": ["error", "consistent"],
-        "block-spacing": ["error", "always"],
-        "brace-style": ["error", "stroustrup"],
-        "comma-spacing": ["error", {
-            "before": false,
-            "after": true
-        }],
-        "comma-style": ["error", "last"],
-        "computed-property-spacing": ["error", "never"],
-        "eol-last": ["error", "always"],
-        "func-call-spacing": ["error", "never"],
-        "func-names": ["error", "always"],
-        "func-style": ["error", "declaration", {
-            "allowArrowFunctions": true
-        }],
-        "function-call-argument-newline": ["error", "consistent"],
-        "function-paren-newline": ["error", "consistent"],
-        "jsx-quotes": ["error", "prefer-double"],
-        "key-spacing": ["error", {
-            "beforeColon": false,
-            "afterColon": true
-        }],
-        "multiline-ternary": ["error", "always-multiline"],
-        "no-lonely-if": "error",
-        "no-multi-assign": "error",
-        "no-multiple-empty-lines": "error",
-        "no-trailing-spaces": ["error", {
-            "ignoreComments": true
-        }],
-        "no-unneeded-ternary": "error",
-        "no-whitespace-before-property": "error",
-        "object-curly-newline": ["error", {
-            "consistent": true
-        }],
-        "object-curly-spacing": ["error", "always"],
-        "operator-assignment": ["error", "always"],
-        "semi-spacing": "error",
-        "semi-style": ["error", "last"],
-        "space-before-blocks": "error",
-        "space-infix-ops": "error",
-        "space-unary-ops": ["error", {
-            "words": true,
-            "nonwords": false
-        }],
-        "switch-colon-spacing": ["error", {
-            "after": true,
-            "before": false
-        }],
-        "arrow-parens": ["error", "always"],
-        "arrow-spacing": "error",
-        "no-var": "error",
-        "prefer-const": ["error", {
-            "destructuring": "all"
-        }],
-        "prefer-template": "error",
-        "no-mixed-operators": ["error", {
-            "allowSamePrecedence": true
-        }],
-        "react/prop-types": "off"
+        "react/jsx-props-no-spreading": "off",
+        "react/prop-types": "off",
+        "@typescript-eslint/comma-dangle": ["error", "never"],
+        "@typescript-eslint/indent": ["error", 4],
+        "@typescript-eslint/quotes": ["error", "double", { "avoidEscape": true }],
+        "react/jsx-indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4]
     }
 }

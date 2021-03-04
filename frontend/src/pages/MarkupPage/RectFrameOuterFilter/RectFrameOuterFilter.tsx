@@ -20,11 +20,10 @@ export default function RectFrameOuterFilter({ rect, className }: Props) {
     return <div
         className={`rect-frame-outer-filter ${className || ""}`}
         style={{
-            // @ts-ignore
             "--left": left,
             "--top": top,
             "--width": width,
             "--height": height
-        }}
+        } as React.CSSProperties}
     />;
 }
