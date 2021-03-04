@@ -1,5 +1,4 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
-
 export class InitialMigration1603042223898 implements MigrationInterface {
     name = 'InitialMigration1603042223898'
 

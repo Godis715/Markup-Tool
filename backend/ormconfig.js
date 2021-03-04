@@ -1,20 +1,20 @@
-export default {
-    "type": "psql",
-    "host": "localhost",
+module.exports = {
+    "type": "postgres",
+    "host": process.env.DB_HOST,
     "port": "5432",
-    "username": process.env.TYPEORM_USERNAME,
-    "password": process.env.TYPEORM_PASSWORD,
-    "database": process.env.TYPEORM_DATABASE,
+    "username": process.env.DB_USERNAME,
+    "password": process.env.DB_PASSWORD,
+    "database": process.env.DB_NAME,
     "synchronize": true,
     "logging": false,
     "entities": [
-        "src/entity/**/*.ts"
+        `${__dirname}/src/entity/**/*.ts`
     ],
     "migrations": [
-        "src/migration/**/*.ts"
+        `${__dirname}/src/migration/**/*.ts`
     ],
     "subscribers": [
-        "src/subscriber/**/*.ts"
+        `${__dirname}/src/subscriber/**/*.ts`
     ],
     "cli": {
         "entitiesDir": "src/entity",
