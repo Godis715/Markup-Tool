@@ -1,22 +1,25 @@
 import fs from "fs";
 import FormData from "form-data";
-import readline from "readline";
 
 // https://stackoverflow.com/questions/34570452/node-js-stdout-clearline-and-cursorto-functions
 // логируем прогресс, перезаписывая старые данные
-function printTheSameLine(message: string){
-    readline.cursorTo(process.stdout, 0);
-    process.stdout.write(message);
-}
+// function printTheSameLine(message: string){
+//     readline.cursorTo(process.stdout, 0);
+//     process.stdout.write(message);
+// }
 
-export async function uploadDataset(dirPath: string, datasetName: string, requestHeaders, host: string, port: string, handleProgress: (progress: number) => void) {
-    const files = fs.readdirSync(dirPath, { withFileTypes: true })
-        .filter(
-            (f) => f.isFile()
-        )
-        .map(
-            (f) => f.name
-        );
+export async function uploadDataset(
+    dirPath,
+    datasetName,
+    requestHeaders,
+    host,
+    port,
+    handleProgress
+) {
+    const files = fs
+        .readdirSync(dirPath, { withFileTypes: true })
+        .filter((f) => f.isFile())
+        .map((f) => f.name);
 
     const form = new FormData();
     files.forEach(
