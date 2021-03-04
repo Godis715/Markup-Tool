@@ -1,0 +1,32 @@
+# docker-compose.yml
+
+version: "3.7"
+services:
+    db:
+        image: postgres
+        environment:
+            - POSTGRES_USER=${DB_USERNAME}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+            - POSTGRES_DB=${DB_NAME}
+        ports:
+            - '5432:5432'
+
+    app:
+        environment:
+            - SECRET_KEY
+            - TYPEORM_CONNECTION=postgres
+            - TYPEORM_HOST=db
+            - TYPEORM_PORT=5432
+            - TYPEORM_USERNAME=${DB_USERNAME}
+            - TYPEORM_PASSWORD=${DB_PASSWORD}
+            - TYPEORM_DATABASE=${DB_NAME}
+        build:
+            # this is because docker file is not in a root directory
+            context: ../
+            # dockerfile location must be specified relatively to a context
+            dockerfile: ./deployment/Dockerfile.app
+        depends_on:
+            # as name of the database service
+            - db
+        ports:
+            - '8000:8000'
