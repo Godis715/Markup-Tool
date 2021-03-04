@@ -5,9 +5,9 @@ services:
     db:
         image: postgres
         environment:
+            - POSTGRES_USER=${DB_USERNAME}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_DB=${DB_NAME}
-            - POSTGRES_USERNAME=${DB_USERNAME}
         ports:
             - '5432:5432'
 
