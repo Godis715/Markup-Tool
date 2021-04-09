@@ -1,25 +1,19 @@
 FROM node:12
 
 WORKDIR /usr/app
-COPY frontend/package.json frontend/package.json
-COPY frontend/package-lock.json frontend/package-lock.json
-COPY backend/package.json backend/package.json
-COPY backend/package-lock.json backend/package-lock.json
+COPY frontend/package.json frontend/package-lock.json ./
+COPY ./frontend ./frontend
+RUN npm install && mv ./package.json ./package-lock.json ./node_modules ./frontend
+
+COPY backend/package.json backend/package-lock.json ./
+COPY ./backend ./backend
+RUN npm install && mv ./package.json ./package-lock.json ./node_modules ./backend
 
 WORKDIR /usr/app/frontend
-RUN npm install
-
-WORKDIR /usr/app/backend
-RUN npm install
-
-WORKDIR /usr/app
-COPY . .
-
 ENV REACT_APP_BASE_URL=http://localhost:8000
-WORKDIR ./frontend
 RUN npm run build
 
-WORKDIR ../backend
+WORKDIR /usr/app/backend
 
 EXPOSE 8000
 
