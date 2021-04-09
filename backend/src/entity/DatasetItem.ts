@@ -12,18 +12,18 @@ import { Dataset } from "./Dataset";
 @Unique(["name", "dataset"])
 export class DatasetItem {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
     @IsNotEmpty({ message: "Dataset item's name mustn't be empty" })
     // не является первичным ключом
     @Column()
-    name: string;
+    name!: string;
 
     // путь включает себя папку, в которой лежит датасет
     @IsNotEmpty({ message: "Dataset item's location mustn't be empty" })
     @Column({ unique: true })
-    location: string;
+    location!: string;
 
     @ManyToOne(() => Dataset, (dataset) => dataset.items)
-    dataset: Dataset;
+    dataset!: Dataset;
 }

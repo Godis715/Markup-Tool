@@ -6,7 +6,7 @@ import extractUserLogin from "./extractUserLogin";
 
 export default function allowForRoles(...roles: string[]) {
     const checkRights = async (
-        request: express.Request,
+        _: express.Request,
         response: express.Response,
         next: express.NextFunction
     ) => {

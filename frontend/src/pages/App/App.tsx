@@ -153,7 +153,6 @@ function App(): JSX.Element {
                             </Route>
                         </Switch>
                     }
-
                 </Col>
             </Row>
         </Container>

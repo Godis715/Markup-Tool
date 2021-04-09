@@ -2,7 +2,6 @@ import React, { useEffect, useReducer } from "react";
 import { Link } from "react-router-dom";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import ListGroup from "react-bootstrap/ListGroup";
-import Alert from "react-bootstrap/Alert";
 import { fetchDatasets } from "../../remote/api";
 import { DatasetShort } from "../../types/dataset";
 import Skeleton from "react-loading-skeleton";

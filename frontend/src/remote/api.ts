@@ -145,7 +145,7 @@ export async function downloadMarkupResult(markupId: string, ext: "json"|"csv"|"
         const filename = (response.headers["content-disposition"] as string)
             .split("filename=")[1]
             .split(";")[0]
-            .replaceAll('"', "");
+            .replace(/"/g, "");
         link.setAttribute("download", filename);
         document.body.appendChild(link);
         link.click();

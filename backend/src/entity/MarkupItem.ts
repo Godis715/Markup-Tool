@@ -13,18 +13,18 @@ import MarkupItemResult from "../validationDecorators/markupItemResult";
 @Entity()
 export class MarkupItem {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
     @ManyToOne(() => Markup, (markup) => markup.items)
-    markup: Markup;
+    markup!: Markup;
 
     @ManyToOne(() => User)
     @JoinColumn()
-    expert: User;
+    expert!: User;
 
     @ManyToOne(() => DatasetItem)
     @JoinColumn()
-    datasetItem: DatasetItem;
+    datasetItem!: DatasetItem;
 
     /**
      * TODO:

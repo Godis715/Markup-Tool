@@ -5,11 +5,7 @@ import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 import { Role } from "../entity/Role";
 import { validateOrReject } from "class-validator";
-
-const SECRET_KEY = process.env.SECRET_KEY;
-if (!SECRET_KEY) {
-    throw "SECRET_KEY must be provided as environmental variable";
-}
+import { SECRET_KEY } from "../constants";
 
 const ACCESS_EXPIRED_IN = "1h";
 // TODO: выяснить, можно ли так время писать
@@ -74,7 +70,7 @@ export async function createUser(login: string, password: string, roleNames: str
 
 export async function getUserRoles(login: string) {
     const manager = getManager();
-    const user = await manager.findOne(User, { login }, { relations: ["roles"] });
+    const user = await manager.findOneOrFail(User, { login }, { relations: ["roles"] });
     return user.roles.map(({ name }) => name);
 }
 

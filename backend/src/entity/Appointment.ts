@@ -10,14 +10,14 @@ import { User } from "./User";
 @Entity()
 export class Appointment {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
     @ManyToOne(() => User)
-    expert: User;
+    expert!: User;
 
     @ManyToOne(() => Markup)
-    markup: Markup;
+    markup!: Markup;
 
     @ManyToOne(() => DatasetItem)
-    datasetItem: DatasetItem;
+    datasetItem!: DatasetItem;
 }

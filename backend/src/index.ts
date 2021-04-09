@@ -4,13 +4,16 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { CorsOptions } from "cors";
 import { createConnection } from "typeorm";
-import { FOLDER_FOR_DATASETS, FRONTEND_BUILD_FOLDER } from "./constants";
+import {
+    DATASETS_FOLDER,
+    FRONTEND_FOLDER,
+    CLIENT_ORIGIN
+} from "./constants";
 import { useExpressServer } from "routing-controllers";
 import currentUserChecker from "./utils/currentUserChecker";
 import authorizationChecker from "./utils/authorizationChecker";
 
 const PORT = 8000;
-const ORIGIN = "http://localhost:3000";
 
 /**
  * Для работы с typeorm требуется лишь один раз создать соединение
@@ -32,19 +35,19 @@ const app = express()
     // чтобы работать с куки ответа
     .use(cookieParser())
     // раздаем картинки
-    .use("/images", express.static(FOLDER_FOR_DATASETS))
+    .use("/images", express.static(DATASETS_FOLDER))
     // раздаем статику react-а
-    .use(express.static(FRONTEND_BUILD_FOLDER));
+    .use(express.static(FRONTEND_FOLDER));
 
 const server = useExpressServer(app, {
     cors: {
-        origin: [ORIGIN],
+        origin: [CLIENT_ORIGIN],
         credentials: true,
         exposedHeaders: ["Content-Disposition"]
     } as CorsOptions,
     currentUserChecker,
     authorizationChecker,
-    controllers: [__dirname + "/controllers/*.ts"],
+    controllers: [`${__dirname}/controllers/*.ts`],
     defaults: {
         nullResultCode: 404
     }
@@ -58,7 +61,7 @@ const server = useExpressServer(app, {
             next();
         }
         else {
-            res.sendFile(`${FRONTEND_BUILD_FOLDER}/index.html`);
+            res.sendFile(`${FRONTEND_FOLDER}/index.html`);
         }
     })
     .listen(PORT, () => {

@@ -11,9 +11,16 @@ import {
     Authorized,
     UseBefore,
     UseAfter,
-    BadRequestError, Req, OnUndefined, QueryParam, Get, Param, ForbiddenError, Body, HeaderParam
+    BadRequestError,
+    Req,
+    OnUndefined,
+    QueryParam,
+    Get,
+    Param,
+    ForbiddenError,
+    Body
 } from "routing-controllers";
-import { FOLDER_FOR_DATASETS } from "../constants";
+import { DATASETS_FOLDER } from "../constants";
 import { User } from "../entity/User";
 import { getManager } from "typeorm";
 import { UserRole } from "../enums/appEnums";
@@ -27,7 +34,7 @@ import { Markup } from "../entity/Markup";
 
 async function handleInterruption(
     req: express.Request,
-    res: express.Response,
+    _: express.Response,
     next: express.NextFunction
 ) {
     /**
@@ -44,7 +51,13 @@ async function handleInterruption(
 
     // когда содинение закрывается, проверяем количество заявленных и полученных байтов
     req.on("close", () => {
-        const totalLength = parseInt(req.header("Content-Length"));
+        const contentLength = req.header("Content-Length");
+        if (!contentLength) {
+            next(new Error("ContentLength wasn't provided"));
+            return;
+        }
+
+        const totalLength = parseInt(contentLength);
         if (totalLength > writtenLen) {
             next(new Error("Connection closed, before data had derived"));
         }
@@ -60,7 +73,7 @@ async function saveFileStream(
 ) {
     // имя директории, в которую будут загружаться файлы
     const dirName = crypto.randomBytes(10).toString("hex");
-    const dirPath = path.resolve(FOLDER_FOR_DATASETS, dirName);
+    const dirPath = path.resolve(DATASETS_FOLDER, dirName);
     // сохраняем путь к директории для последующей работы
     res.locals.dirPath = dirPath;
 
@@ -72,9 +85,9 @@ async function saveFileStream(
 /** Финальный обработчик ошибок */
 async function handleErrors(
     err: Error,
-    req: express.Request,
+    _: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    __: express.NextFunction
 ) {
     if (!err) {
         res.sendStatus(200);
@@ -130,7 +143,7 @@ export default class DatasetController {
             (f) => {
                 const datasetItem = new DatasetItem();
                 datasetItem.dataset = dataset;
-                datasetItem.location = path.relative(FOLDER_FOR_DATASETS, f.path);
+                datasetItem.location = path.relative(DATASETS_FOLDER, f.path);
                 datasetItem.name = f.originalname;
                 dataset.items.push(datasetItem);
             }
@@ -181,7 +194,7 @@ export default class DatasetController {
     async getById(
         @Param("datasetId") datasetId: string,
         @CurrentUser({ required: true }) user: User
-    ): Promise<DatasetDetailed> {
+    ): Promise<DatasetDetailed | null> {
         const manager = getManager();
 
         const dataset = await manager.findOne(Dataset, datasetId, {
@@ -282,7 +295,7 @@ export default class DatasetController {
     async getMarkup(
         @Param("datasetId") datasetId: string,
         @CurrentUser({ required: true }) user: User
-    ): Promise<MarkupForCustomer[]> {
+    ): Promise<MarkupForCustomer[] | null> {
         const manager = getManager();
             
         // FIX ME: внизу идет проверка, однако она никогда не выполнится

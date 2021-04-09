@@ -35,13 +35,12 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
                 type: "string"
             }
         }
-    },
-    [MarkupTypeEnum.OBJECT_ANNOTATION]: null
+    }
 };
 
 @ValidatorConstraint({ name: "markupConfig", async: false })
 export class MarkupConfigConstraint implements ValidatorConstraintInterface {
-    public message: string = null;
+    public message: string | null = null;
 
     public validate(value: any, args: ValidationArguments) {
         const markup = args.object as Markup;
@@ -50,7 +49,7 @@ export class MarkupConfigConstraint implements ValidatorConstraintInterface {
             return false;
         }
 
-        const schema = schemas[markup.type];
+        const schema = schemas[markup.type as MarkupTypeEnum];
 
         /**
          * Если схема не определена,
@@ -73,7 +72,7 @@ export class MarkupConfigConstraint implements ValidatorConstraintInterface {
         return true;
     }
 
-    public defaultMessage(args: ValidationArguments) {
+    public defaultMessage() {
       return `Markup's config has wrong format: ${this.message}`;
     }
 }

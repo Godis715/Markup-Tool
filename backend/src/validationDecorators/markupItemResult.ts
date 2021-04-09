@@ -74,45 +74,12 @@ const schemas: { [T in MarkupTypeEnum]: object } = {
             }
         },
         additionalProperties: false
-    },
-
-    [MarkupTypeEnum.OBJECT_ANNOTATION]: {
-        //required: ["status", "objects"],
-        properties: {
-            status: {
-                type: "string",
-                enum: ["SUCCESS", "CANNOT_DETECT_OBJECT"]
-            },
-            objects: {
-                type: "array",
-                minItems: 1,
-                items: {
-                    type: "object",
-                    required: ["label", "rectangle"],
-                    additionalProperties: false,
-                    properties: {
-                        label: { type: "string" },
-                        rectangle: {
-                            type: "object",
-                            required: ["x1", "y1", "x2", "y2"],
-                            properties: {
-                                x1: coordSchema,
-                                y1: coordSchema,
-                                x2: coordSchema,
-                                y2: coordSchema
-                            },
-                            additionalProperties: false
-                        }
-                    }
-                }
-            }
-        }
     }
 };
 
 @ValidatorConstraint({ name: "markupItemResult", async: false })
 export class MarkupItemResultConstraint implements ValidatorConstraintInterface {
-    public message: string = null;
+    public message: string | null = null;
 
     public validate(value: any, args: ValidationArguments) {
         const markup = (args.object as MarkupItem).markup;
@@ -121,7 +88,7 @@ export class MarkupItemResultConstraint implements ValidatorConstraintInterface 
             return false;
         }
 
-        const schema = schemas[markup.type];
+        const schema = schemas[markup.type as MarkupTypeEnum];
         const ajv = new Ajv({ allErrors: true });
         const isValid = ajv.validate(schema, value);
 
@@ -134,7 +101,7 @@ export class MarkupItemResultConstraint implements ValidatorConstraintInterface 
         return true;
     }
 
-    public defaultMessage(args: ValidationArguments) {
+    public defaultMessage() {
       return `Markup item's result has wrong format: ${this.message}`;
     }
 }

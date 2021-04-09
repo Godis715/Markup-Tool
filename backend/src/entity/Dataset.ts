@@ -6,13 +6,13 @@ import {
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { User } from "./User";
-import { IsNotEmpty, ValidateNested } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { Markup } from "./Markup";
 
 @Entity()
 export class Dataset {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
     /**
      * TODO:
@@ -21,7 +21,7 @@ export class Dataset {
      */
     @IsNotEmpty({ message: "Dataset name mustn't be empty" })
     @Column({ unique: true })
-    name: string;
+    name!: string;
 
     /**
      * TODO:
@@ -30,17 +30,17 @@ export class Dataset {
      */
     @IsNotEmpty({ message: "Dataset location mustn't be empty" })
     @Column({ unique: true })
-    location: string;
+    location!: string;
 
     @ManyToOne(() => User, (user) => user.datasets)
-    user: User;
+    user!: User;
 
     @OneToMany(() => DatasetItem, (datasetItem) => datasetItem.dataset)
-    items: DatasetItem[];
+    items!: DatasetItem[];
 
     @OneToMany(() => Markup, (markup) => markup.dataset)
-    markups: Markup[];
+    markups!: Markup[];
 
     @CreateDateColumn()
-    uploadDate: Date;
+    uploadDate!: Date;
 } 
