@@ -11,10 +11,10 @@ import Badge from "react-bootstrap/Badge";
 import { LinkContainer } from "react-router-bootstrap";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import CreateMarkupModal from "./CreateMarkupModal";
-import { MarkupConfig, MarkupType } from "../../../../backend/src/types/markup";
+import { MarkupConfig, MarkupType } from "../../types/markup";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
-import Skeleton from "react-loading-skeleton";
 import "./style.scss";
+import Divider from "../../components/Divider/Divider";
 
 enum ActionType {
     RECIEVE_DATASET
@@ -100,26 +100,17 @@ export default function DatasetPage(): JSX.Element {
                         <Link to="/dataset">Датасеты</Link>
                     </Breadcrumb.Item>
                     <Breadcrumb.Item active>
-                        {
-                            state.dataset?.name ||
-                            <Skeleton width={50} />
-                        }
+                        {state.dataset?.name}
                     </Breadcrumb.Item>
                 </Breadcrumb>
 
                 <Row className="mt-4">
-                    <Col as="h2">{
-                        state.dataset?.name ||
-                        <Skeleton width={150} />
-                    }</Col>
+                    <Col as="h2">{state.dataset?.name}</Col>
                 </Row>
 
                 <Row>
                     <Col as="small" className="text-muted">
-                        Дата загрузки: {
-                            state.dataset?.uploadDate.toLocaleDateString("ru") ||
-                            <Skeleton width={100} />
-                        }
+                        Дата загрузки: {state.dataset?.uploadDate.toLocaleDateString("ru")}
                     </Col>
                 </Row>
 
@@ -129,6 +120,8 @@ export default function DatasetPage(): JSX.Element {
                         <Button variant="outline-primary" onClick={openModal}>Добавить разметку</Button>
                     </Col>
                 </Row>
+
+                <Divider />
 
                 <Row className="mt-2">
                     <Col>
@@ -149,7 +142,7 @@ export default function DatasetPage(): JSX.Element {
                                     </tr>
                                 }
                                 {
-                                    state.dataset?.markups.map(
+                                    state.dataset?.markups?.map(
                                         (markup, i) => <LinkContainer
                                             to={`/dataset/${datasetId}/markup/${markup.id}`}
                                             key={markup.id}

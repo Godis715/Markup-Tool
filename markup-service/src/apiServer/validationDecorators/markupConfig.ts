@@ -6,8 +6,8 @@ import {
     ValidatorConstraintInterface
 } from 'class-validator';
 import Ajv from "ajv";
-import { MarkupTypeEnum } from '../enums/appEnums';
-import { Markup } from '../entity/Markup';
+import { MarkupTypeEnum } from '../../types/markup';
+import { Markup } from '../../entity/Markup';
 
 // JSON-схемы для параметров разметки различных типов
 const schemas: { [T in MarkupTypeEnum]: object } = {

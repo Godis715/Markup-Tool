@@ -10,9 +10,9 @@ import {
     HeaderParam,
     CookieParam
 } from "routing-controllers";
-import { User } from "../entity/User";
-import { generateAccessTokens, generateTokens, getUserRoles } from "../utils/auth";
-import { ACCESS_TOKEN_COOKIE, CSRF_REFRESH_TOKEN_HEADER, REFRESH_TOKEN_COOKIE } from "../utils/configs";
+import { User } from "../../entity/User";
+import { generateAccessTokens, generateTokens, getUserRoles } from "../../utils/auth";
+import { ACCESS_TOKEN_COOKIE, CSRF_REFRESH_TOKEN_HEADER, REFRESH_TOKEN_COOKIE } from "../../utils/configs";
 
 type AuthData = {
     login: string,

@@ -7,13 +7,12 @@ import { CustomErrorType } from "../../utils/customError";
 import ClassificationTool from "./ClassificationTool/ClassificationTool";
 import RecognitionTool from "./RecognitionTool/RecognitionTool";
 import Card from "react-bootstrap/Card";
-import { ClassificationConfig } from "../../../../backend/src/types/markup";
+import { ClassificationConfig } from "../../types/markup";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
-import "./style.scss";
 import MultiRecognitionTool from "./MultiRecognitionTool/MultiRecognitionTool";
 import { IMAGE_HOST } from "../../constants/urls";
-import Skeleton from "react-loading-skeleton";
+import "./style.scss";
 
 // TODO: добавить случай, когда все MarkupItem закончились
 enum ActionType {
@@ -182,9 +181,7 @@ export default function MarkupPage(): JSX.Element {
             </Breadcrumb.Item>
             <Breadcrumb.Item active>
                 {
-                    state.markup
-                        ? `${state.markup?.datasetName} - ${MARKUP_TYPE_LITERALS[state.markup.type]}`
-                        : <Skeleton width="10rem" />
+                    state.markup && `${state.markup?.datasetName} - ${MARKUP_TYPE_LITERALS[state.markup.type]}`
                 }
             </Breadcrumb.Item>
         </Breadcrumb>

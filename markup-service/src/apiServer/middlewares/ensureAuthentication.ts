@@ -1,9 +1,9 @@
 import express from "express";
-import { JWTPayload, verifyTokens } from "../utils/auth";
+import { JWTPayload, verifyTokens } from "../../utils/auth";
 import {
     ACCESS_TOKEN_COOKIE,
     CSRF_ACCESS_TOKEN_HEADER
-} from "../utils/configs";
+} from "../../utils/configs";
 import jwt from "jsonwebtoken";
 
 export default async function ensureAuthentication(

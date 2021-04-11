@@ -1,7 +1,13 @@
-export type MarkupType =
-    "classification" |
-    "recognition" |
-    "multi-recognition";
+export enum MarkupTypeEnum {
+    // классификация изображений
+    CLASSIFICATION = "classification",
+    // поиск заданного объекта
+    RECOGNITION = "recognition",
+    // поиск нескольких заданных
+    MULTI_RECOGNITION = "multi-recognition"
+}
+
+export type MarkupType = MarkupTypeEnum;
 
 export type ClassificationConfig = string[];
 export type RecognitionConfig = { objectToFind: string };

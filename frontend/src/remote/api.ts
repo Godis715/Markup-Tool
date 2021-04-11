@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { MarkupConfig, MarkupForCustomer, MarkupType } from "../../../backend/src/types/markup";
+import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
 import { API_URL } from "../constants/urls";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";

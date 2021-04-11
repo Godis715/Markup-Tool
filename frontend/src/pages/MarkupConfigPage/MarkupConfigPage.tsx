@@ -6,7 +6,11 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { MarkupForCustomer } from "../../types/markup";
-import { addExpertsToMarkup, fetchDataset, fetchMarkup, downloadMarkupResult } from "../../remote/api";
+import {
+    addExpertsToMarkup,
+    fetchDataset,
+    fetchMarkup
+} from "../../remote/api";
 import { DatasetDetailed } from "../../types/dataset";
 import ListGroup from "react-bootstrap/ListGroup";
 import InputGroup from "react-bootstrap/InputGroup";
@@ -15,7 +19,6 @@ import Form from "react-bootstrap/Form";
 import { MARKUP_TYPE_LITERALS } from "../../constants/literals";
 import ResultDownloader from "./ResultDownloader";
 import Divider from "../../components/Divider/Divider";
-import Skeleton from "react-loading-skeleton";
 
 type QueryParams = {
     datasetId: string,
@@ -98,18 +101,11 @@ export default function MarkupConfigPage(): JSX.Element {
             </Breadcrumb.Item>
             <Breadcrumb.Item>
                 <Link to={`/dataset/${datasetId}`}>
-                    {
-                        dataset?.name ||
-                        <Skeleton width={50} />
-                    }
+                    {dataset?.name}
                 </Link>
             </Breadcrumb.Item>
             <Breadcrumb.Item active>
-                {
-                    markup
-                        ? MARKUP_TYPE_LITERALS[markup.type]
-                        : <Skeleton width={50} />
-                }
+                {markup && MARKUP_TYPE_LITERALS[markup.type]}
             </Breadcrumb.Item>
         </Breadcrumb>
 
@@ -118,27 +114,17 @@ export default function MarkupConfigPage(): JSX.Element {
         <Container className="px-0">
             <Row className="text-muted">
                 <Col as="small" md="auto">
-                    Тип: {
-                        markup
-                            ? MARKUP_TYPE_LITERALS[markup.type]
-                            : <Skeleton width={50} />
-                    }
+                    Тип: {markup && MARKUP_TYPE_LITERALS[markup.type]}
                 </Col>
                 <Col as="small" md="auto">
-                    Дата создания: {
-                        markup?.createDate.toLocaleDateString("ru") ||
-                        <Skeleton width={50} />
-                    }
+                    Дата создания: {markup?.createDate.toLocaleDateString("ru")}
                 </Col>
             </Row>
 
             <Row className="mt-3">
                 <Col>
                     <h5>Описание</h5>
-                    <p>{
-                        markup?.description ||
-                        <Skeleton count={3} />
-                    }</p>
+                    <p>{markup?.description}</p>
                 </Col>
             </Row>
         </Container>
@@ -151,11 +137,7 @@ export default function MarkupConfigPage(): JSX.Element {
                     ? 0
                     : 100 * markup.progress.done / markup.progress.all
             }
-            label={
-                markup
-                    ? `${markup.progress.done}/${markup.progress.all}`
-                    : <Skeleton width={50} />
-            }
+            label={markup && `${markup.progress.done}/${markup.progress.all}`}
         />
 
         <ResultDownloader
@@ -172,11 +154,7 @@ export default function MarkupConfigPage(): JSX.Element {
                     <h5>Управление экспертами</h5>
 
                     <div className="mt-3">
-                        Все эксперты ({
-                            markup
-                                ? markup.experts.length
-                                : <Skeleton width={20} />
-                        })
+                        Все эксперты ({markup?.experts.length})
                     </div>
                     <ListGroup className="mt-2 overflow-auto" style={{ maxHeight: "400px" }}>
                         {

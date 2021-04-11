@@ -20,17 +20,17 @@ import {
     ForbiddenError,
     Body
 } from "routing-controllers";
-import { DATASETS_FOLDER } from "../constants";
-import { User } from "../entity/User";
+import { DATASETS_FOLDER } from "../../constants";
+import { User } from "../../entity/User";
 import { getManager } from "typeorm";
-import { UserRole } from "../enums/appEnums";
-import { Dataset } from "../entity/Dataset";
-import { DatasetItem } from "../entity/DatasetItem";
+import { UserRole } from "../../types/role";
+import { Dataset } from "../../entity/Dataset";
+import { DatasetItem } from "../../entity/DatasetItem";
 import { validateOrReject } from "class-validator";
-import validateAllOrReject from "../utils/validateAllOrReject";
-import { DatasetDetailed, DatasetShort } from "../types/dataset";
-import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
-import { Markup } from "../entity/Markup";
+import validateAllOrReject from "../../utils/validateAllOrReject";
+import { DatasetDetailed, DatasetShort } from "../../types/dataset";
+import { MarkupConfig, MarkupForCustomer, MarkupType } from "../../types/markup";
+import { Markup } from "../../entity/Markup";
 
 async function handleInterruption(
     req: express.Request,

@@ -14,12 +14,12 @@ import {
     Res, OnUndefined
 } from "routing-controllers";
 import { getManager } from "typeorm";
-import { DatasetItem } from "../entity/DatasetItem";
-import { Markup } from "../entity/Markup";
-import { MarkupItem } from "../entity/MarkupItem";
-import { User } from "../entity/User";
-import { UserRole } from "../enums/appEnums";
-import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../types/markup";
+import { DatasetItem } from "../../entity/DatasetItem";
+import { Markup } from "../../entity/Markup";
+import { MarkupItem } from "../../entity/MarkupItem";
+import { User } from "../../entity/User";
+import { UserRole } from "../../types/role";
+import { MarkupForCustomer, MarkupForExpert, MarkupType } from "../../types/markup";
 
 @JsonController("/api/markup")
 export class MarkupController {

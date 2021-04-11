@@ -12,13 +12,13 @@ import {
     OnUndefined
 } from "routing-controllers";
 import { getManager } from "typeorm";
-import { Appointment } from "../entity/Appointment";
-import { DatasetItem } from "../entity/DatasetItem";
-import { Markup } from "../entity/Markup";
-import { MarkupItem } from "../entity/MarkupItem";
-import { User } from "../entity/User";
-import { UserRole } from "../enums/appEnums";
-import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
+import { Appointment } from "../../entity/Appointment";
+import { DatasetItem } from "../../entity/DatasetItem";
+import { Markup } from "../../entity/Markup";
+import { MarkupItem } from "../../entity/MarkupItem";
+import { User } from "../../entity/User";
+import { UserRole } from "../../types/role";
+import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 
 @JsonController("/api/markup/:markupId/item")
 export default class MarkupItemController {

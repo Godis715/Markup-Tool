@@ -12,8 +12,8 @@ import { IsIn } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
-import { MarkupTypeEnum } from "../enums/appEnums";
-import MarkupConfig from "../validationDecorators/markupConfig";
+import { MarkupTypeEnum } from "../types/markup";
+import MarkupConfig from "../apiServer/validationDecorators/markupConfig";
 
 /**
  * Сущность, представляющая собой задание для экспертов на разметку и

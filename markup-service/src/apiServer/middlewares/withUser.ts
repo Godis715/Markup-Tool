@@ -1,9 +1,9 @@
 import express from "express";
-import { JWTPayload, verifyTokens } from "../utils/auth";
-import { ACCESS_TOKEN_COOKIE, CSRF_ACCESS_TOKEN_HEADER } from "../utils/configs";
+import { JWTPayload, verifyTokens } from "../../utils/auth";
+import { ACCESS_TOKEN_COOKIE, CSRF_ACCESS_TOKEN_HEADER } from "../../utils/configs";
 import jwt from "jsonwebtoken";
 import { getManager } from "typeorm";
-import { User } from "../entity/User";
+import { User } from "../../entity/User";
 
 // проверяет jwt токен и по нему восстанавливает пользователя, сохраняет его в response.locals.user
 export default async function withUser(

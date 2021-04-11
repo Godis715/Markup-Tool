@@ -6,8 +6,8 @@ import {
     ValidatorConstraintInterface
 } from 'class-validator';
 import Ajv from "ajv";
-import { MarkupItem } from '../entity/MarkupItem';
-import { MarkupTypeEnum } from '../enums/appEnums';
+import { MarkupItem } from '../../entity/MarkupItem';
+import { MarkupTypeEnum } from '../../types/markup';
 
 const coordSchema = {
     type: "number",

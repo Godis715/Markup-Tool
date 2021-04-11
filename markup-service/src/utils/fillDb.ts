@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Role } from "../entity/Role";
 import { createConnection } from "typeorm";
-import { UserRole } from "../enums/appEnums";
+import { UserRole } from "../types/role";
 
 
 (async () => {

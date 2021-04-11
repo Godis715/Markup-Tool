@@ -1,11 +1,12 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
-import { ObjectAnnotationItemResult } from "../../../types/markupItem";
 import RectFrame from "../RectFrame/RectFrame";
 import Alert from "react-bootstrap/Alert";
 import Form from "react-bootstrap/Form";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import "./style.scss";
+
+type ObjectAnnotationItemResult = unknown;
 
 type Props = {
     imageSrc: string,
