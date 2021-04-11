@@ -1,0 +1,64 @@
+# docker-compose.yml
+
+version: "3.7"
+services:
+    rabbit:
+        image: rabbitmq
+        ports:
+            - 5672:5672
+            - 15672:15672
+
+    markup-db:
+        image: postgres
+        environment:
+            - POSTGRES_USER=${MARKUP_DB_USERNAME}
+            - POSTGRES_PASSWORD=${MARKUP_DB_PASSWORD}
+            - POSTGRES_DB=${MARKUP_DB_NAME}
+        ports:
+            - 5433:5432
+
+    model-db:
+        image: postgres
+        environment:
+            - POSTGRES_USER=${MODEL_DB_USERNAME}
+            - POSTGRES_PASSWORD=${MODEL_DB_PASSWORD}
+            - POSTGRES_DB=${MODEL_DB_NAME}
+        ports:
+            - 5432:5432
+
+    markup-service:
+        environment:
+            - SECRET_KEY
+            - DATASETS_FOLDER
+            - CLIENT_ORIGIN
+            - FRONTEND_FOLDER
+
+            - REACT_APP_BASE_URL
+
+            - DB_HOST=markup-db
+            - DB_PORT=5432
+            - DB_USERNAME=${MARKUP_DB_USERNAME}
+            - DB_PASSWORD=${MARKUP_DB_PASSWORD}
+            - DB_NAME=${MARKUP_DB_NAME}
+        build:
+            context: ./
+            dockerfile: ./markup-service/Dockerfile
+        depends_on:
+            - markup-db
+        ports:
+            - 8000:8000
+
+    model-manager-service:
+        build:
+            context: ./model-management-service
+            dockerfile: ./Dockerfile
+        environment:
+            - DB_HOST=model-db
+            - DB_PORT=5432
+            - DB_USERNAME=${MODEL_DB_USERNAME}
+            - DB_PASSWORD=${MODEL_DB_PASSWORD}
+            - DB_NAME=${MODEL_DB_NAME}
+            - RABBITMQ_HOST=amqp://rabbit
+        depends_on:
+            - rabbit
+            - model-db
