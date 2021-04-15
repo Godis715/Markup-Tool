@@ -4,8 +4,8 @@ import commander from "commander";
 import { prompt } from "inquirer";
 import jwt from "jsonwebtoken";
 import { createConnection } from "typeorm";
-import { UserRole } from "../src/enums/appEnums";
-import * as auth from "../src/utils/auth";
+import { UserRole } from "../src/types/role";
+import * as auth from "../src/services/authService";
 
 createConnection();
 

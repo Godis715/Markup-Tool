@@ -267,6 +267,8 @@ export default class DatasetController {
         markup.config = config;
         markup.description = description;
         markup.experts = [];
+        // TODO: должно приходить от клиента
+        markup.minExpertsPerTask = 3;
 
         try {
             await validateOrReject(markup, { validationError: { target: false } });

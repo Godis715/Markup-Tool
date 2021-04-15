@@ -1,7 +1,7 @@
 import path from "path";
 
 if (!process.env.DATASETS_FOLDER) {
-    throw new Error("DATASET_FOLDER wasn't provided");
+    throw new Error("DATASETS_FOLDER wasn't provided");
 }
 export const DATASETS_FOLDER = path.resolve(process.env.DATASETS_FOLDER);
 

@@ -1,6 +1,6 @@
 import { Action } from "routing-controllers";
 import { User } from "../entity/User";
-import { JWTPayload, verifyTokens } from "./auth";
+import { JWTPayload, verifyTokens } from "../services/authService";
 import jwt from "jsonwebtoken";
 import { getManager } from "typeorm";
 import { ACCESS_TOKEN_COOKIE, CSRF_ACCESS_TOKEN_HEADER } from "./configs";

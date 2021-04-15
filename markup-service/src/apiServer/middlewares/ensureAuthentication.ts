@@ -1,5 +1,5 @@
 import express from "express";
-import { JWTPayload, verifyTokens } from "../../utils/auth";
+import { JWTPayload, verifyTokens } from "../../services/authService";
 import {
     ACCESS_TOKEN_COOKIE,
     CSRF_ACCESS_TOKEN_HEADER

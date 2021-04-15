@@ -8,7 +8,7 @@ import {
     JoinTable,
     CreateDateColumn
 } from "typeorm";
-import { IsIn } from "class-validator";
+import { IsIn, IsInt, Min } from "class-validator";
 import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
@@ -41,6 +41,11 @@ export class Markup {
 
     @OneToMany(() => MarkupItem, (markupItem) => markupItem.markup)
     items!: MarkupItem[];
+
+    @Column()
+    @IsInt()
+    @Min(1)
+    minExpertsPerTask!: number;
 
     // эксперты, назначенные на выполнение задачи
     @ManyToMany(() => User)

@@ -4,9 +4,11 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    Unique
+    Unique,
+    OneToMany
 } from "typeorm";
 import { Dataset } from "./Dataset";
+import { MarkupItem } from "./MarkupItem";
 
 @Entity()
 @Unique(["name", "dataset"])
@@ -26,4 +28,7 @@ export class DatasetItem {
 
     @ManyToOne(() => Dataset, (dataset) => dataset.items)
     dataset!: Dataset;
+
+    @OneToMany(() => MarkupItem, (markup) => markup.datasetItem)
+    markupItems!: MarkupItem[];
 }

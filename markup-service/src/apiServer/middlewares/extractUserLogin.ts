@@ -1,5 +1,5 @@
 import express from "express";
-import { JWTPayload } from "../../utils/auth";
+import { JWTPayload } from "../../services/authService";
 import { ACCESS_TOKEN_COOKIE } from "../../utils/configs";
 import jwt from "jsonwebtoken";
 

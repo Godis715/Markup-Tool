@@ -22,7 +22,7 @@ export class MarkupItem {
     @JoinColumn()
     expert!: User;
 
-    @ManyToOne(() => DatasetItem)
+    @ManyToOne(() => DatasetItem, (datasetItem) => datasetItem.markupItems)
     @JoinColumn()
     datasetItem!: DatasetItem;
 
