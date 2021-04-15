@@ -13,12 +13,12 @@ import {
 } from "routing-controllers";
 import { getManager } from "typeorm";
 import { Appointment } from "../../entity/Appointment";
-import { DatasetItem } from "../../entity/DatasetItem";
 import { Markup } from "../../entity/Markup";
 import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
 import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
+import assignMarkupTask, { TaskGroup } from "../../services/taskAssignmentService";
 
 @JsonController("/api/markup/:markupId/item")
 export default class MarkupItemController {
@@ -58,57 +58,14 @@ export default class MarkupItemController {
             appointment.expert = user;
             appointment.markup = markup;
 
-            /**
-             * TODO:
-             * логику назначения задачи на пользователя нужно вынести отдельно
-             * 
-             * TODO:
-             * отдельно продумать вариант, когда задачи кончились, но некоторые пользователи
-             * не выполняют назначенную им задачу
-             * в этом случае, наверное, стоит отдать эту задачу другим пользователям
-             * а потом по принципу "кто первый"
-             * 
-             * TODO:
-             * продумать схемы с тем, чтобы у пользователей задачи могли пересекаться
-             * 
-             * FIX ME:
-             * видимо, это баг typeorm, что в каких-то случаях, происходит подстановка кавычек для postgre
-             * в каких-то нет
-             * проверить это дело
-             */
-            const datasetItemSubQb = manager
-                .createQueryBuilder()
-                .select("di")
-                .from(DatasetItem, "di")
-                .where('di.datasetId = :datasetId')
-                .andWhere(
-                    (qb) => {
-                        const subQuery = qb
-                            .subQuery()
-                            .select('app.datasetItemId')
-                            .from(Appointment, "app")
-                            .where('app.markupId = :markupId')
-                            .getQuery();
-                    
-                        return `di.id NOT IN ${subQuery}`;
-                    }
-                )
-                .andWhere(
-                    (qb) => {
-                        const subQuery = qb
-                            .subQuery()
-                            .select('item.datasetItemId')
-                            .from(MarkupItem, "item")
-                            .where('item.markupId = :markupId')
-                            .getQuery();
-
-                        return `di.id NOT IN ${subQuery}`;
-                    }
-                )
-                .setParameter("datasetId", markup.dataset.id)
-                .setParameter("markupId", markupId);
-
-            const datasetItem = await datasetItemSubQb.getOne();
+            const datasetItem = await assignMarkupTask(
+                markup,
+                user,
+                {
+                    [TaskGroup.PARTIALLY_DONE]: 0.75,
+                    [TaskGroup.UNTOUCHED]: 0.25
+                }
+            );
 
             if (!datasetItem) {
                 return null;

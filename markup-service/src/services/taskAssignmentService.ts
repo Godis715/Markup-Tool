@@ -1,3 +1,8 @@
+import { getManager } from "typeorm";
+import { DatasetItem } from "../entity/DatasetItem";
+import { Markup } from "../entity/Markup";
+import { User } from "../entity/User";
+
 /**
  * ** Сначала надо понять, какие группы заданий вообще есть
  * ** Также надо, чтобы где-то были заданы такие вероятности
@@ -8,32 +13,15 @@
  * 5.	Если были просмотрены все группы заданий, тогда для пользователя отсутствуют доступные задания
  */
 
-import { getManager } from "typeorm";
-import { DatasetItem } from "../entity/DatasetItem";
-import { Markup } from "../entity/Markup";
-import { User } from "../entity/User";
-
-/**
- * Возможные группы заданий:
- * - Изображений, размеченные недостаточное количество раз
- * - Изображения, которые еще ни разу не были размечены
- * 
- * Нас не интересуют задания:
- * - Размеченные заданное количество раз
- * - Размеченные текущим пользователем
- * 
- * Пока будем считать, что для групп вероятности заданы фиксированно
- */
-
 export enum TaskGroup {
     PARTIALLY_DONE = "partially-done",
     UNTOUCHED = "untouched"
 };
 
-type TaskFetcher = (markup: Markup, user: User) => Promise<string | null>;
+type TaskFetcher = (markup: Markup, user: User) => Promise<DatasetItem | null>;
 
 type TaskRandomFetcher = {
-    fetchTask: () => Promise<string | null>,
+    fetchTask: () => Promise<DatasetItem | null>,
     probability: number
 };
 
@@ -60,7 +48,7 @@ const taskFetchers: { [task in TaskGroup]: TaskFetcher } = {
 };
 
  // Task - по-сути, dataset item
-export async function fetchRandomTask(taskRandomFetchers: TaskRandomFetcher[]): Promise<string | null> {
+export async function fetchRandomTask(taskRandomFetchers: TaskRandomFetcher[]): Promise<DatasetItem | null> {
     while (taskRandomFetchers.some((g) => g.probability > 0)) {
         const probabilities = taskRandomFetchers.map((g) => g.probability);
         const idx = playRandomIndex(probabilities);
@@ -81,60 +69,61 @@ export async function fetchRandomTask(taskRandomFetchers: TaskRandomFetcher[]): 
  * Функция возвращает ID datasetItem-a, который:
  * - Еще никем не был размечен
  */
-async function fetchUntouchedTask(markup: Markup, user: User): Promise<string | null> {
+async function fetchUntouchedTask(markup: Markup): Promise<DatasetItem | null> {
     const manager = getManager();
 
     const datasetItemSubQb = manager
         .createQueryBuilder()
         .select("di")
-        .addSelect("COUNT(*)", "markupCount")
         .from(DatasetItem, "di")
-        .leftJoinAndSelect("di.markupItems", "mi")
-        .leftJoinAndSelect("mi.experts", "e")
-        .where("mi.markupId = :markupId")
+        .leftJoin("di.markupItems", "mi")
+        .leftJoin("mi.expert", "e")
+        .leftJoin("di.dataset", "d")
+        .leftJoin("d.markups", "m")
+        .where("m.id = :markupId")
         .groupBy("di.id")
-        .having("markupCount = 0")
+        .having("COUNT(e.id) = 0")
         .orderBy("RANDOM()")
-        .setParameter("datasetId", markup.dataset.id)
         .setParameter("markupId", markup.id);
 
     const datasetItem = await datasetItemSubQb.getOne();
+    console.log(datasetItem);
 
     if (!datasetItem) {
         return null;
     }
 
-    return datasetItem.id;
+    return datasetItem;
 }
 
-async function fetchPartiallyDoneTask(markup: Markup, user: User): Promise<string | null> {
+async function fetchPartiallyDoneTask(markup: Markup, user: User): Promise<DatasetItem | null> {
     const manager = getManager();
 
     const datasetItemSubQb = manager
         .createQueryBuilder()
         .select("di")
-        .addSelect("BOOL_AND(e.id != :expertId)", "notMarkedUp")
-        .addSelect("SUM(*)", "markupCount")
         // выбираем такие DatasetItem
         .from(DatasetItem, "di")
         // делаем соединение с разметкой
-        .leftJoinAndSelect('di.markupItems', 'mi')
+        .leftJoin('di.markupItems', 'mi')
         // также добавляем пользователя, который разметил изображение
-        .leftJoinAndSelect("mi.expert", "e")
+        .leftJoin("mi.expert", "e")
+        .leftJoin("di.dataset", "d")
+        .leftJoin("d.markups", "m")
         // для заданной разметки
-        .where("mi.markupId = :markupId")
+        .where("m.id = :markupId")
         // группируем по DatasetItem
         .groupBy("di.id")
         // выбираем не размеченные текущим пользователем
-        .having("notMarkedUp")
+        .having("BOOL_AND(e.id != :expertId)")
         // которые были размечены кем-то
-        .andHaving("markupCount > 0")
+        .andHaving("COUNT(*) > 0")
         // но недостаточное количество раз
-        .andHaving("markupCount < :markupLimit")
+        .andHaving("COUNT(*) < :markupLimit")
         .orderBy("RANDOM()")
         .setParameter("datasetId", markup.dataset.id)
         .setParameter("markupId", markup.id)
-        .setParameter("makrupLimit", markup.minExpertsPerTask)
+        .setParameter("markupLimit", markup.minExpertsPerTask)
         .setParameter("expertId", user.id);
 
     const datasetItem = await datasetItemSubQb.getOne();
@@ -143,14 +132,14 @@ async function fetchPartiallyDoneTask(markup: Markup, user: User): Promise<strin
         return null;
     }
 
-    return datasetItem.id;
+    return datasetItem;
 }
 
-export default async function assignTask(
+export default async function assignMarkupTask(
     markup: Markup,
     user: User,
     probabilities: { [task in TaskGroup]: number }
-): Promise<string | null> {
+): Promise<DatasetItem | null> {
     const taskRandomFetchers = Object.values(TaskGroup).map((g) => ({
         fetchTask: () => taskFetchers[g](markup, user),
         probability: probabilities[g]
