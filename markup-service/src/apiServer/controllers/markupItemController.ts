@@ -1,15 +1,15 @@
 import { validateOrReject } from "class-validator";
 import {
-    JsonController,
     Get,
-    CurrentUser,
-    Body,
     Post,
-    Authorized,
+    Body,
     Param,
-    BadRequestError,
+    Authorized,
+    CurrentUser,
+    OnUndefined,
     ForbiddenError,
-    OnUndefined
+    JsonController,
+    BadRequestError
 } from "routing-controllers";
 import { getManager } from "typeorm";
 import { Appointment } from "../../entity/Appointment";
@@ -18,7 +18,13 @@ import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
 import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
-import assignMarkupTask, { TaskGroup } from "../../services/taskAssignmentService";
+import assignMarkupTask from "../../services/taskAssignmentService/taskAssignmentService";
+import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
+
+const MarkupTaskProbabilities = {
+    [MarkupTaskGroup.PARTIALLY_DONE]: 0.75,
+    [MarkupTaskGroup.UNTOUCHED]: 0.25
+};
 
 @JsonController("/api/markup/:markupId/item")
 export default class MarkupItemController {
@@ -27,7 +33,7 @@ export default class MarkupItemController {
     async getNextItem(
         @Param("markupId") markupId: string,
         @CurrentUser({ required: true }) user: User
-    ): Promise<MarkupItemData|null> {
+    ): Promise<MarkupItemData | null> {
         const manager = getManager();
 
         const markup = await manager.findOne(Markup, markupId, {
@@ -44,34 +50,20 @@ export default class MarkupItemController {
             throw new ForbiddenError(`User is not an expert in this markup`);
         }
 
-        // ищем следующий объект в назначениях
-        let appointment = await manager.findOne(Appointment, {
-            where: {
-                expert: user,
-                markup
-            },
+        // сначала ищем существующее назначение
+        let appointment: Appointment | null | undefined = await manager.findOne(Appointment, {
+            where: { expert: user, markup },
             relations: ["datasetItem"]
         });
 
+        // в случае, если назначения не нашлось, то вызываем сервис назначения заданий
         if (!appointment) {
-            appointment = new Appointment();
-            appointment.expert = user;
-            appointment.markup = markup;
+            appointment = await assignMarkupTask(markup, user, MarkupTaskProbabilities);
 
-            const datasetItem = await assignMarkupTask(
-                markup,
-                user,
-                {
-                    [TaskGroup.PARTIALLY_DONE]: 0.75,
-                    [TaskGroup.UNTOUCHED]: 0.25
-                }
-            );
-
-            if (!datasetItem) {
+            if (!appointment) {
                 return null;
             }
             
-            appointment.datasetItem = datasetItem;
             await manager.save(appointment);
         }
 
@@ -101,10 +93,7 @@ export default class MarkupItemController {
 
         // ищем следующий объект в назначениях
         const appointment = await manager.findOne(Appointment, {
-            where: {
-                expert: user,
-                markup
-            },
+            where: { expert: user, markup },
             relations: ["datasetItem"]
         });
 
