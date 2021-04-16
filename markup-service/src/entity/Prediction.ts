@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
-import MarkupItemResult from "../apiServer/validationDecorators/markupItemResult";
+import MarkupItemResult from "../api/validationDecorators/markupItemResult";
 import { Vote } from "./Vote";
 
 @Entity()

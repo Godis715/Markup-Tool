@@ -16,6 +16,11 @@ if (!process.env.CLIENT_ORIGIN) {
 export const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
 
 if (!process.env.SECRET_KEY) {
-    throw "SECRET_KEY must be provided as environmental variable";
+    throw new Error("SECRET_KEY must be provided as environmental variable");
 }
 export const SECRET_KEY = process.env.SECRET_KEY;
+
+if (!process.env.RABBITMQ_HOST) {
+    throw new Error("RABBITMQ_HOST must be provided as environmental variable");
+}
+export const RABBITMQ_HOST = process.env.RABBITMQ_HOST;

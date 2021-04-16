@@ -8,7 +8,7 @@ import {
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
 import { User } from "./User";
-import MarkupItemResult from "../apiServer/validationDecorators/markupItemResult";
+import MarkupItemResult from "../api/validationDecorators/markupItemResult";
 
 @Entity()
 export class MarkupItem {

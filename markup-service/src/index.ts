@@ -47,7 +47,7 @@ const server = useExpressServer(app, {
     } as CorsOptions,
     currentUserChecker,
     authorizationChecker,
-    controllers: [`${__dirname}/apiServer/controllers/*.ts`],
+    controllers: [`${__dirname}/api/controllers/*.ts`],
     defaults: {
         nullResultCode: 404
     }

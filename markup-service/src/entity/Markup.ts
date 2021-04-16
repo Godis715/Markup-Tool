@@ -13,7 +13,7 @@ import { Dataset } from "./Dataset";
 import { MarkupItem } from "./MarkupItem";
 import { User } from "./User" ;
 import { MarkupTypeEnum } from "../types/markup";
-import MarkupConfig from "../apiServer/validationDecorators/markupConfig";
+import MarkupConfig from "../api/validationDecorators/markupConfig";
 
 /**
  * Сущность, представляющая собой задание для экспертов на разметку и

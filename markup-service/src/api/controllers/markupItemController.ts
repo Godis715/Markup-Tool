@@ -20,6 +20,7 @@ import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import assignMarkupTask from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
+import { channelWrapper, MARKUP_ITEM_CREATED_EXCHANGE } from "../../rabbit/channelWrapper";
 
 const MarkupTaskProbabilities = {
     [MarkupTaskGroup.PARTIALLY_DONE]: 0.75,
@@ -91,7 +92,7 @@ export default class MarkupItemController {
             return null;
         }
 
-        // ищем следующий объект в назначениях
+        // ищем назначение для заданного пользователя
         const appointment = await manager.findOne(Appointment, {
             where: { expert: user, markup },
             relations: ["datasetItem"]
@@ -101,6 +102,7 @@ export default class MarkupItemController {
             return null;
         }
 
+        // кладем разметку пользователя в базу
         const markupItem = new MarkupItem();
         markupItem.expert = user;
         markupItem.datasetItem = appointment.datasetItem;
@@ -109,6 +111,7 @@ export default class MarkupItemController {
 
         markup.items.push(markupItem);
 
+        // валидируем разметку, которую пользователь отправил
         try {
             await validateOrReject(markupItem, { validationError: { target: false } });
         }
@@ -116,6 +119,7 @@ export default class MarkupItemController {
             throw new BadRequestError(JSON.stringify(errors));
         }
 
+        // осуществляем изменения  базе в виде транзакции
         try {
             await manager.transaction(
                 async (transactionManager) => {
@@ -127,6 +131,24 @@ export default class MarkupItemController {
         }
         catch(err) {
             throw new BadRequestError(err);
+        }
+
+        // здесь генерируется сообщение о том, что было размечено некоторое задание
+        // если произошла ошибка, то это норма, сервис продолжает работать в обычном режиме
+        try {
+            await channelWrapper.publish(MARKUP_ITEM_CREATED_EXCHANGE, "", {
+                expertId: user.id,
+                markupItemId: markupItem.id,
+                markupType: markup.type
+            }, undefined, (err) => {
+                if (err) {
+                    throw err;
+                }
+            });
+        }
+        catch (err) {
+            console.error("Couldn't publish 'markup item created' message");
+            console.error(err);
         }
     }
 }
