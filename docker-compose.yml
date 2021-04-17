@@ -40,11 +40,13 @@ services:
             - DB_USERNAME=${MARKUP_DB_USERNAME}
             - DB_PASSWORD=${MARKUP_DB_PASSWORD}
             - DB_NAME=${MARKUP_DB_NAME}
+            - RABBITMQ_HOST=amqp://rabbit
         build:
             context: ./
             dockerfile: ./markup-service/Dockerfile
         depends_on:
             - markup-db
+            - rabbit
         ports:
             - 8000:8000
 
@@ -62,3 +64,12 @@ services:
         depends_on:
             - rabbit
             - model-db
+
+    training-launch-service:
+        build:
+            context: ./training-launch-service
+            dockerfile: ./Dockerfile
+        environment:
+            - RABBITMQ_HOST=amqp://rabbit
+        depends_on:
+            - rabbit

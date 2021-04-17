@@ -11,4 +11,4 @@ set DB_USERNAME=markupdbadmin
 set DB_PASSWORD=qwerty123
 set DB_NAME=markupdb
 
-set RABBITMQ_HOST=localhost
+set RABBITMQ_HOST=amqp://localhost
