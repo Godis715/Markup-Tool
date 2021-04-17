@@ -49,6 +49,8 @@ services:
             - rabbit
         ports:
             - 8000:8000
+        volumes:
+            - ./markup-service/images:/usr/app/markup-service/images
 
     model-manager-service:
         build:

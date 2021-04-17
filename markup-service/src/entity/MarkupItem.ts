@@ -3,7 +3,8 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    CreateDateColumn
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
@@ -37,4 +38,7 @@ export class MarkupItem {
     @MarkupItemResult()
     @Column("simple-json")
     result: any;
+
+    @CreateDateColumn()
+    createDate!: Date;
 }

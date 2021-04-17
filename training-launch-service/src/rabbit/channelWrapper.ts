@@ -1,117 +1,83 @@
 import amqp  from "amqp-connection-manager";
 import { ConfirmChannel } from "amqplib";
 import { RABBITMQ_HOST } from "../config";
-import { v4 as uuidv4 } from "uuid";
+import handleModelInfo from "../handlers/handleModelInfo";
+import handleMarkupItemCreated from "../handlers/handleMarkupItemCreated";
+import handleMarkupItemCount from "../handlers/handleMarkupItemCount";
+import handleMarkupItems from "../handlers/handleMarkupItems";
+import handleResultInference from "../handlers/hadleResultInference";
+import handleModelCreated from "../handlers/handleModelCreated";
 
 const connection = amqp.connect([RABBITMQ_HOST]);
 
-export const MARKUP_ITEM_CREATED_EXCHANGE = "markup.created";
+export const EX_MARKUP_ITEM_CREATED = "markup_item.created";
 
-export const MARKUP_ITEM_COUNT_QUEUE = "markup_item_count";
+export const Q_MARKUP_ITEM_COUNT = "markup_item.count";
 
-export const MARKUP_MODEL_QUEUE = "markup_model";
+export const Q_GET_MARKUP_ITEMS = "markup_item.get";
 
-type MarkupItemCreatedMsg = {
-    expertId: string,
-    markupId: string,
-    marupItemId: string,
-    // FIXME: написать типы более конкретно
-    type: string
-};
+export const Q_GET_MODEL_INFO = "model.get_info";
 
-type ModelStatus = "training" | "ready" | "failure";
+export const Q_CREATE_MODEL = "model.create";
 
-type MarkupModelResult = {
-    markupId: string,
-    modelId: string,
-    status: ModelStatus,
-    timestamp: string,
-    markupsDone: number
-} | {
-    markupId: string,
-    modelId: null
-};
+export const Q_TRAIN_MODEL = "model.train";
 
-type MarkupItemCountResult = {
-    markupId: string,
-    markupCount: number
-};
+export const Q_RESULT_INFERENCE = "result_inference";
+
+const replyQueueParams = { exclusive: true, autoDelete: true };
 
 export const channelWrapper = connection.createChannel({
     json: true,
     setup: async (channel: ConfirmChannel) => {
-        await channel.assertExchange(MARKUP_ITEM_CREATED_EXCHANGE, "fanout", { durable: true });
+        await channel.assertExchange(EX_MARKUP_ITEM_CREATED, "fanout", { durable: true });
 
-        const { queue: markupItemQueue } = await channel.assertQueue("", { exclusive: true, autoDelete: true });
-        await channel.bindQueue(markupItemQueue, MARKUP_ITEM_CREATED_EXCHANGE, "");
+        // канал для прослушивания событий разметки
+        const { queue: markupItemRecieveQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.bindQueue(markupItemRecieveQueue, EX_MARKUP_ITEM_CREATED, "");
 
-        const { queue: markupItemCountResultQueue } = await channel.assertQueue("", { exclusive: true, autoDelete: true });
-        await channel.assertQueue(MARKUP_ITEM_COUNT_QUEUE, { durable: true });
+        // ========
 
-        const { queue: markupModelResultQueue } = await channel.assertQueue("", { exclusive: true, autoDelete: true });
-        await channel.assertQueue(MARKUP_MODEL_QUEUE, { durable: true });
+        // канал для прослушивания событий о том, что основной сервис посчитало количество разметок
+        const { queue: markupItemCountReplyQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.assertQueue(Q_MARKUP_ITEM_COUNT, { durable: true });
 
-        await channel.consume(markupItemQueue, (msg1) => {
-            if (!msg1 || !msg1.content) {
-                return;
-            }
+        // канал для прослушивания событий о получении информации о модели
+        const { queue: modelInfoReplyQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.assertQueue(Q_GET_MODEL_INFO, { durable: true });
+
+        // канал для прослушивания событий о получении сырых данных
+        const { queue: markupItemsReplyQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.assertQueue(Q_GET_MARKUP_ITEMS, { durable: true });
+
+        // канал для получения обработанных данных
+        const { queue: resultInferenceQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.assertQueue(Q_RESULT_INFERENCE, { durable: true });
+
+        // канал для получения id созданной модели
+        const { queue: createModelReplyQueue } = await channel.assertQueue("", replyQueueParams);
+        await channel.assertQueue(Q_CREATE_MODEL, { durable: true });
         
-            let payload: MarkupItemCreatedMsg;
-            try {
-                payload = JSON.parse(msg1.content.toString());
-            }
-            catch (err) {
-                console.error("[TRAINING-LAUNCH-SERVICE]: Couldn't parse message content: ", msg1.content);
-                return;
-            }
-        
-            console.log("[TRAINING-LAUNCH-SERVICE]", payload);
-            // Тепеь нужно сделать два RPC вызова - получить количество разметок пользователей -- MarkupService
-            // Получить актуальные данные по модели -- к ModelManagementService
+        // ======== CONSUMERS - выяснение того, нужно ли обучать модель =====================
 
-            const markupModelResultCorrId = uuidv4();
+        // сначала прослушивается событие того, что какое-то изображение было размечено. Делается запрос к model management service
+        await channel.consume(markupItemRecieveQueue, (msg) => handleMarkupItemCreated(msg, Q_GET_MODEL_INFO, modelInfoReplyQueue));
 
-            channel.consume(markupModelResultQueue, (msg2) => {
-                if (!msg2 || markupModelResultCorrId !== msg2.properties.correlationId || !msg2.content) {
-                    return;
-                }
+        // после этого прослушивается сообщение, содержащее информацию о текущей модели. Делается запрос в основной сервис
+        await channel.consume(modelInfoReplyQueue, (msg) => handleModelInfo(msg, Q_MARKUP_ITEM_COUNT, markupItemCountReplyQueue));
 
-                const markupModelResult = JSON.parse(msg2.content.toString()) as MarkupModelResult;
-                // когда модель в процессе обучения, тогда мы не запускаем обучаться ее снова
-                if (markupModelResult.modelId && markupModelResult.status === "training") {
-                    return;
-                }
+        // когда получены данные о том, сколько разметки было сделано со времени последнего обучения модели
+        // делается вывод о том, нужно ли запускать обучение. Если да, то тогда отправляется запрос на выгрузку разметки в основной сервис
+        await channel.consume(markupItemCountReplyQueue, (msg) => handleMarkupItemCount(msg, Q_GET_MARKUP_ITEMS, markupItemsReplyQueue));
 
-                const markupItemCountResultCorrId = uuidv4();
-                channel.consume(markupItemCountResultQueue, (msg3) => {
-                    if (!msg3 || msg3.properties.correlationId !== markupItemCountResultCorrId || !msg3.content) {
-                        return;
-                    }
+        // ======== CONSUMERS - подготова данных для обучения модели =====================
 
-                    const markupItemCountResult = JSON.parse(msg3.content.toString()) as MarkupItemCountResult;
-                    console.log(
-                        "[TRAINING-LAUNCH-SERVICE]: ready to start training",
-                        markupModelResult,
-                        markupItemCountResult
-                    );
-                });
+        // когда получены сырые размеченные данные, они отправляются в result inference service
+        await channel.consume(markupItemsReplyQueue, (msg) => handleMarkupItems(msg, Q_RESULT_INFERENCE, resultInferenceQueue));
 
-                // запрос на получение данных о количестве разметок к markup-service
-                channelWrapper.sendToQueue(MARKUP_ITEM_COUNT_QUEUE, {
-                    markupId: payload.markupId
-                }, {
-                    replyTo: markupItemCountResultQueue,
-                    correlationId: markupItemCountResultCorrId
-                });
-            });
+        // когда получены обработанные данные, делается запрос на создание новой модели
+        await channel.consume(resultInferenceQueue, (msg) => handleResultInference(msg, Q_CREATE_MODEL, createModelReplyQueue));
 
-            // запрос на получение данных о модели к model-management-service
-            channelWrapper.sendToQueue(MARKUP_MODEL_QUEUE, {
-                markupId: payload.markupId
-            }, {
-                replyTo: markupModelResultQueue,
-                correlationId: markupModelResultCorrId
-            });
-        });
+        // когда новая модель создана, запускается процесс обучения
+        await channel.consume(createModelReplyQueue, (msg) => handleModelCreated(msg, Q_TRAIN_MODEL));
     }
 });

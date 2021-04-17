@@ -2,6 +2,7 @@ import { getManager } from "typeorm";
 import { Appointment, AppointmentType } from "../../entity/Appointment";
 import { DatasetItem } from "../../entity/DatasetItem";
 import { Markup } from "../../entity/Markup";
+import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
 import { TaskFetcher } from "./types";
 
@@ -22,17 +23,40 @@ export const markupTaskFetchers: { [task in MarkupTaskGroup]: TaskFetcher } = {
 async function fetchUntouchedTask(markup: Markup, user: User): Promise<Appointment | null> {
     const manager = getManager();
 
+    /**
+        SELECT *
+        FROM "dataset_item" "di"
+        LEFT JOIN "dataset" "d" ON "d"."id" = "di"."datasetId"
+        LEFT JOIN "markup" "m" ON "m"."datasetId"="di"."datasetId"
+        WHERE "m"."id" = 'ceb7bf5e-8f84-408d-8da5-51ffa8adc638' AND
+        "di"."id" NOT IN (
+            SELECT "mi"."datasetItemId"
+            FROM "markup_item" "mi"
+            LEFT JOIN "markup" "m" ON "m"."id" = "mi"."markupId"
+            WHERE "m"."id" = 'ceb7bf5e-8f84-408d-8da5-51ffa8adc638'
+        )
+     */
     const datasetItemSubQb = manager
         .createQueryBuilder()
         .select("di")
         .from(DatasetItem, "di")
-        .leftJoin("di.markupItems", "mi")
-        .leftJoin("mi.expert", "e")
         .leftJoin("di.dataset", "d")
         .leftJoin("d.markups", "m")
         .where("m.id = :markupId")
-        .groupBy("di.id")
-        .having("COUNT(e.id) = 0")
+        .andWhere(
+            (qb) => {
+                const subQuery = qb
+                    .subQuery()
+                    .select("di_2.id")
+                    .from(MarkupItem, "mi")
+                    .leftJoin("mi.markup", "m")
+                    .leftJoin("mi.datasetItem", "di_2")
+                    .where("m.id = :markupId")
+                    .getQuery();
+            
+                return `di.id NOT IN ${subQuery}`;
+            }
+        )
         .orderBy("RANDOM()")
         .setParameter("markupId", markup.id);
 
@@ -63,14 +87,14 @@ async function fetchPartiallyDoneTask(markup: Markup, user: User): Promise<Appoi
         .leftJoin('di.markupItems', 'mi')
         // также добавляем пользователя, который разметил изображение
         .leftJoin("mi.expert", "e")
-        .leftJoin("di.dataset", "d")
-        .leftJoin("d.markups", "m")
+        .leftJoin("mi.markup", "m")
         // для заданной разметки
         .where("m.id = :markupId")
         // группируем по DatasetItem
         .groupBy("di.id")
         // выбираем не размеченные текущим пользователем
         .having("BOOL_AND(e.id != :expertId)")
+        // FIXME: вроде как, это излишнее условее
         // которые были размечены кем-то
         .andHaving("COUNT(*) > 0")
         // но недостаточное количество раз

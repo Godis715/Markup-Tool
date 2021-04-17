@@ -20,7 +20,7 @@ import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import assignMarkupTask from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
-import { channelWrapper, MARKUP_ITEM_CREATED_EXCHANGE } from "../../rabbit/channelWrapper";
+import { channelWrapper, EX_MARKUP_ITEM_CREATED } from "../../rabbit/channelWrapper";
 
 const MarkupTaskProbabilities = {
     [MarkupTaskGroup.PARTIALLY_DONE]: 0.75,
@@ -135,19 +135,24 @@ export default class MarkupItemController {
 
         // здесь генерируется сообщение о том, что было размечено некоторое задание
         // если произошла ошибка, то это норма, сервис продолжает работать в обычном режиме
+        console.log("[MARKUP-SERVICE]: Starting senditn message about creating markup");
+
         try {
-            await channelWrapper.publish(MARKUP_ITEM_CREATED_EXCHANGE, "", {
+            await channelWrapper.publish(EX_MARKUP_ITEM_CREATED, "", {
                 expertId: user.id,
                 markupItemId: markupItem.id,
-                markupType: markup.type
+                type: markup.type,
+                markupId: markup.id
             }, undefined, (err) => {
                 if (err) {
                     throw err;
                 }
+
+                console.log("[MARKUP-SERVICE]: Sent message 'markup item created'")
             });
         }
         catch (err) {
-            console.error("Couldn't publish 'markup item created' message");
+            console.error("[MARKUP-SERVICE]: Couldn't publish 'markup item created' message");
             console.error(err);
         }
     }
