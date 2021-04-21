@@ -4,7 +4,6 @@ import { getManager } from "typeorm";
 import { MarkupItem } from "../entity/MarkupItem";
 
 type MessageContent = {
-    timestamp: number,
     markupId: string
 };
 
@@ -25,6 +24,8 @@ export default async function handleGetMarkupItems(msg: ConsumeMessage | null): 
         return;
     }
 
+    const currDate = new Date();
+
     const markupItems = await manager
         .createQueryBuilder(MarkupItem, "mi")
         .select()
@@ -32,7 +33,7 @@ export default async function handleGetMarkupItems(msg: ConsumeMessage | null): 
         .leftJoinAndSelect("mi.datasetItem", "di")
         .where("m.id = :markupId")
         .andWhere("m.createDate <= :timestamp")
-        .setParameter("timestamp", new Date(msgContent.timestamp).toISOString())
+        .setParameter("timestamp", currDate.toISOString())
         .setParameter("markupId", msgContent.markupId)
         .getMany();
     
@@ -48,9 +49,9 @@ export default async function handleGetMarkupItems(msg: ConsumeMessage | null): 
         {
             markupId: msgContent.markupId,
             type: markupItems[0].markup.type,
-            markupItems: processedMarkupItems
-        },
-        { correlationId: msg.properties.correlationId }
+            items: processedMarkupItems,
+            timestamp: currDate.getTime
+        }
     );
 
     channelWrapper.ack(msg);

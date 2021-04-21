@@ -1,8 +1,14 @@
 import { ConsumeMessage } from "amqplib";
-import processStore, { InferencedResultsMsg } from "../store/processStore";
+import { v4 as uuidv4 } from "uuid";
+import { InferencedResultsMsg } from "../store/processStore";
 import { channelWrapper } from "../rabbit/channelWrapper";
 
-export default function handleResultInference(msg: ConsumeMessage | null, sendTo: string, replyTo: string): void {
+/**
+ * Здесь не делается проверка на то, что если пришел результат какого-то вывода, то
+ * надо проверить, а вообще корректно ли это сообщение. Считается, что результат корректен
+ * и нужно запустить обучение модели после этого сообщения
+ */
+export default function handleResultInference(msg: ConsumeMessage | null, sendTo: string): void {
     if (!msg || !msg.content) {
         return;
     }
@@ -23,16 +29,19 @@ export default function handleResultInference(msg: ConsumeMessage | null, sendTo
         return;
     }
 
-    if(!processStore.addInferencedResults(payload)) {
-        return;
-    }
+    const { markupId, type } = payload;
+    // здесь создается ID модели
+    const modelId = uuidv4();
 
+    /**
+     * В сервис обучения модели отправляется markupId и modelId, т.к.
+     * без них может потеряться привязка модели к разметке, что очень плохо.
+     * 
+     * Например, modelId мог не записаться в базу сервиса управления моделями
+     * Тогда результат обучения пропадет
+     */
     channelWrapper.sendToQueue(
         sendTo,
-        {
-            markupId: payload.markupId,
-            type: payload.type
-        },
-        { replyTo }
+        { modelId, markupId, type }
     );
 }

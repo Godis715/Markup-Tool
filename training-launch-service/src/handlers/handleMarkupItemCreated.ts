@@ -23,13 +23,20 @@ export default function handleMarkupItemCreated(msg: ConsumeMessage | null, send
         return;
     }
 
-    if(!processStore.startProcessingMarkup(payload.markupId)) {
+    const { markupId } = payload;
+    processStore.handleMarkupItemCreated(markupId);
+
+    // если пока что не нужно запускать обучение моделей, останавливаем дальнейшую
+    // работу и выходим из функции
+    if(!processStore.isReadyToStartTraining(payload.markupId)) {
         return;
     }
 
+    // если было принято решение запускать обучение
+    // отправляется запрос на выгрузку данных из main-service
     channelWrapper.sendToQueue(
         sendTo,
-        { markupId: payload.markupId },
+        { markupId },
         { replyTo }
     );
 }
