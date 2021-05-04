@@ -1,4 +1,4 @@
-from bbox_utils import bbox_overlaps_iou
+from core.bbox_utils import bbox_overlaps_iou
 from sklearn.cluster import DBSCAN
 import numpy as np
 
@@ -40,26 +40,27 @@ def infer_multi_recognition(results, aggregate="median"):
 
     Возвращает:
     {
-        imageUrl: string,
+        datasetItemId: string,
         result: {
             rectangles: [number, number, number, number][]
         }
     }[]
     """
-    agg_results = { res["imageUrl"]: [] for res in results }
+    agg_results = { res["datasetItemId"]: [] for res in results }
 
     for res in results:
         rects = res["result"]["rectangles"]
         arr_rects = [_rect_dict_to_arr(r_) for r_ in rects]
-        agg_results[res["imageUrl"]] += arr_rects
+        agg_results[res["datasetItemId"]] += arr_rects
     
     inferred_rects = {
         img_name: np.array(
-            _infer_object_rects(rects, aggregate)
+            # FIXME: временное решение, чтобы всегда даже для разметок одного человека был какой-то результат
+            _infer_object_rects(rects, aggregate, min_samples=1)
         ).tolist()
         for img_name, rects in agg_results.items()
     }
 
-    return [{ "imageUrl": id_,
+    return [{ "datasetItemId": id_,
               "result": { "rectangles": rects }}
             for id_, rects in inferred_rects.items()]

@@ -18,7 +18,7 @@ export default function handleResultInference(msg: ConsumeMessage | null, sendTo
         payload = JSON.parse(msg.content.toString());
         console.log(
             "[TRAINING-LAUNCH-SERVICE]: Recieved result inference",
-            msg.content
+            payload
         );
     }
     catch (err) {

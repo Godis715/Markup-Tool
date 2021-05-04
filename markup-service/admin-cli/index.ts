@@ -7,29 +7,22 @@ import { createConnection } from "typeorm";
 import { UserRole } from "../src/types/role";
 import * as auth from "../src/services/authService";
 
-createConnection();
+const conn = createConnection();
 
 commander
     .version("1.0.0")
     .description("CLI administration panel.");
 
 commander
-    .command("create-user [login]")
+    .command("create-user")
     .option("--expert")
     .option("--customer")
     .option("--admin")
+    .option("-u, --username <value>")
+    .option("-p, --password <value>")
     .description("Create new user with specified name")
     .action(
-        async (login, cmd) => {
-            const { password } = await prompt([
-                {
-                    type: "password",
-                    mask: "*",
-                    message: "Enter a password",
-                    name: "password"
-                }
-            ]);
-
+        async (cmd) => {
             const roles = [];
             if (cmd.expert) {
                 roles.push(UserRole.EXPERT);
@@ -44,11 +37,12 @@ commander
             }
 
             try {
-                await auth.createUser(login, password, roles);
-                console.log("User has been successfully created.");
+                await conn;
+                await auth.createUser(cmd.username, cmd.password, roles);
+                console.log("[ADMIN-CLI]: User has been successfully created.");
             }
             catch(err) {
-                logError(err);
+                console.error("[ADMIN-CLI]: Error!", err);
             }
         }
     );

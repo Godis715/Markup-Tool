@@ -75,3 +75,12 @@ services:
             - RABBITMQ_HOST=amqp://rabbit
         depends_on:
             - rabbit
+
+    result-inference-service:
+        build:
+            context: ./result-inference-service
+            dockerfile: ./Dockerfile
+        environment:
+            - RABBITMQ_HOST=rabbit
+        depends_on:
+            - rabbit
