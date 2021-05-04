@@ -222,7 +222,7 @@ export default class MultiRecognitionTool extends React.PureComponent<Props, Sta
     };
 
     onImageLoad = (ev: React.SyntheticEvent<HTMLImageElement>) => {
-        const { width, height } = ev.target as HTMLImageElement;
+        const { naturalWidth: width, naturalHeight: height } = ev.target as HTMLImageElement;
         this.setState({
             imgOrigSize: { width, height }
         });
