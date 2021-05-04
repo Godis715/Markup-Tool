@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqp-connection-manager": "^3.2.2",
     "amqplib": "^0.7.1",
     "express": "^4.17.1",
     "pg": "^8.5.1",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/amqplib": "^0.5.17",
-    "@types/node": "^14.14.37"
+    "@types/node": "^14.14.37",
+    "@types/amqp-connection-manager": "^2.0.10"
   }
 }

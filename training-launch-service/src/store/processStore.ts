@@ -29,7 +29,12 @@ export type InferencedResultsMsg = {
         imageUrl: string
     }[]
 }
-const MARKUP_ITEMS_BETWEEN_TRAINING = 5;
+
+export type TrainingFinishedMsg = {
+    markupId: string
+};
+
+const MARKUP_ITEMS_BETWEEN_TRAINING = 3;
 
 // хранит промежуточное состояние, необходимое для выяснения того, следует ли обучать модель
 // а также данные, которые необходимые для того, чтобы начать обучение
@@ -39,14 +44,14 @@ class ProcessStore {
     private markupStore: {
         [markupId: string]: {
             // количество разметок, полученное с последней обученной модели
-            itemsSinceLastModel: number,
+            itemCounter: number,
             isModelTraining: boolean
         }
     } = {};
 
     handleMarkupItemCreated(markupId: string): void {
         this.initMarkupState(markupId);
-        this.markupStore[markupId].itemsSinceLastModel += 1;
+        this.markupStore[markupId].itemCounter += 1;
     }
 
     isReadyToStartTraining(markupId: string): boolean {
@@ -57,14 +62,12 @@ class ProcessStore {
             return false;
         }
 
-        return markupState.itemsSinceLastModel < MARKUP_ITEMS_BETWEEN_TRAINING;
+        return markupState.itemCounter % MARKUP_ITEMS_BETWEEN_TRAINING === 0;
     }
 
     handleStartTraining(markupId: string): void {
-        this.markupStore[markupId] = {
-            isModelTraining: true,
-            itemsSinceLastModel: 0
-        }
+        this.initMarkupState(markupId);
+        this.markupStore[markupId].isModelTraining = true
     }
 
     handleFinishTraining(markupId: string): void {
@@ -76,7 +79,7 @@ class ProcessStore {
         if (!this.markupStore[markupId]) {
             this.markupStore[markupId] = {
                 isModelTraining: false,
-                itemsSinceLastModel: 0
+                itemCounter: 0
             }
         }
     }

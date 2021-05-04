@@ -1,8 +1,9 @@
 import { ConsumeMessage } from "amqplib";
 import processStore, { MarkupItemCreatedMsg } from "../store/processStore";
 import { channelWrapper } from "../rabbit/channelWrapper";
+import { Q_GET_MARKUP_ITEMS } from "../config";
 
-export default function handleMarkupItemCreated(msg: ConsumeMessage | null, sendTo: string, replyTo: string): void {
+export default function handleMarkupItemCreated(msg: ConsumeMessage | null, markupItemsReplyQueue: string): void {
     if (!msg || !msg.content) {
         return;
     }
@@ -35,8 +36,12 @@ export default function handleMarkupItemCreated(msg: ConsumeMessage | null, send
     // если было принято решение запускать обучение
     // отправляется запрос на выгрузку данных из main-service
     channelWrapper.sendToQueue(
-        sendTo,
-        { markupId },
-        { replyTo }
+        Q_GET_MARKUP_ITEMS,
+        {
+            markupId
+        },
+        {
+            replyTo: markupItemsReplyQueue
+        }
     );
 }

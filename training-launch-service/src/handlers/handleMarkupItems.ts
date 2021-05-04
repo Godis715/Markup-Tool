@@ -1,8 +1,9 @@
 import { ConsumeMessage } from "amqplib";
-import processStore, { MarkupItemsMsg } from "../store/processStore";
+import { MarkupItemsMsg } from "../store/processStore";
 import { channelWrapper } from "../rabbit/channelWrapper";
+import { Q_RESULT_INFERENCE } from "../config";
 
-export default function handleMarkupItems(msg: ConsumeMessage | null, sendTo: string, replyTo: string): void {
+export default function handleMarkupItems(msg: ConsumeMessage | null, resultInferenceQueue: string): void {
     if (!msg || !msg.content) {
         return;
     }
@@ -23,9 +24,7 @@ export default function handleMarkupItems(msg: ConsumeMessage | null, sendTo: st
         return;
     }
 
-    channelWrapper.sendToQueue(
-        sendTo,
-        payload,
-        { replyTo }
-    );
+    channelWrapper.sendToQueue(Q_RESULT_INFERENCE, payload, {
+        replyTo: resultInferenceQueue
+    });
 }
