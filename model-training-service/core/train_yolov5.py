@@ -7,7 +7,7 @@ import uuid
 from PIL import Image
 from pathlib import Path
 from shutil import copyfile
-from deps.yolov5.utils.google_utils import attempt_download
+import tempfile
 
 '''
     items: {
@@ -109,19 +109,37 @@ def prepare_data(dest_dir, items):
 
     return dataset_yaml_path
 
-def train_yolov5(items, model_type="s"):
+EPOCHS = 50
+
+def train_yolov5(items, save_to_dir, model_type="s"):
     # https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data
 
-    dataset_dir_name = str(uuid.uuid4())
-    dataset_dir_path = Path("data", dataset_dir_name)
-    dataset_dir_path.mkdir(parents=True, exist_ok=True)
+    dataset_dir = tempfile.TemporaryDirectory()
+    project_dir = tempfile.TemporaryDirectory()
+
+    dataset_dir_path = dataset_dir.name
+    project_dir_path = project_dir.name
+
     dataset_yaml_path = prepare_data(dataset_dir_path, items)
 
     model_name = f'yolov5{model_type}.pt'
     weights_path = Path("weights", model_name)
 
-    if not weights_path.exists():
-        attempt_download(weights_path)
+    os.system(
+        f"python ./deps/yolov5/train.py \
+            --img 640 \
+            --batch 8 \
+            --epochs {EPOCHS} \
+            --data {dataset_yaml_path} \
+            --weights {weights_path} \
+            --project {project_dir_path} \
+            --name result"
+    )
 
-    # ... All training results are saved to runs/train/ with incrementing run directories, i.e. runs/train/exp2, runs/train/exp3 etc. 
-    os.system(f"python ./deps/yolov5/train.py --img 640 --batch 8 --epochs 100 --data {dataset_yaml_path} --weights {weights_path}")
+    output_weights_path = str(Path(project_dir_path, "result", "weights", "best.pt"))
+
+    weights_save_to = Path(save_to_dir, "weights.pt")
+    copyfile(output_weights_path, weights_save_to)
+
+    dataset_dir.cleanup()
+    project_dir.cleanup()
