@@ -29,7 +29,7 @@ services:
     markup-service:
         environment:
             - SECRET_KEY
-            - DATASETS_FOLDER
+            - DATASETS_FOLDER=/usr/app/markup-service/images
             - CLIENT_ORIGIN
             - FRONTEND_FOLDER
 
@@ -50,7 +50,7 @@ services:
         ports:
             - 8000:8000
         volumes:
-            - ./markup-service/images:/usr/app/markup-service/images
+            - dataset-volume:/usr/app/markup-service/images
 
     model-manager-service:
         build:
@@ -84,3 +84,23 @@ services:
             - RABBITMQ_HOST=rabbit
         depends_on:
             - rabbit
+        
+    model-training-service:
+        build:
+            context: ./model-training-service
+            dockerfile: ./Dockerfile
+            shm_size: 4gb # https://stackoverflow.com/questions/30210362/how-to-increase-the-size-of-the-dev-shm-in-docker-container
+        environment:
+            - RABBITMQ_HOST=rabbit
+            - MODELS_DIR=/usr/data/models
+            - DATASETS_DIR=/usr/data/datasets
+        depends_on:
+            - rabbit
+        volumes:
+            - model-volume:/usr/data/models
+            - dataset-volume:/usr/data/datasets
+        shm_size: 4gb
+        privileged: true
+volumes:
+    model-volume:
+    dataset-volume:

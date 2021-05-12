@@ -19,3 +19,7 @@ KEY_MODEL_TRAINING_SUCCEED = "model.training.finished.success"
 KEY_MODEL_TRAINING_FAILED = "model.training.finished.failure"
 
 START_MODEL_TRAINING_QUEUE = "model.training.start"
+
+DATASETS_DIR = os.environ.get('DATASETS_DIR')
+if not DATASETS_DIR:
+    raise RuntimeError("DATASETS_DIR wasn't provided!")

@@ -41,12 +41,14 @@ def on_request(ch, method, props, body):
     markup_items = markup_result["items"]
     markup_id = markup_result["markupId"]
 
+    # TODO: к item-ам надо добавить imageUrl
     inferred_result = match_task_inferer[markup_type](markup_items)
     
     print("[RESULT-INFERENCE-SERVICE]: inferred result", inferred_result)
 
     message_body = { "markupId": markup_id,
-                     "items": inferred_result }
+                     "items": inferred_result,
+                     "type": markup_type }
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,

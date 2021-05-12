@@ -4,28 +4,23 @@ FROM python:3
 
 WORKDIR /usr/app
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install --user virtualenv && \
-    mkdir deps && \
-    git clone https://github.com/ultralytics/yolov5.git
+# https://stackoverflow.com/questions/55313610/importerror-libgl-so-1-cannot-open-shared-object-file-no-such-file-or-directo
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
+RUN mkdir ./deps && \
+    git clone https://github.com/ultralytics/yolov5.git && \
+    mv ./yolov5 ./deps
     # здесь также может быть скачивание и других репозиториев
 
-COPY ./deps ./deps
-
-# установка зависимостей Yolo v5
-WORKDIR ./deps/yolov5
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python -m venv venv && \
-    . venv/bin/activate && \
-    pip install -r requirements.txt && \
-    deactivate
-
-# здесь могут быть установки зависимостей для других реп
+# RUN --mount=type=cache,target=/root/.cache/pip \
+RUN pip install -r ./deps/yolov5/requirements.txt
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
+# здесь могут быть установки зависимостей для других реп
+
 COPY . .
 
-# временная заглушка
-CMD ["sleep","3600"]
+CMD ["python", "-u", "app.py"]

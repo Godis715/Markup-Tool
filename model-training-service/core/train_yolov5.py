@@ -1,13 +1,9 @@
 import os
-import pathlib
 import yaml
-import random
-import math
-import uuid
+import tempfile
 from PIL import Image
 from pathlib import Path
 from shutil import copyfile
-import tempfile
 
 '''
     items: {
@@ -17,7 +13,7 @@ import tempfile
             rectangles: Rect[]
         }[],
         # TODO: добавить это поле в выгрузку
-        imagePath: string,
+        imageUrl: string,
         datasetItemId: string,
         imageUrl: string
     }[]
@@ -25,7 +21,11 @@ import tempfile
 
 # TODO: протестировать
 def get_yolo_rect(rect, img_w, img_h):
-    x1, y1, x2, y2 = rect[0] / img_w, rect[1] / img_h, rect[2] / img_w, rect[3] / img_h
+    if isinstance(rect, list):
+        x1, y1, x2, y2 = rect[0] / img_w, rect[1] / img_h, rect[2] / img_w, rect[3] / img_h
+    else:
+        x1, y1, x2, y2 = rect["x1"] / img_w, rect["y1"] / img_h, rect["x2"] / img_w, rect["y2"] / img_h
+
     x1, x2 = min(x1, x2), max(x1, x2)
     y1, y2 = min(y1, y2), max(y1, y2)
     h = y2 - y1
@@ -39,13 +39,13 @@ def get_image_dims(image_path):
     im = Image.open(image_path)
     return im.size
 
-# NOTE: !!! items должны содержать локальный imagePath
+# NOTE: !!! items должны содержать локальный imageUrl
 def create_image_labels(item, dest_path):
     rects = item["result"]["rectangles"]
     if len(rects) == 0:
         return
     
-    img_w, img_h = get_image_dims(item["imagePath"])
+    img_w, img_h = get_image_dims(item["imageUrl"])
     lines = []
     for r in rects:
         cx, cy, w, h = get_yolo_rect(r, img_w, img_h)
@@ -57,8 +57,8 @@ def create_image_labels(item, dest_path):
 def copy_images(items, dest_dir, using_cache=True):
     paths = []
     for item in items:
-        image_source = item["imagePath"]
-        image_name = Path(item["imagePath"]).stem
+        image_source = item["imageUrl"]
+        image_name = Path(item["imageUrl"]).stem
         image_filename = f"{image_name}.png"
         image_dest = Path(dest_dir, image_filename)
         paths.append(str(image_dest))
@@ -74,14 +74,14 @@ def copy_images(items, dest_dir, using_cache=True):
 
 def create_labels(items, dest_dir):
     for item in items:
-        image_name = Path(item["imagePath"]).stem
+        image_name = Path(item["imageUrl"]).stem
         label_path = Path(dest_dir, f"{image_name}.txt")
         create_image_labels(item, label_path)
 
-def create_dataset_yaml(items, dest_dir):
+def create_dataset_yaml(dest_dir):
     dataset_yaml = {
-        "train": str(Path(dest_dir, "images", "0")),
-        "val": str(Path(dest_dir, "images", "0")),
+        "train": str(Path(dest_dir, "images")),
+        "val": str(Path(dest_dir, "images")),
         "nc": 1,
         "names": ["target object"]
     }
@@ -93,23 +93,25 @@ def create_dataset_yaml(items, dest_dir):
     return str(dest_path)
 
 def prepare_data(dest_dir, items):
-    images_dir = Path(dest_dir, "images", "0")
+    images_dir = Path(dest_dir, "images")
     images_dir.mkdir(parents=True, exist_ok=True)
     new_paths = copy_images(items, images_dir)
     new_items = [
-        { **item, "imagePath": new_paths[i] }
+        { **item, "imageUrl": new_paths[i] }
         for i, item in enumerate(items)
     ]
 
-    dataset_yaml_path = create_dataset_yaml(new_items, dest_dir)
+    dataset_yaml_path = create_dataset_yaml(dest_dir)
 
-    labels_dir = Path(dest_dir, "labels", "0")
+    labels_dir = Path(dest_dir, "labels")
     labels_dir.mkdir(parents=True, exist_ok=True)
     create_labels(new_items, labels_dir)
 
     return dataset_yaml_path
 
-EPOCHS = 50
+EPOCHS = 100
+BATCH_SIZE = 1
+IMG_SIZE = 320
 
 def train_yolov5(items, save_to_dir, model_type="s"):
     # https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data
@@ -125,10 +127,30 @@ def train_yolov5(items, save_to_dir, model_type="s"):
     model_name = f'yolov5{model_type}.pt'
     weights_path = Path("weights", model_name)
 
-    os.system(
+    # try:
+    #     process = Popen(["python",    "./deps/yolov5/train.py",
+    #                      "--img",     "640",
+    #                      "--batch",   "8",
+    #                      "--epochs",  str(EPOCHS),
+    #                      "--data",    dataset_yaml_path,
+    #                      "--weights", weights_path,
+    #                      "--project", project_dir_path,
+    #                      "--name",    "result"],
+    #                     stdout=PIPE)
+    #     while True:
+    #         output = process.stdout.readline()
+    #         if process.poll() is not None:
+    #             break
+    #         if output:
+    #             print(output.strip())
+    # except CalledProcessError as e:
+    #     print(e)
+    #     raise e
+    
+    status_code = os.system(
         f"python ./deps/yolov5/train.py \
-            --img 640 \
-            --batch 8 \
+            --img {IMG_SIZE} \
+            --batch {BATCH_SIZE} \
             --epochs {EPOCHS} \
             --data {dataset_yaml_path} \
             --weights {weights_path} \
@@ -136,10 +158,11 @@ def train_yolov5(items, save_to_dir, model_type="s"):
             --name result"
     )
 
-    output_weights_path = str(Path(project_dir_path, "result", "weights", "best.pt"))
+    if status_code != 0:
+        raise RuntimeError("Training failed")
+
+    output_weights_path = Path(project_dir_path, "result", "weights", "best.pt")
 
     weights_save_to = Path(save_to_dir, "weights.pt")
     copyfile(output_weights_path, weights_save_to)
 
-    dataset_dir.cleanup()
-    project_dir.cleanup()
