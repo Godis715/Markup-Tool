@@ -2,6 +2,13 @@ export type MarkupItemData = {
     imageSrc: string
 }
 
+export type TaskItemData = {
+    imageSrc: string
+} | {
+    imageSrc: string,
+    markup: MarkupItemResult
+}
+
 export type ClassificationItemResult = string;
 
 export type Rect = {
@@ -29,3 +36,9 @@ export type MarkupItemResult =
     ClassificationItemResult |
     RecognitionItemResult |
     MultiRecognitionItemResult;
+
+export type ValidationItemResult = {
+    isCorrect: boolean
+};
+
+export type TaskItemResult = MarkupItemResult | ValidationItemResult;

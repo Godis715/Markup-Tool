@@ -29,7 +29,7 @@ export class Appointment {
     @ManyToOne(() => Markup)
     markup!: Markup;
 
-    @ManyToOne(() => Markup, { nullable: true })
+    @ManyToOne(() => Prediction, { nullable: true })
     prediction?: Prediction;
 
     @ManyToOne(() => DatasetItem, { nullable: true })

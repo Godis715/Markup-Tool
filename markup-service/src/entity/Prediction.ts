@@ -3,7 +3,6 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    JoinColumn,
     OneToMany
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
@@ -23,8 +22,7 @@ export class Prediction {
     @Column()
     modelId!: string;
 
-    @ManyToOne(() => DatasetItem, (datasetItem) => datasetItem.markupItems)
-    @JoinColumn()
+    @ManyToOne(() => DatasetItem)
     datasetItem!: DatasetItem;
 
     /**

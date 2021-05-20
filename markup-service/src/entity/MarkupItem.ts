@@ -10,6 +10,7 @@ import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
 import { User } from "./User";
 import MarkupItemResult from "../api/validationDecorators/markupItemResult";
+import { MarkupItemResult as MarkupItemResultType } from "../types/markupItem";
 
 @Entity()
 export class MarkupItem {
@@ -37,7 +38,7 @@ export class MarkupItem {
      */
     @MarkupItemResult()
     @Column("simple-json")
-    result: any;
+    result!: MarkupItemResultType;
 
     @CreateDateColumn()
     createDate!: Date;
