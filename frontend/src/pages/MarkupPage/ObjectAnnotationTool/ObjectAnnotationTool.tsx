@@ -1,9 +1,9 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
 import RectFrame from "../RectFrame/RectFrame";
-import Alert from "react-bootstrap/Alert";
 import Form from "react-bootstrap/Form";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
+import clamp from "../../../utils/clamp";
 import "./style.scss";
 
 type ObjectAnnotationItemResult = unknown;
@@ -227,8 +227,8 @@ export default class ObjectAnbotationTool extends React.PureComponent<Props, Sta
         const mouseEv = ev as MouseEvent;
 
         const imgScale = scales[this.state.scaleIndex];
-        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width)) / imgScale;
-        const y = Math.max(0, Math.min(mouseEv.clientY - elemRect.top, elemRect.height)) / imgScale;
+        const x = clamp(mouseEv.clientX - elemRect.left, 0, elemRect.width) / imgScale;
+        const y = clamp(mouseEv.clientY - elemRect.top, 0, elemRect.height) / imgScale;
 
         this.dispatch({
             type: "DRAW_RECT",

@@ -30,7 +30,7 @@ export const channelWrapper = connection.createChannel({
 
         // канал для прослушивания событий обучения модели
         const { queue: modelTrainingResultQueue } = await channel.assertQueue("", replyQueueParams);
-        await channel.bindQueue(markupItemRecieveQueue, EX_MODEL, KEY_MODEL_TRAINING_FINISHED);
+        await channel.bindQueue(modelTrainingResultQueue, EX_MODEL, KEY_MODEL_TRAINING_FINISHED);
 
         // ========
 

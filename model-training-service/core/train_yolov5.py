@@ -67,7 +67,6 @@ def copy_images(items, dest_dir, using_cache=True):
         if using_cache and image_dest.exists():
             continue
 
-        # TODO: проверить, сработает ли то, что передается не строка, а Path (image_dest)
         converted = Image.open(image_source)
         converted.save(image_dest, format="png")
     return paths
@@ -109,8 +108,8 @@ def prepare_data(dest_dir, items):
 
     return dataset_yaml_path
 
-EPOCHS = 100
-BATCH_SIZE = 1
+EPOCHS = 150
+BATCH_SIZE = 4
 IMG_SIZE = 320
 
 def train_yolov5(items, save_to_dir, model_type="s"):
@@ -148,7 +147,7 @@ def train_yolov5(items, save_to_dir, model_type="s"):
     #     raise e
     
     status_code = os.system(
-        f"python ./deps/yolov5/train.py \
+        f"python -u ./deps/yolov5/train.py \
             --img {IMG_SIZE} \
             --batch {BATCH_SIZE} \
             --epochs {EPOCHS} \

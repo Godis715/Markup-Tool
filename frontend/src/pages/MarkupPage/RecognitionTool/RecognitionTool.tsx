@@ -5,6 +5,7 @@ import "./style.scss";
 import Card from "react-bootstrap/Card";
 import RectFrame from "../RectFrame/RectFrame";
 import RectFrameOuterFilter from "../RectFrameOuterFilter/RectFrameOuterFilter";
+import clamp from "../../../utils/clamp";
 
 type Props = {
     imageSrc: string,
@@ -117,8 +118,8 @@ export default function RecognitionTool(props: Props): ReactElement {
         const elemRect = workspaceRef.current.getBoundingClientRect();
         const mouseEv = ev as MouseEvent;
 
-        const x = Math.max(0, Math.min(mouseEv.clientX - elemRect.left, elemRect.width)) + workspaceRef.current.scrollLeft;
-        const y = Math.max(0, Math.min(mouseEv.clientY - elemRect.top, elemRect.height));
+        const x = clamp(mouseEv.clientX - elemRect.left, 0, elemRect.width) + workspaceRef.current.scrollLeft;
+        const y = clamp(mouseEv.clientY - elemRect.top, 0, elemRect.height);
 
         dispatch({
             type: "DRAW_RECT",

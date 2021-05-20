@@ -1,4 +1,5 @@
 from core.bbox_utils import bbox_overlaps_iou
+from core.rect_utils import rect_dict_to_arr, rect_arr_to_dict
 from sklearn.cluster import DBSCAN
 import numpy as np
 import math
@@ -15,6 +16,7 @@ def _infer_object_rects(rects, aggregate, eps=0.5, min_samples=3):
     rects = np.array(rects)
     # iou - мера схожести, чтобы получить расстояние, вычитаем из единицы
     dist_mat = 1 - bbox_overlaps_iou(rects, rects)
+    print(dist_mat)
 
     # кластеризация
     clustering = DBSCAN(eps, min_samples, metric="precomputed", algorithm="brute").fit(dist_mat)
@@ -27,12 +29,6 @@ def _infer_object_rects(rects, aggregate, eps=0.5, min_samples=3):
         filtered_rects.append(agg_func(rects[mask]))
     # преобразуем вложенные numpy массивы в обычные списки
     return list(map(list, filtered_rects))
-
-def _rect_dict_to_arr(rect):
-    return [rect["x1"], rect["y1"], rect["x2"], rect["y2"]]
-
-def _rect_arr_to_dict(rect):
-    return { "x1": rect[0], "y1": rect[1], "x2": rect[2], "y2": rect[3] }
 
 def infer_multi_recognition(results, aggregate="median"):
     """
@@ -64,7 +60,7 @@ def infer_multi_recognition(results, aggregate="median"):
     for res in results:
         dataset_item_id = res["datasetItemId"]
         rects = res["result"]["rectangles"]
-        agg_results[dataset_item_id] += [_rect_dict_to_arr(r_) for r_ in rects]
+        agg_results[dataset_item_id] += [rect_dict_to_arr(r_) for r_ in rects]
         expert_counts[dataset_item_id] += 1
     
     inferred_rects = {}
@@ -83,5 +79,5 @@ def infer_multi_recognition(results, aggregate="median"):
 
     return [{ "datasetItemId": id_,
               "imageUrl": img_urls[id_],
-              "result": { "rectangles": [_rect_arr_to_dict(r) for r in rects] }}
+              "result": { "rectangles": [rect_arr_to_dict(r) for r in rects] }}
             for id_, rects in inferred_rects.items()]

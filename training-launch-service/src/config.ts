@@ -8,7 +8,7 @@ export const EX_MARKUP_ITEM_CREATED = "markup_item.created";
 export const EX_MODEL = "model";
 
 // может быть model.training.result.success или model.training.result.failure
-export const KEY_MODEL_TRAINING_FINISHED = "model.training.result.*";
+export const KEY_MODEL_TRAINING_FINISHED = "model.training.finished.*";
 
 export const KEY_MODEL_TRAINING_STARTED = "model.training.started";
 

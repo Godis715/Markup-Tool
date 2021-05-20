@@ -40,7 +40,18 @@ const MARKUP_ITEMS_BETWEEN_TRAINING = 3;
 // а также данные, которые необходимые для того, чтобы начать обучение
 // когда становится ясно, что модель не нужно обучать, или же обучение начинается, хранилище для заданного
 // Markup должно очищаться
-class ProcessStore {
+
+type Configs = {
+    markupItemsBetweenTraining: number
+};
+
+export class ProcessStore {
+    constructor(configs: Configs) {
+        this.configs = configs;
+    }
+
+    private configs: Configs;
+
     private markupStore: {
         [markupId: string]: {
             // количество разметок, полученное с последней обученной модели
@@ -62,12 +73,13 @@ class ProcessStore {
             return false;
         }
 
-        return markupState.itemCounter % MARKUP_ITEMS_BETWEEN_TRAINING === 0;
+        return markupState.itemCounter >= this.configs.markupItemsBetweenTraining;
     }
 
     handleStartTraining(markupId: string): void {
         this.initMarkupState(markupId);
-        this.markupStore[markupId].isModelTraining = true
+        this.markupStore[markupId].itemCounter = 0;
+        this.markupStore[markupId].isModelTraining = true;
     }
 
     handleFinishTraining(markupId: string): void {
@@ -85,4 +97,6 @@ class ProcessStore {
     }
 }
 
-export default new ProcessStore();
+export default new ProcessStore({
+    markupItemsBetweenTraining: MARKUP_ITEMS_BETWEEN_TRAINING
+});

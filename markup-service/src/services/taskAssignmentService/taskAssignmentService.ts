@@ -18,7 +18,7 @@ import { TaskRandomFetcher } from "./types";
  * Для заданного набора вероятностей p = [p_0, ... p_n]
  * Возвращает единственное число i с вероятностью p_i
  */
-function playRandomIndex(p: number[]): number {
+export function playRandomIndex(p: number[]): number {
     const value = Math.random();
     let sum = 0;
     for (let i = 0; i < p.length - 1; ++i) {
