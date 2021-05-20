@@ -10,6 +10,7 @@ import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
 import MarkupItemResult from "../api/validationDecorators/markupItemResult";
 import { Vote } from "./Vote";
+import { MarkupItemResult as MarkupItemResultType } from "../types/markupItem";
 
 @Entity()
 export class Prediction {
@@ -36,7 +37,7 @@ export class Prediction {
      */
     @MarkupItemResult()
     @Column("simple-json")
-    result: any;
+    result!: MarkupItemResultType;
 
     @OneToMany(() => Vote, (vote) => vote.prediction)
     votes!: Vote[]

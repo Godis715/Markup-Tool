@@ -4,7 +4,6 @@ import {
     Column,
     ManyToOne
 } from "typeorm";
-import { MarkupItem } from "./MarkupItem";
 import { Prediction } from "./Prediction";
 import { User } from "./User";
 
@@ -15,9 +14,6 @@ export class Vote {
 
     @ManyToOne(() => Prediction, (prediction) => prediction.votes, { nullable: true })
     prediction?: Prediction;
-
-    @ManyToOne(() => MarkupItem, undefined, { nullable: true })
-    markupItem?: MarkupItem;
 
     @Column()
     isCorrect!: boolean;

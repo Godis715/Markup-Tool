@@ -12,7 +12,7 @@ import {
     BadRequestError
 } from "routing-controllers";
 import { getManager } from "typeorm";
-import { Appointment } from "../../entity/Appointment";
+import { Appointment, AppointmentType } from "../../entity/Appointment";
 import { Markup } from "../../entity/Markup";
 import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
@@ -53,7 +53,11 @@ export default class MarkupItemController {
 
         // сначала ищем существующее назначение
         let appointment: Appointment | null | undefined = await manager.findOne(Appointment, {
-            where: { expert: user, markup },
+            where: {
+                expert: user,
+                markup,
+                type: AppointmentType.MARKUP
+            },
             relations: ["datasetItem"]
         });
 
@@ -66,6 +70,10 @@ export default class MarkupItemController {
             }
             
             await manager.save(appointment);
+        }
+
+        if (!appointment.datasetItem) {
+            throw new Error("Found appointment of type 'Markup', but it's datasetItem is null");
         }
 
         return {
@@ -94,12 +102,20 @@ export default class MarkupItemController {
 
         // ищем назначение для заданного пользователя
         const appointment = await manager.findOne(Appointment, {
-            where: { expert: user, markup },
+            where: {
+                expert: user,
+                markup,
+                type: AppointmentType.MARKUP
+            },
             relations: ["datasetItem"]
         });
 
         if (!appointment) {
             return null;
+        }
+
+        if (!appointment.datasetItem) {
+            throw new Error("Found appointment of type 'Markup', but it's datasetItem is null");
         }
 
         // кладем разметку пользователя в базу

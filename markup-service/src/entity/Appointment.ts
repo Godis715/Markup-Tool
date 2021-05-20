@@ -6,6 +6,7 @@ import {
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
+import { Prediction } from "./Prediction";
 import { User } from "./User";
 
 export enum AppointmentType {
@@ -28,6 +29,9 @@ export class Appointment {
     @ManyToOne(() => Markup)
     markup!: Markup;
 
-    @ManyToOne(() => DatasetItem)
-    datasetItem!: DatasetItem;
+    @ManyToOne(() => Markup, { nullable: true })
+    prediction?: Prediction;
+
+    @ManyToOne(() => DatasetItem, { nullable: true })
+    datasetItem?: DatasetItem;
 }
