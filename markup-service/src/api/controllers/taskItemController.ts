@@ -22,10 +22,16 @@ import { assignMarkupTask, assignValidationTask } from "../../services/taskAssig
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
 import { channelWrapper, EX_MARKUP_ITEM_CREATED, EX_VALIDATION_ITEM_CREATED } from "../../rabbit/channelWrapper";
 import { Vote } from "../../entity/Vote";
+import { ValidationTaskGroup } from "../../services/taskAssignmentService/validationTaskGroup";
 
-const MarkupTaskProbabilities = {
-    [MarkupTaskGroup.PARTIALLY_DONE]: 0.75,
-    [MarkupTaskGroup.UNTOUCHED]: 0.25
+const markupTaskProbabilities = {
+    [MarkupTaskGroup.PARTIALLY_DONE]: 0.5,
+    [MarkupTaskGroup.UNTOUCHED]: 0.5
+};
+
+const validationTaskProbabilities = {
+    [ValidationTaskGroup.PARTIALLY_DONE]: 0.75,
+    [ValidationTaskGroup.UNTOUCHED]: 0.25
 };
 
 type TaskType = "markup" | "validation";
@@ -81,7 +87,7 @@ export default class TaskItemController {
         switch(taskType) {
             case "markup": {
                 if (!appointment) {
-                    appointment = await assignMarkupTask(markup, user, MarkupTaskProbabilities);
+                    appointment = await assignMarkupTask(markup, user, markupTaskProbabilities);
 
                     if (!appointment) {
                         return null;
@@ -100,7 +106,7 @@ export default class TaskItemController {
             }
             case "validation": {
                 if (!appointment) {
-                    appointment = await assignValidationTask(markup, user, MarkupTaskProbabilities);
+                    appointment = await assignValidationTask(markup, user, validationTaskProbabilities);
 
                     if (!appointment) {
                         return null;

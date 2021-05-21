@@ -101,6 +101,24 @@ services:
             - dataset-volume:/usr/data/datasets
         shm_size: 4gb
         privileged: true
+
+    model-execution-service:
+        build:
+            context: ./model-execution-service
+            dockerfile: ./Dockerfile
+        environment:
+            - RABBITMQ_HOST=rabbit
+            - MODELS_DIR=/usr/data/models
+            - DATASETS_DIR=/usr/data/datasets
+            - TORCH_HOME=/usr/data/torch
+        depends_on:
+            - rabbit
+        volumes:
+            - model-volume:/usr/data/models
+            - dataset-volume:/usr/data/datasets
+            - torch-home:/usr/data/torch
+
 volumes:
     model-volume:
     dataset-volume:
+    torch-home:
