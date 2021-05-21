@@ -68,7 +68,7 @@ def start_training(conn, ch, delivery_tag, body):
         message_body = { "markupId": markup_id,
                         "modelId": model_id,
                         "type": markup_type,
-                        "weightsPath": str(model_dir) }
+                        "weightsPath": str(Path(model_id, "weights.pt")) }
         routing_key = KEY_MODEL_TRAINING_SUCCEED
 
     publish_cb = functools.partial(ch.basic_publish,

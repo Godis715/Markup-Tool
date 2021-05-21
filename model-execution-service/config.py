@@ -1,6 +1,6 @@
 import os
 
-LOG_PREFIX = "[MODEL-TRAINING-SERVICE]: "
+LOG_PREFIX = "[MODEL-EXECUTION-SERVICE]: "
 
 CLASSIFICATION      = "classification"
 RECOGNITION         = "recognition"

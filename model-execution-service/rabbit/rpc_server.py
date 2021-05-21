@@ -63,3 +63,4 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue=PREDICT_MODEL_QUEUE, on_message_callback=on_message)
 
 print(LOG_PREFIX, "Awaiting RPC requests")
+channel.start_consuming()

@@ -30,7 +30,7 @@ export default function handleResultInference(msg: ConsumeMessage | null): void 
         return;
     }
 
-    const { markupId, type, items } = payload;
+    const { markupId, type, items, timestamp } = payload;
     // здесь создается ID модели
     const modelId = uuidv4();
 
@@ -40,7 +40,8 @@ export default function handleResultInference(msg: ConsumeMessage | null): void 
     channelWrapper.publish(EX_MODEL, KEY_MODEL_TRAINING_STARTED, {
         modelId,
         markupId,
-        type
+        type,
+        timestamp
     });
 
     /**

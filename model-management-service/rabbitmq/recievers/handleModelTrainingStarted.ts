@@ -1,9 +1,12 @@
 import { ConsumeMessage } from "amqplib";
+import { getManager } from "typeorm";
+import { Model, ModelStatus } from "../../src/entity/Model";
 
 type ModelTrainingStartedMsg = {
     modelId: string,
     markupId: string,
-    type: string
+    type: string,
+    timestamp: number
 };
 
 export default async function handleModelTrainingStarted(msg: ConsumeMessage | null): Promise<void> {
@@ -18,6 +21,15 @@ export default async function handleModelTrainingStarted(msg: ConsumeMessage | n
             "[MODEL-MANAGER]: Recieved training started msg",
             payload
         );
+
+        const model = new Model();
+        model.id = payload.modelId;
+        model.markupId = payload.markupId;
+        model.status = ModelStatus.TRAINING;
+        model.markupType = payload.type;
+        model.timestamp = new Date(payload.timestamp);
+
+        await getManager().save(model);
     }
     catch (err) {
         console.error(

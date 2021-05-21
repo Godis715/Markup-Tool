@@ -108,7 +108,7 @@ def prepare_data(dest_dir, items):
 
     return dataset_yaml_path
 
-EPOCHS = 150
+EPOCHS = 1
 BATCH_SIZE = 4
 IMG_SIZE = 320
 

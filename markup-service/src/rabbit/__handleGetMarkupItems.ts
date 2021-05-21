@@ -50,7 +50,7 @@ export default async function handleGetMarkupItems(msg: ConsumeMessage | null): 
             markupId: msgContent.markupId,
             type: markupItems[0].markup.type,
             items: processedMarkupItems,
-            timestamp: currDate.getTime
+            timestamp: currDate.getTime()
         }
     );
 

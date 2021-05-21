@@ -40,6 +40,7 @@ def on_request(ch, method, props, body):
     markup_type = markup_result["type"]
     markup_items = markup_result["items"]
     markup_id = markup_result["markupId"]
+    timestamp = markup_result["timestamp"]
 
     # TODO: к item-ам надо добавить imageUrl
     inferred_result = match_task_inferer[markup_type](markup_items)
@@ -48,7 +49,8 @@ def on_request(ch, method, props, body):
 
     message_body = { "markupId": markup_id,
                      "items": inferred_result,
-                     "type": markup_type }
+                     "type": markup_type,
+                     "timestamp": timestamp }
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,

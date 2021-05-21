@@ -22,6 +22,7 @@ export type MarkupItemsMsg = {
 export type InferencedResultsMsg = {
     markupId: string,
     type: MarkupType,
+    timestamp: number,
     items: {
         id: string,
         result: unknown,

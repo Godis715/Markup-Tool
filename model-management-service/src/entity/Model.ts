@@ -1,22 +1,25 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
-    Column
+    Column,
+    PrimaryColumn
 } from "typeorm";
 
-enum ModelStatus {
-    "training",
-    "ready",
-    "failure"
+export enum ModelStatus {
+    TRAINING = "training",
+    READY = "ready",
+    FAILURE = "failure"
 }
 
 @Entity()
 export class Model {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string;
 
     @Column()
     markupId!: string;
+
+    @Column()
+    markupType!: string;
 
     @Column()
     timestamp!: Date;
