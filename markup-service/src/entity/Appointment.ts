@@ -26,12 +26,12 @@ export class Appointment {
     @ManyToOne(() => User)
     expert!: User;
 
-    @ManyToOne(() => Markup)
+    @ManyToOne(() => Markup, { eager: true })
     markup!: Markup;
 
-    @ManyToOne(() => Prediction, { nullable: true })
+    @ManyToOne(() => Prediction, { nullable: true, eager: true })
     prediction?: Prediction;
 
-    @ManyToOne(() => DatasetItem, { nullable: true })
+    @ManyToOne(() => DatasetItem, { nullable: true, eager: true })
     datasetItem?: DatasetItem;
 }

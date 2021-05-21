@@ -18,7 +18,7 @@ import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
 import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
-import assignMarkupTask from "../../services/taskAssignmentService/taskAssignmentService";
+import { assignMarkupTask } from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
 import { channelWrapper, EX_MARKUP_ITEM_CREATED } from "../../rabbit/channelWrapper";
 

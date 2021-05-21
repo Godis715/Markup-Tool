@@ -18,7 +18,7 @@ import { MarkupItem } from "../../entity/MarkupItem";
 import { User } from "../../entity/User";
 import { UserRole } from "../../types/role";
 import { MarkupItemResult, TaskItemData, TaskItemResult, ValidationItemResult } from "../../types/markupItem";
-import assignMarkupTask from "../../services/taskAssignmentService/taskAssignmentService";
+import { assignMarkupTask, assignValidationTask } from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
 import { channelWrapper, EX_MARKUP_ITEM_CREATED, EX_VALIDATION_ITEM_CREATED } from "../../rabbit/channelWrapper";
 import { Vote } from "../../entity/Vote";
@@ -82,12 +82,14 @@ export default class TaskItemController {
             case "markup": {
                 if (!appointment) {
                     appointment = await assignMarkupTask(markup, user, MarkupTaskProbabilities);
+
+                    if (!appointment) {
+                        return null;
+                    }
+
+                    await manager.save(appointment);
                 }
 
-                if (!appointment) {
-                    return null;
-                }
-            
                 if (!appointment.datasetItem) {
                     throw new Error("Found appointment of type 'Markup', but it's datasetItem is null");
                 }
@@ -98,16 +100,20 @@ export default class TaskItemController {
             }
             case "validation": {
                 if (!appointment) {
-                    throw new Error("Not implemented");
-                }
+                    appointment = await assignValidationTask(markup, user, MarkupTaskProbabilities);
 
-                if (!appointment) {
-                    return null;
+                    if (!appointment) {
+                        return null;
+                    }
+
+                    await manager.save(appointment);
                 }
 
                 if (!appointment.prediction) {
                     throw new Error("Found appointment of type 'Validation', but it's prediction is null")
                 }
+
+                await manager.save(appointment);
 
                 return {
                     imageSrc: appointment.prediction.datasetItem.location,
@@ -130,8 +136,9 @@ export default class TaskItemController {
             throw new BadRequestError(`Invalid task type: ${taskType}`);
         }
 
-        const manager = getManager();
         const { result } = body;
+
+        const manager = getManager();
 
         const markup = await manager.findOne(Markup, taskid, {
             relations: ["items"]
@@ -219,6 +226,10 @@ export default class TaskItemController {
                 break;
             }
             case "validation": {
+                if (!result || typeof result !== "object" || !("isCorrect" in result)) {
+                    throw new BadRequestError(`Expected { isCorrect: boolean}, but got ${JSON.stringify(result)}`);
+                }
+
                 if (!appointment) {
                     return null;
                 }
@@ -232,6 +243,9 @@ export default class TaskItemController {
                 vote.prediction = appointment.prediction;
                 vote.isCorrect = (result as ValidationItemResult).isCorrect;
 
+                if (!appointment.prediction.votes) {
+                    appointment.prediction.votes = [];
+                }
                 appointment.prediction.votes.push(vote);
                 // осуществляем изменения  базе в виде транзакции
                 try {

@@ -22,7 +22,7 @@ export class Prediction {
     @Column()
     modelId!: string;
 
-    @ManyToOne(() => DatasetItem)
+    @ManyToOne(() => DatasetItem, { eager: true })
     datasetItem!: DatasetItem;
 
     /**

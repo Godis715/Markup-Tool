@@ -3,6 +3,7 @@ import { Markup } from "../../entity/Markup";
 import { User } from "../../entity/User";
 import { markupTaskFetchers, MarkupTaskGroup } from "./markupTaskGroups";
 import { TaskRandomFetcher } from "./types";
+import { validationTaskFetchers, ValidationTaskGroup } from "./validationTaskGroup";
 
 /**
  * ** Сначала надо понять, какие группы заданий вообще есть
@@ -49,13 +50,27 @@ export async function fetchRandomTask(taskRandomFetchers: TaskRandomFetcher[]): 
     return null;
 }
 
-export default async function assignMarkupTask(
+export async function assignMarkupTask(
     markup: Markup,
     user: User,
     probabilities: { [task in MarkupTaskGroup]: number }
 ): Promise<Appointment | null> {
     const taskRandomFetchers = Object.values(MarkupTaskGroup).map((g) => ({
         fetchTask: () => markupTaskFetchers[g](markup, user),
+        probability: probabilities[g]
+    }));
+
+    const appointment = await fetchRandomTask(taskRandomFetchers);
+    return appointment;
+}
+
+export async function assignValidationTask(
+    markup: Markup,
+    user: User,
+    probabilities: { [task in ValidationTaskGroup]: number }
+): Promise<Appointment | null> {
+    const taskRandomFetchers = Object.values(ValidationTaskGroup).map((g) => ({
+        fetchTask: () => validationTaskFetchers[g](markup, user),
         probability: probabilities[g]
     }));
 
