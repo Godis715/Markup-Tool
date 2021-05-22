@@ -20,7 +20,8 @@ import { UserRole } from "../../types/role";
 import { MarkupItemData, MarkupItemResult } from "../../types/markupItem";
 import { assignMarkupTask } from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
-import { channelWrapper, EX_MARKUP_ITEM_CREATED } from "../../rabbit/channelWrapper";
+import { channelWrapper } from "../../rabbit/channelWrapper";
+import { EX_MARKUP_ITEM_CREATED } from "../../constants";
 
 const MarkupTaskProbabilities = {
     [MarkupTaskGroup.PARTIALLY_DONE]: 0.75,

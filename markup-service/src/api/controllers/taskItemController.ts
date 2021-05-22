@@ -20,9 +20,10 @@ import { UserRole } from "../../types/role";
 import { MarkupItemResult, TaskItemData, TaskItemResult, ValidationItemResult } from "../../types/markupItem";
 import { assignMarkupTask, assignValidationTask } from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
-import { channelWrapper, EX_MARKUP_ITEM_CREATED, EX_VALIDATION_ITEM_CREATED } from "../../rabbit/channelWrapper";
+import { channelWrapper } from "../../rabbit/channelWrapper";
 import { Vote } from "../../entity/Vote";
 import { ValidationTaskGroup } from "../../services/taskAssignmentService/validationTaskGroup";
+import { EX_MARKUP_ITEM_CREATED, EX_VALIDATION_ITEM_CREATED } from "../../constants";
 
 const markupTaskProbabilities = {
     [MarkupTaskGroup.PARTIALLY_DONE]: 0.5,

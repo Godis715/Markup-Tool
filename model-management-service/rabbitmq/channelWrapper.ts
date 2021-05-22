@@ -2,11 +2,12 @@ import  amqp from "amqp-connection-manager";
 import { ConfirmChannel } from "amqplib";
 import {
     EX_MODEL,
+    KEY_MODEL_READY,
     KEY_MODEL_TRAINING_FAILED,
     KEY_MODEL_TRAINING_STARTED,
     KEY_MODEL_TRAINING_SUCCEED,
     Q_MODEL_PREDICT,
-    Q_MODEL_PREDICT_RESULT,
+    Q_MODEL_PREDICT_RAW,
     RABBITMQ_HOST
 } from "../config";
 import handleModelTrainingFailed from "./recievers/handleModelTrainingFailed";
@@ -20,8 +21,9 @@ export const channelWrapper = connection.createChannel({
     json: true,
     setup: async (channel: ConfirmChannel) => {
         await channel.assertExchange(EX_MODEL, "topic", { durable: true });
+
         await channel.assertQueue(Q_MODEL_PREDICT, { durable: true });
-        await channel.assertQueue(Q_MODEL_PREDICT_RESULT, { durable: true });
+        await channel.assertQueue(Q_MODEL_PREDICT_RAW, { durable: true });
 
         const { queue: modelTrainingSucceedQueue } = await channel.assertQueue("", {
             exclusive: true,
@@ -49,3 +51,7 @@ export const channelWrapper = connection.createChannel({
         await channel.consume(modelTrainingFailedQueue, handleModelTrainingFailed);
     }
 });
+function EX_MODEL_READY(EX_MODEL_READY: any, arg1: string, arg2: { durable: true; }) {
+    throw new Error("Function not implemented.");
+}
+

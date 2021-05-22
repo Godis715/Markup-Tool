@@ -24,3 +24,17 @@ if (!process.env.RABBITMQ_HOST) {
     throw new Error("RABBITMQ_HOST must be provided as environmental variable");
 }
 export const RABBITMQ_HOST = process.env.RABBITMQ_HOST;
+
+export const EX_MARKUP_ITEM_CREATED = "markup_item.created";
+
+export const EX_VALIDATION_ITEM_CREATED = "validation_item.created";
+
+export const Q_GET_MARKUP_ITEMS = "markup_item.get_all";
+
+export const Q_MODEL_PREDICTION_RESULT = "model.prediction.result";
+
+export const EX_MODEL = "model";
+
+export const KEY_MODEL_READY = "model.ready";
+
+export const Q_MODEL_PREDICT = "model.predict";

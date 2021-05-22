@@ -10,7 +10,7 @@ HOST = os.environ.get('RABBITMQ_HOST')
 if not HOST:
     raise RuntimeError("RABBITMQ_HOST wasn't provided!")
 
-PREDICT_MODEL_QUEUE = "model.predict"
+PREDICT_MODEL_QUEUE = "model.predict-raw"
 
 MODELS_DIR = os.environ.get('MODELS_DIR')
 if not MODELS_DIR:

@@ -1,6 +1,8 @@
 import { ConsumeMessage } from "amqplib";
 import { getRepository } from "typeorm";
+import { EX_MODEL, KEY_MODEL_READY } from "../../config";
 import { Model, ModelStatus } from "../../src/entity/Model";
+import { channelWrapper } from "../channelWrapper";
 
 type ModelTrainingSucceedMsg = {
     modelId: string,
@@ -26,6 +28,15 @@ export default async function handleModelTrainingSucceed(msg: ConsumeMessage | n
         model.status = ModelStatus.READY;
 
         await modelRespository.save(model);
+
+        await channelWrapper.publish(
+            EX_MODEL,
+            KEY_MODEL_READY,
+            {
+                markupId: model.markupId,
+                markupType: model.markupType
+            }
+        );
     }
     catch (err) {
         console.error(

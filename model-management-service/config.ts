@@ -13,4 +13,6 @@ export const KEY_MODEL_TRAINING_STARTED = "model.training.started";
 
 export const Q_MODEL_PREDICT = "model.predict";
 
-export const Q_MODEL_PREDICT_RESULT = "model.predict.result";
+export const Q_MODEL_PREDICT_RAW = "model.predict-raw";
+
+export const KEY_MODEL_READY = "model.ready";

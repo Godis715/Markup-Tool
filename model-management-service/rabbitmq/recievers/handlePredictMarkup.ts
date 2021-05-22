@@ -1,6 +1,6 @@
 import { ConsumeMessage } from "amqplib";
 import { getRepository } from "typeorm";
-import { Q_MODEL_PREDICT, Q_MODEL_PREDICT_RESULT } from "../../config";
+import { Q_MODEL_PREDICT, Q_MODEL_PREDICT_RAW } from "../../config";
 import { Model } from "../../src/entity/Model";
 import { channelWrapper } from "../channelWrapper";
 
@@ -41,15 +41,16 @@ export default async function handlePredictMarkup(msg: ConsumeMessage | null): P
             return;
         }
 
-        channelWrapper.sendToQueue(
-            Q_MODEL_PREDICT,
+        await channelWrapper.sendToQueue(
+            Q_MODEL_PREDICT_RAW,
             {
                 ...payload,
                 weightsPath: model.weightsPath,
-                markupType: model.markupType
+                markupType: model.markupType,
+                modelId: model.id
             },
             {
-                replyTo: Q_MODEL_PREDICT_RESULT
+                replyTo: msg.properties.replyTo
             }
         );
     }

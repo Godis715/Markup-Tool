@@ -37,6 +37,9 @@ export default async function handleMarkupPrediction(msg: ConsumeMessage | null)
         pred.datasetItem = { id: item.datasetItemId } as DatasetItem;
         pred.markup = { id: msgContent.markupId } as Markup;
         pred.result = item.result;
+        pred.modelId = msgContent.modelId;
+
+        return pred;
     });
 
     await manager.save(predictions);
