@@ -20,10 +20,11 @@ import { UserRole } from "../../types/role";
 import { MarkupItemResult, TaskItemData, TaskItemResult, ValidationItemResult } from "../../types/markupItem";
 import { assignMarkupTask, assignValidationTask } from "../../services/taskAssignmentService/taskAssignmentService";
 import { MarkupTaskGroup } from "../../services/taskAssignmentService/markupTaskGroups";
-import { channelWrapper } from "../../rabbit/channelWrapper";
+import { channelWrapper, predictionResultQueue } from "../../rabbit/channelWrapper";
 import { Vote } from "../../entity/Vote";
 import { ValidationTaskGroup } from "../../services/taskAssignmentService/validationTaskGroup";
 import { EX_MARKUP_ITEM_CREATED, EX_VALIDATION_ITEM_CREATED } from "../../constants";
+import { queryAutoAnnotation, shouldRequestMorePredictions } from "../../services/autoAnnotationService/autoAnnotationService";
 
 const markupTaskProbabilities = {
     [MarkupTaskGroup.PARTIALLY_DONE]: 0.5,
@@ -285,8 +286,22 @@ export default class TaskItemController {
                     console.error("[MARKUP-SERVICE]: Couldn't publish 'validation item created' message");
                     console.error(err);
                 }
+
+                // TODO: вынести в отдельный сервис
+                if (await shouldRequestMorePredictions(markup.id)) {
+                    await queryAutoAnnotation(markup.id, 3, predictionResultQueue);
+                }
+                
                 break;
             }
         }
+    }
+
+    @Get("/should-continue")
+    async shouldContinue(
+        @Param("taskId") taskId: string
+    ): Promise<{ shouldRequest: boolean }> {
+        const shouldRequest = await shouldRequestMorePredictions(taskId);
+        return { shouldRequest };
     }
 }

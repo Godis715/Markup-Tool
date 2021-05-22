@@ -3,7 +3,8 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToMany
+    OneToMany,
+    CreateDateColumn
 } from "typeorm";
 import { DatasetItem } from "./DatasetItem";
 import { Markup } from "./Markup";
@@ -38,5 +39,8 @@ export class Prediction {
     result!: MarkupItemResultType;
 
     @OneToMany(() => Vote, (vote) => vote.prediction)
-    votes!: Vote[]
+    votes!: Vote[];
+
+    @CreateDateColumn()
+    createDate!: Date;
 }
