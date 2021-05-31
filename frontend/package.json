@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@bem-react/classname": "^1.5.10",
         "axios": "^0.21.1",
         "bootstrap": "^4.5.3",
         "react": "^16.14.0",

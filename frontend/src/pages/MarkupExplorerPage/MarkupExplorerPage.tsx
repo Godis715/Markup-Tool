@@ -72,7 +72,7 @@ export default function MarkupExplorerPage(): JSX.Element {
             !state.recievingMarkups &&
             state.markups.map(
                 (markup) => <ListGroup.Item key={markup.id} className="mb-2">
-                    <Link to={`markup/${markup.id}`}>
+                    <Link to={`task/${markup.id}/markup`}>
                         <h4>{markup.datasetName} / {MARKUP_TYPE_LITERALS[markup.type]}</h4>
                     </Link>
                     <small className="text-muted">

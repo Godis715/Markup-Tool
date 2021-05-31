@@ -3,7 +3,7 @@ import { MarkupConfig, MarkupForCustomer, MarkupType } from "../types/markup";
 import { API_URL } from "../constants/urls";
 import { DatasetDetailed, DatasetShort } from "../types/dataset";
 import { MarkupForExpert } from "../types/markup";
-import { MarkupItemData, MarkupItemResult } from "../types/markupItem";
+import { MarkupItemData, TaskItemData, TaskItemResult } from "../types/markupItem";
 import axiosParseWithDates from "../utils/axiosParseWithDates";
 import {
     CustomErrorType,
@@ -77,9 +77,9 @@ export async function fetchMarkups(): RequestResult<MarkupForExpert[]> {
     }
 }
 
-export async function fetchNextMarkupItem(markupId: string): RequestResult<MarkupItemData> {
+export async function fetchNextMarkupItem(markupId: string, taskType: string): RequestResult<TaskItemData> {
     try {
-        const { data } = await axiosInst.get<MarkupItemData>(`/markup/${markupId}/item`);
+        const { data } = await axiosInst.get<MarkupItemData>(`/task/${markupId}/${taskType}/item`);
         return new SuccessResult(data);
     }
     catch(err) {
@@ -100,9 +100,9 @@ export async function fetchMarkup(markupId: string): RequestResult<MarkupForExpe
     }
 }
 
-export async function postMarkupItemResult(markupId: string, result: MarkupItemResult): RequestResult<null> {
+export async function postMarkupItemResult(markupId: string, taskType: string, result: TaskItemResult): RequestResult<null> {
     try {
-        await axiosInst.post(`/markup/${markupId}/item`, { result });
+        await axiosInst.post(`/task/${markupId}/${taskType}/item`, { result });
         return new SuccessResult(null);
     }
     catch(err) {

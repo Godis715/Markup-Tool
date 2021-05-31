@@ -144,7 +144,7 @@ function App(): JSX.Element {
                             }
                             {
                                 roles.includes(UserRole.EXPERT) &&
-                                <Route exact path="/markup/:markupId">
+                                <Route exact path="/task/:taskId/:taskType">
                                     <MarkupPage />
                                 </Route>
                             }
